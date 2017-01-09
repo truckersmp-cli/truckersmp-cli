@@ -18,6 +18,7 @@
 
 static void inject(char *cmd, char *dll);
 static void die(const char *fmt, ...);
+static int upprivileges();
 
 
 int
@@ -31,7 +32,7 @@ main(int argc, char **argv)
 	char dll[BUF_SIZE];
 
 	if (argc < 3)
-		die("Usage: inject GAMEDIR MODDIR\n");
+		die("Usage: truckersmp-cli GAMEDIR MODDIR\n");
 
 	for (i = 1; i < 3; i++) { /* '\' and '/' can be mixed in windows type pathes */
 		len = strlen(argv[i]);
@@ -45,6 +46,7 @@ main(int argc, char **argv)
 	SetEnvironmentVariable("SteamGameId", "227300");
 	SetEnvironmentVariable("SteamAppID", "227300");
 
+	upprivileges();
 	inject(cmd, dll);
 	return 0;
 }
@@ -95,6 +97,20 @@ inject(char *cmd, char *dll)
 	CloseHandle(pi.hProcess);
 	VirtualFreeEx(pi.hProcess, page, MAX_PATH, MEM_RELEASE);
 }
+
+static int
+upprivileges()
+{
+	HANDLE Token;
+	TOKEN_PRIVILEGES tp;
+	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &Token)) {
+		LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &tp.Privileges[0].Luid);
+		tp.PrivilegeCount = 1;
+		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+		AdjustTokenPrivileges(Token, 0, &tp, sizeof(tp), NULL, NULL);
+	}
+}
+
 
 static void
 die(const char *fmt, ...)
