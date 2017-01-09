@@ -2,14 +2,15 @@
 
 listurl=http://update.ets2mp.com
 dlurl=http://download.ets2mp.com/files
-dldir=./truckersmp
+base="$(dirname $0)"
+dldir="$base/truckersmp"
 steampath="/home/lhark/.wine/drive_c/Program Files (x86)/Steam/Steam.exe"
 
 mkdir -p $dldir
-wget -O - "$listurl/files.json" > files.json
+wget -O - "$listurl/files.json" > "$base/files.json"
 
-cat files.json | awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > .checksums
-files="$(cat .checksums | md5sum -c --quiet - 2> /dev/null | awk -F ':' '/FAILED/{print $1}' | sed 's,'"$dldir"'/,,g')"
+cat "$base/files.json" | awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > "$base/.checksums"
+files="$(cat "$base/.checksums" | md5sum -c --quiet - 2> /dev/null | awk -F ':' '/FAILED/{print $1}' | sed 's,'"$dldir"'/,,g')"
 
 for f in $files; do
     echo "f = $f"
@@ -17,7 +18,7 @@ for f in $files; do
     wget -O - $dlurl/$f > "$dldir/$f"
 done
 
-rm -f .checksums
+rm -f "$base/.checksums"
 
 echo ""
 echo "###################################################################"
