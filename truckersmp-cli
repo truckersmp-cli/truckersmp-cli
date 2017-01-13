@@ -6,19 +6,21 @@ base="$(dirname $0)"
 dldir="truckersmp"
 steampath="/home/lhark/.wine/drive_c/Program Files (x86)/Steam/Steam.exe"
 
-mkdir -p $base/$dldir
-wget -O - "$listurl/files.json" > "$base/files.json"
+pushd "$base"
 
-cat "$base/files.json" | awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > "$base/.checksums"
-files="$(cat "$base/.checksums" | md5sum -c --quiet - 2> /dev/null | awk -F ':' '/FAILED/{print $1}' | sed 's,\./'"$dldir"'/,,g')"
+mkdir -p "./$dldir"
+wget -O - "$listurl/files.json" > "./files.json"
+
+cat "./files.json" | awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > "./.checksums"
+files="$(cat "./.checksums" | md5sum -c --quiet - 2> /dev/null | awk -F ':' '/FAILED/{print $1}' | sed 's,\./'"$dldir"'/,,g')"
 
 for f in $files; do
     echo "f = $f"
-    mkdir -p "$base/$dldir/$(dirname $f)"
-    wget -O - $dlurl/$f > "$base/$dldir/$f"
+    mkdir -p "./$dldir/$(dirname $f)"
+    wget -O - $dlurl/$f > "./$dldir/$f"
 done
 
-rm -f "$base/.checksums"
+rm -f "./.checksums"
 
 echo ""
 echo "###################################################################"
@@ -28,5 +30,7 @@ echo "#                                                                 #"
 echo "###################################################################"
 echo ""
 read -p "Press enter if you are good to go:"
+
+popd
 
 WINEDEBUG=-all,WINEARCH=win64 wine ./truckersmp-cli.exe "$1" "$base/$dldir"
