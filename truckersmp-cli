@@ -33,4 +33,4 @@ read -p "Press enter if you are good to go:"
 
 popd
 
-WINEDEBUG=-all,WINEARCH=win64 wine ./truckersmp-cli.exe "$1" "$base/$dldir"
+WINEDEBUG=-all,WINEARCH=win64 wine "$base/truckersmp-cli.exe" "$1" "$base/$dldir"
