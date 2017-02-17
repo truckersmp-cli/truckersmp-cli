@@ -30,7 +30,8 @@ echo "#  Please check that steam is running or the launcher won't work  #"
 echo "#                                                                 #"
 echo "###################################################################"
 echo ""
-read -p "Press enter if you are good to go:"
+echo "Press enter if you are good to go:"
+read
 
 cd "$curdir"
 
