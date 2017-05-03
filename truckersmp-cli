@@ -13,7 +13,7 @@ mkdir -p "./$dldir"
 wget -O - "$listurl/files.json" > "./files.json"
 
 cat "./files.json" | awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > "./.checksums"
-files="$(cat "./.checksums" | md5sum -c --quiet - 2> /dev/null | awk -F ':' '/FAILED/{print $1}' | sed 's,\./'"$dldir"'/,,g')"
+files="$(cat "./.checksums" | md5sum -c --quiet - 2> /dev/null | awk -F ':' '{print $1}' | sed 's,\./'"$dldir"'/,,g')"
 
 for f in $files; do
     echo "f = $f"
