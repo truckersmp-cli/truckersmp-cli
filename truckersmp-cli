@@ -1,7 +1,7 @@
 #!/bin/sh
 
-listurl=http://update.ets2mp.com
-dlurl=http://download.ets2mp.com/files
+listurl=https://update.ets2mp.com
+dlurl=https://download.ets2mp.com/files
 base="$(dirname $0)"
 dldir="truckersmp"
 steampath="~/.wine/drive_c/Program Files (x86)/Steam/Steam.exe"
