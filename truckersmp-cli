@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ -z "$1" ]; then
+    echo "Usage: truckersmp-cli GAMEDIR"
+    exit
+fi
+
 listurl=https://update.ets2mp.com
 dlurl=https://download.ets2mp.com/files
 base="$(dirname $0)"
