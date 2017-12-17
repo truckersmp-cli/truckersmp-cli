@@ -41,5 +41,7 @@ I was greatly inspired by mewrev's [Inject](https://github.com/mewrev/inject) to
 and TheUnknownNO's unofficial [TruckersMP-Launcher](https://github.com/TheUnknownNO/TruckersMP-Launcher).
 
 Amit Malik's [article](http://securityxploded.com/dll-injection-and-hooking.php) on dll injection was also a great help.
+
 Gnabbist on YouTube for finding the /etc/hosts fix
+
 ferenCEO for mentioning it here
