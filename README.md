@@ -19,7 +19,7 @@ the `WINEPREFIX` is only mandatory if you are not using the standard `~/.wine/`
 
 If you're having problems using this, and are getting Connection Refused Errors, try the following fix:
 1. Go into /etc/hosts
-2. Add the following line: `104.24.114.213    download.ets2mp.com` (Be warned, there has to be 4 spaces there, instead of the one GitHub shortened it to)
+2. Add the following line: `104.24.114.213    download.ets2mp.com`
 3. Save, and try it again
 
 ## Install ##
