@@ -24,9 +24,24 @@ for f in $files; do
     echo "f = $f"
     mkdir -p "./$dldir/$(dirname $f)"
     wget -O - $dlurl/$f > "./$dldir/$f"
+    if [ ! $? -eq 0 ]; then
+        errors=1
+    fi
 done
 
 rm -f "./.checksums"
+
+if [ ! -z $errors ] && [ "$errors" = "1" ]; then
+    zenity --question --icon-name=dialog-error --title "Truckers MP CLI" --text "Some Errors Occured during the Downloading of Files, Continue or Try Again?" --ok-label="Continue" --cancel-label="Try Again" --default-cancel
+    if [ $? = 0 ]; then
+        echo "Continuing..."
+    else
+        rm -rf "./truckersmp" "./files.json"
+        #Relaunch to try again
+        "$0" "$@"
+        exit 0
+    fi
+fi
 
 echo ""
 echo "###################################################################"
