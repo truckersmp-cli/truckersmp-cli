@@ -7,23 +7,41 @@ fi
 
 listurl=https://update.ets2mp.com
 dlurl=https://downloads.ets2mp.com/files
-base="$(dirname $0)"
+base="$(dirname "$0")"
 dldir="truckersmp"
 steampath="~/.wine/drive_c/Program Files (x86)/Steam/Steam.exe"
 
 curdir=$(pwd)
-cd "$base"
+cd "$base" || exit 1
 
 mkdir -p "./$dldir"
-wget -O - "$listurl/files.json" > "./files.json"
+wget -O - "$listurl/files.json" > "./files.json" || exit 1
 
-cat "./files.json" | awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > "./.checksums"
-files="$(cat "./.checksums" | md5sum -c --quiet - 2> /dev/null | awk -F ':' '{print $1}' | sed 's,\./'"$dldir"'/,,g')"
+awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' "./files.json" | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > "./.checksums"
 
-for f in $files; do
-    echo "f = $f"
-    mkdir -p "./$dldir/$(dirname $f)"
-    wget -O - $dlurl/$f > "./$dldir/$f"
+error=1
+while [ "$error" = "1" ]; do
+    files="$(cat "./.checksums" | md5sum -c --quiet - 2> /dev/null | awk -F ':' '{print $1}' | sed 's,\./'"$dldir"'/,,g')"
+    error=0
+    for f in $files; do
+        mkdir -p "./$dldir/$(dirname "$f")"
+        wget -O - "$dlurl/$f" > "./$dldir/$f" || error=1
+    done
+    if [ "$error" = "1" ]; then
+        echo ""
+        echo "#####"
+        echo "#/!\\#"
+        echo "#####"
+        echo ""
+        echo "/!\\ Failed to download mod files. Try again? [Y/N]"
+        old_stty_cfg=$(stty -g)
+        stty raw -echo ; answer="$(head -c 1)" ; stty "$old_stty_cfg" # Careful playing with stty
+        if echo "$answer" | grep -iq "^y" ;then
+            "$0" "$@"; exit 0
+        else
+            exit 1
+        fi
+    fi
 done
 
 rm -f "./.checksums"
