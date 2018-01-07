@@ -7,6 +7,7 @@ fi
 
 listurl=https://update.ets2mp.com
 dlurl=https://downloads.ets2mp.com/files
+dlurlalt=https://download.ets2mp.com/files
 base="$(dirname "$0")"
 dldir="truckersmp"
 steampath="~/.wine/drive_c/Program Files (x86)/Steam/Steam.exe"
@@ -25,7 +26,7 @@ while [ "$error" = "1" ]; do
     error=0
     for f in $files; do
         mkdir -p "./$dldir/$(dirname "$f")"
-        wget -O - "$dlurl/$f" > "./$dldir/$f" || error=1
+        wget -O - "$dlurl/$f" > "./$dldir/$f" || wget -O - "$dlurlalt/$f" > "./$dldir/$f" || error=1
     done
     if [ "$error" = "1" ]; then
         echo ""
