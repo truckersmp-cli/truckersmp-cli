@@ -17,6 +17,8 @@ $ WINEPREFIX=<wine prefix> ./truckersmp-cli <path to your ETS2 install folder>
 
 the `WINEPREFIX` is only mandatory if you are not using the standard `~/.wine/`
 
+**WARNING !** Your WINEPREFIX must be 64bits, the mod is not 32bits-compatible.
+
 ## Install ##
 
 Just clone this repository wherever you want your TruckersMP installation to be.
