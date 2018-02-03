@@ -16,7 +16,7 @@ curdir=$(pwd)
 cd "$base" || exit 1
 
 mkdir -p "./$dldir"
-wget -O - "$listurl/files.json" > "./files.json" || exit 1
+wget --header 'Accept-encoding: identity' -O - "$listurl/files.json" > "./files.json" || exit 1
 
 awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' "./files.json" | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > "./.checksums"
 
@@ -26,7 +26,7 @@ while [ "$error" = "1" ]; do
     error=0
     for f in $files; do
         mkdir -p "./$dldir/$(dirname "$f")"
-        wget -O - "$dlurl/$f" > "./$dldir/$f" || wget -O - "$dlurlalt/$f" > "./$dldir/$f" || error=1
+        wget --header 'Accept-encoding: identity' -O - "$dlurl/$f" > "./$dldir/$f" || wget --header 'Accept-encoding: identity' -O - "$dlurlalt/$f" > "./$dldir/$f" || error=1
     done
     if [ "$error" = "1" ]; then
         echo ""
