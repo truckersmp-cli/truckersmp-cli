@@ -5,7 +5,7 @@ if [ -z "$1" ]; then
     exit
 fi
 
-listurl=https://update.ets2mp.com
+listurl=http://update.ets2mp.com
 dlurl=https://downloads.ets2mp.com/files
 dlurlalt=https://download.ets2mp.com/files
 base="$(dirname "$0")"
