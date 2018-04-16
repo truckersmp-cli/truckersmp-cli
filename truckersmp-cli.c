@@ -18,6 +18,7 @@
 
 static void inject(char *cmd, char *dll);
 static void die(const char *fmt, ...);
+static void dieonerror(const char* function, const char* cmd);
 static int upprivileges();
 
 
@@ -62,12 +63,12 @@ inject(char *cmd, char *dll)
 
 	si.cb = sizeof(STARTUPINFO);
 	if (!CreateProcess(NULL, cmd, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi))
-		die("CreateProcess(\"%s\") failed; error code = 0x%08X\n", cmd, GetLastError());
+		dieonerror("CreateProcess()", cmd);
 
 	// Allocate a page in memory for the arguments of LoadLibrary.
 	page = VirtualAllocEx(pi.hProcess, NULL, MAX_PATH, MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
 	if (page == NULL)
-		die("VirtualAllocEx failed; error code = 0x%08X\n", GetLastError());
+		dieonerror("VirtualAllocEx()", "[]");
 
 	/* Inject the core dll into the process address space */
 	len = strlen(dll) + 1;
@@ -79,20 +80,20 @@ inject(char *cmd, char *dll)
 
 	/* Write library path to the page used for LoadLibrary arguments. */
 	if (!WriteProcessMemory(pi.hProcess, page, dll, len, NULL))
-		die("WriteProcessMemory failed; error code = 0x%08X\n", GetLastError());
+		dieonerror("WriteProcessMemory", "[]");
 
 	/* Inject the library */
 	hThread = CreateRemoteThread(pi.hProcess, NULL, 0, (LPTHREAD_START_ROUTINE) LoadLibraryA, page, 0, NULL);
 	if (!hThread)
-		die("CreateRemoteThread failed; error code = 0x%08X\n", GetLastError());
+		dieonerror("CreateRemoteThread", "[]");
 
 	if (WaitForSingleObject(hThread, INFINITE) == WAIT_FAILED)
-		die("WaitForSingleObject failed; error code = 0x%08X\n", GetLastError());
+		dieonerror("WaitForSingleObject", "[]");
 
 	CloseHandle(hThread);
 
 	if (ResumeThread(pi.hThread) == -1)
-		die("ResumeThread failed; error code = 0x%08X\n", GetLastError());
+		dieonerror("ResumeThread", "[]");
 
 	CloseHandle(pi.hProcess);
 	VirtualFreeEx(pi.hProcess, page, MAX_PATH, MEM_RELEASE);
@@ -129,4 +130,22 @@ die(const char *fmt, ...)
 	}
 
 	exit(1);
+}
+
+
+static void
+dieonerror(const char* function, const char* cmd)
+{
+	LPVOID buf;
+	DWORD err = GetLastError();
+
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR) &buf, 0, NULL );
+
+	fprintf(stderr, "%s with argument \"%s\" failed with error %d: %s\n", function, cmd, err, buf);
+
+	LocalFree(buf);
+	ExitProcess(err);
 }
