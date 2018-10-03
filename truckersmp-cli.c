@@ -11,9 +11,12 @@
 
 #include <stdio.h>
 #include <windows.h>
+#include <unistd.h>
 
 
 #define BUF_SIZE 1024
+#define STEAMID_ETS2 "227300"
+#define STEAMID_ATS "270880"
 
 
 static void inject(char *cmd, char *dll);
@@ -26,11 +29,10 @@ int
 main(int argc, char **argv)
 {
 	int i, len;
-	char *exepath = "\\bin\\win_x64\\eurotrucks2.exe";
-	char *dllpath = "\\core_ets2mp.dll";
 	const char opts[] = "-nointro -64bit";
 	char cmd[BUF_SIZE];
 	char dll[BUF_SIZE];
+	char *exepath, *dllpath, *steamid;
 
 	if (argc < 3)
 		die("Usage: truckersmp-cli GAMEDIR MODDIR\n");
@@ -41,11 +43,27 @@ main(int argc, char **argv)
 			argv[i][len - 1] = '\0';
 	}
 
+	snprintf(cmd, sizeof(cmd), "%s%s", argv[1], "\\bin\\win_x64\\eurotrucks2.exe");
+	if (access (cmd, F_OK) != -1) {
+		exepath = "\\bin\\win_x64\\eurotrucks2.exe";
+		dllpath = "\\core_ets2mp.dll";
+		steamid = STEAMID_ETS2;
+	} else {
+		snprintf(cmd, sizeof(cmd), "%s%s", argv[1], "\\bin\\win_x64\\amtrucks.exe");
+		if (access (cmd, F_OK) != -1) {
+			exepath = "\\bin\\win_x64\\amtrucks.exe";
+			dllpath = "\\core_atsmp.dll";
+			steamid = STEAMID_ATS;
+		} else {
+			die ("Unable to find ETS2 or ATS in this GAMEDIR.");
+		}
+	}
+
 	snprintf(cmd, sizeof(cmd), "%s%s %s", argv[1], exepath, opts);
 	snprintf(dll, sizeof(dll), "%s%s", argv[2], dllpath);
 
-	SetEnvironmentVariable("SteamGameId", "227300");
-	SetEnvironmentVariable("SteamAppID", "227300");
+	SetEnvironmentVariable("SteamGameId", steamid);
+	SetEnvironmentVariable("SteamAppID", steamid);
 
 	upprivileges();
 	inject(cmd, dll);
