@@ -7,7 +7,22 @@ frustration after having spent multiple days trying to make the official launche
 linux with Wine.
 
 ## Usage ##
+### General ###
+~~~
+truckersmp-cli [-d <path> -h] [GAMEDIR]
+    -d path     mod directory, defaults to $XDG_CACHE_HOME/truckersmp-cli
+    -h          this help
+    GAMEDIR     path to ETS2 od ATS game data, (optional: update only)
+~~~
 
+By default `truckersmp-cli` stores the mod in `$XDG_CACHE_HOME/truckersmp-cli`.
+This is overrided as a fallback to the old behavior if a folder named `truckersmp`
+is found in the script directory.
+You can specify your own directory by using `-d <path>`.
+
+If no `GAMEDIR` is specified the script only verifies and updates the mod files.
+
+### Example ###
 You will first have to lauch steam by itself, because for some reason steam refuses to
 launch the mod without having been brough up first. Then you can just run the script
 

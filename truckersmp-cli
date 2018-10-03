@@ -1,33 +1,75 @@
 #!/bin/sh
 
-if [ -z "$1" ]; then
-    echo "Usage: truckersmp-cli GAMEDIR"
-    exit
-fi
+readonly XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
+
+usage() {
+    echo "Usage: ${0} [-d <path> -h] [GAMEDIR]"
+    echo "  -d path     mod directory, defaults to \$XDG_CACHE_HOME/truckersmp-cli"
+    echo "  -h          this help"
+    echo "  GAMEDIR     path to ETS2 od ATS game data, (optional: update only)"
+}
+
+quit() {
+    # clean up tmpfiles
+    rm "$filelist" "$checksums"
+    exit "$1"
+}
 
 listurl=https://update.ets2mp.com
 dlurl=https://downloads.ets2mp.com/files
 dlurlalt=https://download.ets2mp.com/files
 base="$(dirname "$0")"
-dldir="truckersmp"
+dldir="$XDG_CACHE_HOME/truckersmp-cli"
+filelist=$(mktemp)
+checksums=$(mktemp)
+updonly=false
+
+# fallback to old behavior
+if [ -d "$base/truckersmp" ]; then
+    dldir="$base/truckersmp"
+fi
+
+# https://stackoverflow.com/a/14203146
+OPTIND=1         # Reset in case getopts has been used previously in the shell.
+
+while getopts "d:h?" opt; do
+    case "$opt" in
+    d)	dldir=${OPTARG}
+        ;;
+    h|\?)
+        usage
+        quit 0
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+[ "${1:-}" = "--" ] && shift
+
+if [ -z "$1" ]; then
+    updonly=true
+elif ! [ -f "$1/bin/win_x64/eurotrucks2.exe" ] && ! [ -f "$1/bin/win_x64/amtrucks.exe" ]; then
+    >&2 echo "ETS2 or ATS not found in GAMEDIR"
+    quit 1
+fi
 
 curdir=$(pwd)
-cd "$base" || exit 1
+cd "$base" || quit 1
 
-mkdir -p "./$dldir"
-wget --header 'Accept-encoding: identity' -O - "$listurl/files.json" > "./files.json" || exit 1
+mkdir -p "$dldir"
+wget --header 'Accept-encoding: identity' -q --show-progress -O "$filelist" "$listurl/files.json" || quit 1
 
-awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' "./files.json" | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > "./.checksums"
+awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' "$filelist" | awk -F '"' '{printf "%s '"$dldir"'%s\n",$8,$4}' > "$checksums"
 
 error=1
 while [ "$error" = "1" ]; do
-    files="$(cat "./.checksums" | md5sum -c --quiet - 2> /dev/null | awk -F ':' '{print $1}' | sed 's,\./'"$dldir"'/,,g')"
+    files=$(md5sum -c --quiet <"$checksums" 2> /dev/null | awk -F ':' '{print $1}' | sed "s@$dldir/@@g")
     error=0
     for f in $files; do
-        mkdir -p "./$dldir/$(dirname "$f")"
-        wget --header 'Accept-encoding: identity' -O - "$dlurl/$f" > "./$dldir/$f" || wget --header 'Accept-encoding: identity' -O - "$dlurlalt/$f" > "./$dldir/$f" || error=1
+        mkdir -p "$dldir/$(dirname "$f")"
+        wget --header 'Accept-encoding: identity' -q --show-progress -O "$dldir/$f" "$dlurl/$f" || wget --header 'Accept-encoding: identity' -q --show-progress -O "$dldir/$f" "$dlurlalt/$f" || error=1
     done
-    if [ "$error" = "1" ]; then
+    if [ "$error" = "1" ] && [ "$updonly" = false ]; then
         echo ""
         echo "#####"
         echo "#/!\\#"
@@ -37,25 +79,31 @@ while [ "$error" = "1" ]; do
         old_stty_cfg=$(stty -g)
         stty raw -echo ; answer="$(head -c 1)" ; stty "$old_stty_cfg" # Careful playing with stty
         if echo "$answer" | grep -iq "^y" ;then
-            "$0" "$@"; exit 0
+            "$0" "$@"; quit 0
         else
-            exit 1
+            quit 1
         fi
+    elif [ "$error" = "1" ] && [ "$updonly" = true ]; then
+        >&2 echo "Failed to download mod files."
+        quit 1
     fi
 done
 
-rm -f "./.checksums"
+cd "$curdir" || quit 1
 
-echo ""
-echo "###################################################################"
-echo "#                                                                 #"
-echo "#  Please check that steam is running or the launcher won't work  #"
-echo "#                                                                 #"
-echo "###################################################################"
-echo ""
-echo "Press enter if you are good to go:"
-read _
+if [ "$updonly" = false ]; then
+    echo ""
+    echo "###################################################################"
+    echo "#                                                                 #"
+    echo "#  Please check that steam is running or the launcher won't work  #"
+    echo "#                                                                 #"
+    echo "###################################################################"
+    echo ""
+    echo "Press enter if you are good to go:"
+    read _
 
-cd "$curdir"
+    WINEDEBUG=-all,WINEARCH=win64 wine "$base/truckersmp-cli.exe" "$1" "$dldir"
+fi
 
-WINEDEBUG=-all,WINEARCH=win64 wine "$base/truckersmp-cli.exe" "$1" "$base/$dldir"
+quit 0
+
