@@ -3,10 +3,11 @@
 readonly XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
 
 usage() {
-    echo "Usage: ${0} [-d <path> -h] [GAMEDIR]"
+    echo "Usage: ${0} [-d <path> -h -u] [GAMEDIR]"
     echo "  -d path     mod directory, defaults to \$XDG_CACHE_HOME/truckersmp-cli"
     echo "  -h          this help"
-    echo "  GAMEDIR     path to ETS2 od ATS game data, (optional: update only)"
+    echo "  -u          update mod files only"
+    echo "  GAMEDIR     path to ETS2 od ATS game data, optional with -u"
 }
 
 quit() {
@@ -32,7 +33,7 @@ fi
 # https://stackoverflow.com/a/14203146
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
-while getopts "d:h?" opt; do
+while getopts "d:h?u" opt; do
     case "$opt" in
     d)	dldir=${OPTARG}
         ;;
@@ -40,15 +41,18 @@ while getopts "d:h?" opt; do
         usage
         quit 0
         ;;
+    u)  updonly=true
+        ;;
     esac
 done
 
 shift $((OPTIND-1))
 [ "${1:-}" = "--" ] && shift
 
-if [ -z "$1" ]; then
-    updonly=true
-elif ! [ -f "$1/bin/win_x64/eurotrucks2.exe" ] && ! [ -f "$1/bin/win_x64/amtrucks.exe" ]; then
+if [ -z "$1" ] && [ "$updonly" = false ]; then
+    usage
+    quit 0
+elif ! [ -f "$1/bin/win_x64/eurotrucks2.exe" ] && ! [ -f "$1/bin/win_x64/amtrucks.exe" ] && [ "$updonly" = false ]; then
     >&2 echo "ETS2 or ATS not found in GAMEDIR"
     quit 1
 fi
