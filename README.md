@@ -8,18 +8,19 @@ linux with Wine.
 
 ## Usage ##
 ### General ###
-~~~
-truckersmp-cli [-d <path> -h -u] [GAMEDIR]
-    -d path     mod directory, defaults to $XDG_CACHE_HOME/truckersmp-cli
+<pre>
+<b>truckersmp-cli</b> [-huv] [-d <i>path</i>] GAMEDIR
+    -d <i>path</i>     mod directory, defaults to <i>$XDG_CACHE_HOME/truckersmp-cli</i>
     -h          this help
     -u          update mod files only
+    -v          verbose
     GAMEDIR     path to ETS2 od ATS game data, optional with -u
-~~~
+</pre>
 
 By default `truckersmp-cli` stores the mod in `$XDG_CACHE_HOME/truckersmp-cli`.
 This is overrided as a fallback to the old behavior if a folder named `truckersmp`
 is found in the script directory.
-You can specify your own directory by using `-d <path>`.
+You can specify your own directory by using `-d path`.
 
 ### Example ###
 You will first have to lauch steam by itself, because for some reason steam refuses to
