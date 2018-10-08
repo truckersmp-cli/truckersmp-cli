@@ -124,8 +124,11 @@ else
 fi
 
 # extract md5sums and filenames
-awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' "$filelist" \
-| awk -F '"' '{printf "%s '"$moddir"'%s\n",$8,$4}' > "$checksums"
+sed -r  -e 's@\{"Files":\[\{@@g' \
+        -e 's@,"Type":"[a-zA-Z0-9]+"[]\}\{,]{3}@\n@g' \
+        -e 's@"FilePath":"([a-zA-Z0-9\/_\.-]+)","Md5":"([0-9a-f]{32})"@\2 '"$moddir"'\1@g' \
+        < "$filelist" \
+        > "$checksums"
 print "$(cat "$checksums")"
 
 # compare existing local files with md5sums and remember wrong files
