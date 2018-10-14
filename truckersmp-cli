@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 # URLs
-declare -r listurl="https://update.ets2mp.com"
-declare -r dlurl="https://downloads.ets2mp.com/files"
-declare -r dlurlalt="https://download.ets2mp.com/files"
+readonly listurl="https://update.ets2mp.com"
+readonly dlurl="https://downloads.ets2mp.com/files"
+readonly dlurlalt="https://download.ets2mp.com/files"
 
 # dirs
 readonly XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
@@ -18,8 +18,17 @@ checksums=$(mktemp -t truckersmp-cli.XXXXXXXXXX)
 updonly=false
 verbose=false
 
+# Used to save an array
+# http://www.etalabs.net/sh_tricks.html
+save () {
+    for i do
+        printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\\/"
+    done
+    echo " "
+}
+
 # preserve arguments in case we need to execute this script again
-arguments=("$@")
+arguments=$(save "$@")
 
 usage() {
     echo "Usage: ${0} [-huv] [-d path] GAMEDIR"
@@ -44,7 +53,8 @@ start_game() {
     echo "#                                                                 #"
     echo "###################################################################"
     echo ""
-    read -r -p "Press enter if you are good to go:"
+    echo "Press enter if you are good to go:"
+    read -r _
 
     print 'Command: WINEDEBUG=-all,WINEARCH=win64 wine "'"$scriptdir"'/truckersmp-cli.exe" "'"$1"'" "'"$moddir"'"'
 
@@ -165,11 +175,13 @@ done
 # something went wrong, ask for restart
 if [ "$error" = "1" ] && [ "$updonly" = false ]; then
     while true; do
-        read -r -p "Failed to download mod files. Try again? [y/N] " yn
+        >&2 echo "Failed to download mod files. Try again? [y/N] "
+        read -r yn
         case $yn in
             [Yy]* )
                 rm "$filelist" "$checksums"
-                exec "$0" "${arguments[@]}"
+                eval "set -- $arguments"
+                exec "$0" "$@"
                 ;;
             [Nn]* ) quit 1;;
             * )     quit 1;;
