@@ -1,61 +1,203 @@
 #!/bin/sh
 
-if [ -z "$1" ]; then
-    echo "Usage: truckersmp-cli GAMEDIR"
-    exit
+# URLs
+readonly listurl="https://update.ets2mp.com"
+readonly dlurl="https://downloads.ets2mp.com/files"
+readonly dlurlalt="https://download.ets2mp.com/files"
+
+# dirs
+readonly XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
+moddir="$XDG_CACHE_HOME/truckersmp-cli"
+scriptdir=$(dirname "$0")
+
+# files
+filelist=$(mktemp -t truckersmp-cli.XXXXXXXXXX)
+checksums=$(mktemp -t truckersmp-cli.XXXXXXXXXX)
+
+# variables
+updonly=false
+verbose=false
+
+# Used to save an array
+# http://www.etalabs.net/sh_tricks.html
+save () {
+    for i do
+        printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\\/"
+    done
+    echo " "
+}
+
+# preserve arguments in case we need to execute this script again
+arguments=$(save "$@")
+
+usage() {
+    echo "Usage: ${0} [-huv] [-d path] GAMEDIR"
+    echo "  -d path     mod directory, defaults to \$XDG_CACHE_HOME/truckersmp-cli"
+    echo "  -h          this help"
+    echo "  -u          update mod files only"
+    echo "  -v          verbose"
+    echo "  GAMEDIR     path to ETS2 od ATS game data, optional with -u"
+}
+
+quit() {
+    # clean up tmpfiles
+    rm "$filelist" "$checksums"
+    exit "$1"
+}
+
+start_game() {
+    echo ""
+    echo "###################################################################"
+    echo "#                                                                 #"
+    echo "#  Please check that steam is running or the launcher won't work  #"
+    echo "#                                                                 #"
+    echo "###################################################################"
+    echo ""
+    echo "Press enter if you are good to go:"
+    read -r _
+
+    print 'Command: WINEDEBUG=-all,WINEARCH=win64 wine "'"$scriptdir"'/truckersmp-cli.exe" "'"$1"'" "'"$moddir"'"'
+
+    # truckersmp-cli.exe GAMEDIR MODDIR
+    WINEDEBUG=-all,WINEARCH=win64 wine "$scriptdir/truckersmp-cli.exe" "$1" "$moddir"
+}
+
+print() {
+    if [ "$verbose" = true ]; then
+        echo "$1"
+    fi
+}
+
+# fallback to old local folder
+if [ -d "$scriptdir/truckersmp" ]; then
+    moddir="$scriptdir/truckersmp"
 fi
 
-listurl=https://update.ets2mp.com
-dlurl=https://downloads.ets2mp.com/files
-dlurlalt=https://download.ets2mp.com/files
-base="$(dirname "$0")"
-dldir="truckersmp"
+# https://stackoverflow.com/a/14203146
+{
+    # Reset in case getopts has been used previously in the shell.
+    OPTIND=1
 
-curdir=$(pwd)
-cd "$base" || exit 1
-
-mkdir -p "./$dldir"
-wget --header 'Accept-encoding: identity' -O - "$listurl/files.json" > "./files.json" || exit 1
-
-awk 'BEGIN{i=0}/":"/{printf $0;i=1;next}{if (i) {printf "\n"; i=0}}' "./files.json" | awk -F '"' '{printf "%s ./truckersmp%s\n",$8,$4}' > "./.checksums"
-
-error=1
-while [ "$error" = "1" ]; do
-    files="$(cat "./.checksums" | md5sum -c --quiet - 2> /dev/null | awk -F ':' '{print $1}' | sed 's,\./'"$dldir"'/,,g')"
-    error=0
-    for f in $files; do
-        mkdir -p "./$dldir/$(dirname "$f")"
-        wget --header 'Accept-encoding: identity' -O - "$dlurl/$f" > "./$dldir/$f" || wget --header 'Accept-encoding: identity' -O - "$dlurlalt/$f" > "./$dldir/$f" || error=1
+    # parse options
+    while getopts "d:h?uv" opt; do
+        case "$opt" in
+        d)	moddir=${OPTARG}
+            ;;
+        h|\?)
+            usage
+            quit 0
+            ;;
+        u)  updonly=true
+            ;;
+        v)  verbose=true
+            ;;
+        esac
     done
-    if [ "$error" = "1" ]; then
-        echo ""
-        echo "#####"
-        echo "#/!\\#"
-        echo "#####"
-        echo ""
-        echo "/!\\ Failed to download mod files. Try again? [Y/N]"
-        old_stty_cfg=$(stty -g)
-        stty raw -echo ; answer="$(head -c 1)" ; stty "$old_stty_cfg" # Careful playing with stty
-        if echo "$answer" | grep -iq "^y" ;then
-            "$0" "$@"; exit 0
-        else
-            exit 1
-        fi
+
+    # restore all unused arguments
+    shift $((OPTIND-1))
+    [ "${1:-}" = "--" ] && shift
+}
+
+# check for GAMEDIR, don't fail if -u is set
+# but also don't fail if -u is set and a wrong GAMEDIR is given
+# because we don't use it anyway
+if [ -z "$1" ] && [ "$updonly" = false ]; then
+    usage
+    quit 0
+elif ! [ -f "$1/bin/win_x64/eurotrucks2.exe" ] \
+        && ! [ -f "$1/bin/win_x64/amtrucks.exe" ] \
+        && [ "$updonly" = false ]; then
+    >&2 echo "ETS2 or ATS not found in GAMEDIR"
+    quit 1
+fi
+
+# print info
+print "Moddir: $moddir"
+print "Scriptdir: $scriptdir"
+if [ "$updonly" = false ]; then
+    print "Gamedir: $1"
+fi
+
+# make MODDIR and download missing files
+mkdir -p "$moddir"
+
+# get the fileinfo from the server
+if [ "$verbose" = false ]; then
+    wget --header 'Accept-encoding: identity' -q --show-progress \
+        -O "$filelist" "$listurl/files.json" \
+    || quit 1
+else
+    wget --header 'Accept-encoding: identity' -v \
+        -O "$filelist" "$listurl/files.json" \
+    || quit 1
+fi
+
+# extract md5sums and filenames
+sed -r  -e 's@\{"Files":\[\{@@g' \
+        -e 's@,"Type":"[a-zA-Z0-9]+"[]\}\{,]{3}@\n@g' \
+        -e 's@"FilePath":"([a-zA-Z0-9\/_\.-]+)","Md5":"([0-9a-f]{32})"@\2 '"$moddir"'\1@g' \
+        < "$filelist" \
+        > "$checksums"
+print "$(cat "$checksums")"
+
+# compare existing local files with md5sums and remember wrong files
+files=$(md5sum -c --quiet <"$checksums" 2> /dev/null \
+        | awk -F ':' '{print $1}' \
+        | sed "s@$moddir/@@g")
+print "Files to download:"
+print "$files"
+
+# redownload wrong files
+error=0
+for f in $files; do
+    print "Downloading file $f to $moddir/$(dirname "$f")"
+
+    # make file hierarchy
+    mkdir -p "$moddir/$(dirname "$f")"
+
+    # download file
+    if [ "$verbose" = false ]; then
+        wget --header 'Accept-encoding: identity' -q --show-progress \
+            -O "$moddir/$f" "$dlurl/$f" \
+        || wget --header 'Accept-encoding: identity' -q --show-progress \
+            -O "$moddir/$f" "$dlurlalt/$f" \
+        || error=1
+    else
+        wget --header 'Accept-encoding: identity' -v \
+            -O "$moddir/$f" "$dlurl/$f" \
+        || wget --header 'Accept-encoding: identity' -v \
+            -O "$moddir/$f" "$dlurlalt/$f" \
+        || error=1
     fi
 done
 
-rm -f "./.checksums"
+# something went wrong, ask for restart
+if [ "$error" = "1" ] && [ "$updonly" = false ]; then
+    while true; do
+        >&2 echo "Failed to download mod files. Try again? [y/N] "
+        read -r yn
+        case $yn in
+            [Yy]* )
+                rm "$filelist" "$checksums"
+                eval "set -- $arguments"
+                exec "$0" "$@"
+                ;;
+            [Nn]* ) quit 1;;
+            * )     quit 1;;
+        esac
+    done
+elif [ "$error" = "1" ] && [ "$updonly" = true ]; then
+    >&2 echo "Failed to download mod files."
+    quit 1
+fi
 
-echo ""
-echo "###################################################################"
-echo "#                                                                 #"
-echo "#  Please check that steam is running or the launcher won't work  #"
-echo "#                                                                 #"
-echo "###################################################################"
-echo ""
-echo "Press enter if you are good to go:"
-read _
+echo "Everything up to date"
 
-cd "$curdir"
+# start game if -u is not given
+if [ "$updonly" = false ]; then
+    start_game "$1"
+fi
 
-WINEDEBUG=-all,WINEARCH=win64 wine "$base/truckersmp-cli.exe" "$1" "$base/$dldir"
+quit 0
+
