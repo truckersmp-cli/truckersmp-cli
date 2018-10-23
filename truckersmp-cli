@@ -135,8 +135,8 @@ fi
 
 # extract md5sums and filenames
 sed -r  -e 's@\{"Files":\[\{@@g' \
-        -e 's@,"Type":"[a-zA-Z0-9]+"[]\}\{,]{3}@\n@g' \
-        -e 's@"FilePath":"([a-zA-Z0-9\/_\.-]+)","Md5":"([0-9a-f]{32})"@\2 '"$moddir"'\1@g' \
+        -e  's@"FilePath":"([a-zA-Z0-9\/_\.-]+)","Type":"[a-zA-Z0-9]+",'\
+'"Md5":"([0-9a-f]{32})"[]\}\{,]{3}@\2 '"$moddir"'\1\n@g' \
         < "$filelist" \
         > "$checksums"
 print "$(cat "$checksums")"
