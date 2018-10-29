@@ -2,8 +2,8 @@
 
 # URLs
 readonly listurl="https://update.ets2mp.com"
-readonly dlurl="https://downloads.ets2mp.com/files"
-readonly dlurlalt="https://download.ets2mp.com/files"
+readonly dlurl="https://download.ets2mp.com/files"
+readonly dlurlalt="https://downloads.ets2mp.com/files"
 
 # dirs
 readonly XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
