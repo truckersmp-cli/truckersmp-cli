@@ -1,95 +1,461 @@
 #!/bin/sh
 
 # URLs
-readonly listurl="https://update.ets2mp.com"
 readonly dlurl="https://download.ets2mp.com/files"
 readonly dlurlalt="https://downloads.ets2mp.com/files"
+readonly listurl="https://update.ets2mp.com"
+readonly steamcmdurl="https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
 
 # dirs
 readonly XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
-moddir="$XDG_CACHE_HOME/truckersmp-cli"
-scriptdir=$(dirname "$0")
+readonly XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+default_gamedir_ats="$XDG_DATA_HOME/truckersmp-cli/American Truck Simulator/data"
+default_gamedir_ets2="$XDG_DATA_HOME/truckersmp-cli/Euro Truck Simulator 2/data"
+default_moddir="$XDG_DATA_HOME/truckersmp-cli/TruckersMP"
+default_prefixdir_ats="$XDG_DATA_HOME/truckersmp-cli/American Truck Simulator/prefix"
+default_prefixdir_ets2="$XDG_DATA_HOME/truckersmp-cli/Euro Truck Simulator 2/prefix"
+protondir="$XDG_DATA_HOME/truckersmp-cli/Proton"
+scriptdir=$(dirname "$(realpath "$0")")
+
+# non changeable dirs
+steamcmddir="$XDG_CACHE_HOME/truckersmp-cli/steamcmd"
 
 # files
 filelist=$(mktemp -t truckersmp-cli.XXXXXXXXXX)
 checksums=$(mktemp -t truckersmp-cli.XXXXXXXXXX)
 
 # variables
-updonly=false
+appid_ats="270880"      # https://steamdb.info/app/270880/
+appid_ets2="227300"     # https://steamdb.info/app/227300/
+appid_proton="1054830"  # Proton 4.2 https://steamdb.info/app/1054830/
+ats=false
+ets2=false
+proton=false
+startgame=false
+wine=false
+update=false
 verbose=false
 
-# Used to save an array
-# http://www.etalabs.net/sh_tricks.html
-save () {
-    for i do
-        printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/' \\\\/"
-    done
-    echo " "
-}
+usage () {
+cat <<HELP_USAGE
 
-# preserve arguments in case we need to execute this script again
-arguments=$(save "$@")
+    $0  [-a|e] [-p|w] [-hsuv] [-g path -i appid -m path -n name -o path -x path]
 
-usage() {
-    echo "Usage: ${0} [-huv] [-d path] GAMEDIR"
-    echo "  -d path     mod directory, defaults to \$XDG_CACHE_HOME/truckersmp-cli"
-    echo "  -h          this help"
-    echo "  -u          update mod files only"
-    echo "  -v          verbose"
-    echo "  GAMEDIR     path to ETS2 od ATS game data, optional with -u"
-}
+    truckersmp-cli is an easy to use script to download TruckersMP and start the
+    game afterwards.
+    It can install and update the windows version of
+    American Truck Simulator (-a) or Euro Truck Simulator 2 (-e)
+    with steamcmd (-u) and handles starting (-s) the mod through Proton aka.
+    Steam Play (-p) or Wine (-w).
+    It needs a working Steam installation in \$XDG_DATA_HOME/Steam for starting
+    through Proton or to update the game files. It will
+    stop all running Steam processes while updating to prevent Steam asking
+    for password and guard code at the next startup.
+    When using standard Wine you should start the windows version of Steam first.
 
-quit() {
-    # clean up tmpfiles
-    rm "$filelist" "$checksums"
-    exit "$1"
-}
+    -a  Use American Truck Simulator.
+    	or
+    -e  Use Euro Truck Simulator 2.
 
-start_game() {
-    echo ""
-    echo "###################################################################"
-    echo "#                                                                 #"
-    echo "#  Please check that steam is running or the launcher won't work  #"
-    echo "#                                                                 #"
-    echo "###################################################################"
-    echo ""
-    echo "Press enter if you are good to go:"
-    read -r _
+    -p  Start the game with Proton.
+        or
+    -w  Start the game with Wine.
 
-    print 'Command: WINEDEBUG=-all,WINEARCH=win64 wine "'"$scriptdir"'/truckersmp-cli.exe" "'"$1"'" "'"$moddir"'"'
+    -h  Display this help.
+    -s  Start the game.
+    -u  Update the game.
+    -v  verbose
 
-    # truckersmp-cli.exe GAMEDIR MODDIR
-    WINEDEBUG=-all,WINEARCH=win64 wine "$scriptdir/truckersmp-cli.exe" "$1" "$moddir"
+    -g path     Choose a different directory for the game files.
+                  Default: \$XDG_DATA_HOME/truckersmp-cli/\$GAME/data
+    -i appid    Choose a different appid for Proton
+                  Needs an update for changes.
+                  Proton 4.2:       1054830 (Default)
+                  Proton 3.16 Beta: 996510
+                  Proton 3.16:      961940
+                  Proton 3.7 Beta:  930400
+                  Proton 3.7:       858280
+                  See https://github.com/ValveSoftware/Proton/issues/162 if you
+                  want to use a lower version than 3.16 Beta.
+    -m path     Choose a different directory for the mod files.
+                  Default: \$XDG_DATA_HOME/truckersmp-cli/TruckersMP
+                  Fallback: ./truckersmp
+    -n name     Steam account name to use.
+                  This account should own the game and ideally is logged in
+                  with saved credentials.
+    -o path     Choose a different Proton directory.
+                  Default: \$XDG_DATA_HOME/truckersmp-cli/Proton
+                  While updating any previous version in this folder gets changed
+                  to the given (-i) or default Proton version.
+    -x path     Choose a different directory for the prefix.
+                  Default: \$XDG_DATA_HOME/truckersmp-cli/\$GAME/prefix
+
+HELP_USAGE
 }
 
 print() {
     if [ "$verbose" = true ]; then
-        echo "$1"
+        echo "$@"
     fi
 }
 
-# fallback to old local folder
-if [ -d "$scriptdir/truckersmp" ]; then
-    moddir="$scriptdir/truckersmp"
-fi
+quit() {
+    # clean up tmpfiles
+    print "removing $filelist and $checksums"
+    rm "$filelist" "$checksums"
+    exit "$1"
+}
 
-# https://stackoverflow.com/a/14203146
-{
+start_with_proton() {
+    # make sure steam is started
+    # It's probably safe to assume steam is up and running completely started
+    # when the user is logged in. On user login the timestamp in
+    # $XDG_DATA_HOME/Steam/config/loginusers.vdf gets updated.
+    # We can detect the timestamp update with inotifywait -e modify.
+    # Needs inotify-tools installed
+    if ! pidof steam; then
+        print "Starting Steam…"
+        nohup steam > /dev/null 2>&1 &
+
+        # Wait for user login
+        if command -v inotifywait > /dev/null 2>&1; then
+            print "Waiting for Steam using inotifywait."
+            inotifywait -e modify -qq "$XDG_DATA_HOME/Steam/config/loginusers.vdf"
+            print "Steam should now be up and running and the user logged in."
+        else
+            # fallback to 30 seconds if inotify-tools is not installed
+            # Maybe enhance this with manual timestamp comparison in the future.
+            >&2 echo "Inotify-tools not installed, waiting 30 seconds for steam to start up."
+            sleep 30
+            print "Steam should be up now"
+        fi
+    fi
+
+    if ! [ -d "$prefixdir" ]; then
+        print "mkdir -p $prefixdir"
+        mkdir -p "$prefixdir"
+    fi
+
+    print "Startup command:"
+    print   "SteamGameId=$steamid" \
+            "SteamAppId=$steamid" \
+            "STEAM_COMPAT_DATA_PATH=$prefixdir" \
+            "STEAM_COMPAT_CLIENT_INSTALL_PATH=$XDG_DATA_HOME/Steam" \
+            "/usr/bin/env python3 $protondir/proton" \
+            "run" \
+            "$scriptdir/truckersmp-cli.exe $gamedir $moddir"
+
+    SteamGameId="$steamid" \
+    SteamAppId="$steamid" \
+    STEAM_COMPAT_DATA_PATH="$prefixdir" \
+    STEAM_COMPAT_CLIENT_INSTALL_PATH="$XDG_DATA_HOME/Steam" \
+    /usr/bin/env python3    "$protondir/proton" \
+                            run \
+                            "$scriptdir/truckersmp-cli.exe" \
+                            "$gamedir" \
+                            "$moddir"
+}
+
+start_with_wine() {
+cat <<WINE_USAGE
+
+    ###################################################################
+    #                                                                 #
+    #  Please check wine steam is running or the launcher won't work  #
+    #                                                                 #
+    ###################################################################
+
+    Press enter if you are good to go:
+WINE_USAGE
+    read -r _
+
+    print "Startup command:"
+    print   "WINEDEBUG=-all" \
+            "WINEARCH=win64" \
+            "WINEPREFIX=$prefixdir" \
+            "wine $scriptdir/truckersmp-cli.exe $gamedir $moddir"
+
+    # truckersmp-cli.exe GAMEDIR MODDIR
+    WINEDEBUG=-all \
+    WINEARCH=win64 \
+    WINEPREFIX="$prefixdir" \
+    wine    "$scriptdir/truckersmp-cli.exe" \
+            "$gamedir" \
+            "$moddir"
+}
+
+# download missing or outdated files
+update_mod() {
+    # update the script itself when origin/master is checked out
+    if [ "origin/master" = \
+        "$(git -C "$scriptdir" rev-parse --abbrev-ref --symbolic-full-name "@{u}")" \
+        ]; then
+        print "This script is checked out with git, upstream is origin/master"
+        print "Running git pull"
+        git -C "$scriptdir" pull > /dev/null 2>&1
+    else
+        print "better do not self update"
+    fi
+
+    if ! [ -d "$moddir" ]; then
+        print "mkdir -p $moddir"
+        mkdir -p "$moddir"
+    fi
+
+    # get the fileinfo from the server
+    if [ "$verbose" = false ]; then
+        wget --header 'Accept-encoding: identity' -q --show-progress \
+            -O "$filelist" "$listurl/files.json" \
+        || quit 1
+    else
+        wget --header 'Accept-encoding: identity' -v \
+            -O "$filelist" "$listurl/files.json" \
+        || quit 1
+    fi
+
+    # extract md5sums and filenames
+    sed -r  -e 's@\{"Files":\[\{@@g' \
+        -e  's@"FilePath":"([a-zA-Z0-9\/_\.-]+)","Type":"[a-zA-Z0-9]+",'\
+'"Md5":"([0-9a-f]{32})"[]\}\{,]{3}@\2 '"$moddir"'\1\n@g' \
+        < "$filelist" \
+        > "$checksums"
+    print "$(cat "$checksums")"
+
+    # compare existing local files with md5sums and remember wrong files
+    files=$(md5sum -c --quiet <"$checksums" 2> /dev/null \
+            | awk -F ':' '{print $1}' \
+            | sed "s@$moddir/@@g")
+    print "Files to download:"
+    print "$files"
+
+    # redownload wrong files
+    error=0
+    for f in $files; do
+        print "Downloading file $f to $moddir/$(dirname "$f")"
+
+        # make file hierarchy
+        mkdir -p "$moddir/$(dirname "$f")"
+
+        # download file
+        if [ "$verbose" = false ]; then
+            wget --header 'Accept-encoding: identity' -q --show-progress \
+                -O "$moddir/$f" "$dlurl/$f" \
+            || wget --header 'Accept-encoding: identity' -q --show-progress \
+                -O "$moddir/$f" "$dlurlalt/$f" \
+            || error=1
+        else
+            wget --header 'Accept-encoding: identity' -v \
+                -O "$moddir/$f" "$dlurl/$f" \
+            || wget --header 'Accept-encoding: identity' -v \
+                -O "$moddir/$f" "$dlurlalt/$f" \
+            || error=1
+        fi
+    done
+
+    # something went wrong
+    if [ "$error" = "1" ]; then
+        >&2 echo "Failed to download mod files."
+        quit 1
+    fi
+}
+
+update_game() {
+    # make sure steam is closed before updating
+    # it's possible to update with the steam client open but the client looses
+    # all connectivity and asks for password and steam guard code after restart
+    while pidof steam > /dev/null 2>&1; do
+        print "found running steam, running pkill -x steam"
+        pkill -x steam
+    sleep 5
+    done
+
+    if ! [ -d "$gamedir" ]; then
+        print "mkdir $gamedir"
+        mkdir -p "$gamedir"
+    fi
+
+    # fetch steamcmd if not in $PATH
+    if ! command -v steamcmd > /dev/null 2>&1; then
+        print "steamcmd not found in \$PATH"
+        if ! [ -f "$steamcmddir/steamcmd.sh" ]; then
+            print "Downloading steamcmd"
+            mkdir -p "$steamcmddir"
+            wget -qO- "$steamcmdurl" | tar xvz -C "$steamcmddir"
+        fi
+
+        steamcmd="$steamcmddir/steamcmd.sh"
+    else
+        print "steamcmd found in \$PATH"
+        steamcmd=$(command -v steamcmd)
+    fi
+    print "Steamcmd: $steamcmd"
+
+    # download/update Proton
+    if [ "$proton" = true ]; then
+        print "Updating Proton $appid_proton"
+
+        if ! [ -d "$protondir" ]; then
+            print "mkdir $protondir"
+            mkdir -p "$protondir"
+        fi
+
+        print "Command:"
+        print   "$steamcmd" \
+                    "+login $accountname" \
+                    "+force_install_dir $protondir" \
+                    "+app_update $appid_proton validate" \
+                    "+quit"
+
+        "$steamcmd" \
+            +login "$accountname" \
+            +force_install_dir "$protondir" \
+            +app_update "$appid_proton" validate \
+            +quit
+    fi
+
+    # use steamcmd to update the chosen game
+    print "Updating $steamid"
+    print "Command:"
+    print   "$steamcmd" \
+                "+@sSteamCmdForcePlatformType windows" \
+                "+login $accountname" \
+                "+force_install_dir $gamedir" \
+                "+app_update $steamid validate" \
+                "+quit"
+
+    "$steamcmd" \
+        +@sSteamCmdForcePlatformType windows \
+        +login "$accountname" \
+        +force_install_dir "$gamedir" \
+        +app_update "$steamid" validate \
+        +quit
+}
+
+check_error() {
+    # checks for updating and/or starting
+    if [ "$update" = false ] && [ "$startgame" = false ]; then
+        >&2 echo "What to do? Starting (-s) or updating (-u) the game?"
+        quit 1
+    else
+        # make sure only one game is chosen
+        if [ "$ats" = true ] && [ "$ets2" = true ]; then
+            >&2 echo "It's only possible to use one game at a time."
+            quit 1
+        elif ! [ "$ats" = true ] && ! [ "$ets2" = true ]; then
+            >&2 echo "Need at least one game. ATS (-a) or ETS2 (-e)"
+            quit 1
+        elif [ "$ats" = true ]; then
+            steamid="$appid_ats"
+            if [ -z "$prefixdir" ]; then
+                prefixdir="$default_prefixdir_ats"
+            fi
+            if [ -z "$gamedir" ]; then
+                gamedir="$default_gamedir_ats"
+            fi
+        elif [ "$ets2" = true ]; then
+            steamid="$appid_ets2"
+            if [ -z "$prefixdir" ]; then
+                prefixdir="$default_prefixdir_ets2"
+            fi
+            if [ -z "$gamedir" ]; then
+                gamedir="$default_gamedir_ets2"
+            fi
+        fi
+    fi
+
+    # checks for starting
+    if [ "$startgame" = true ]; then
+        # make sure proton and wine aren't chosen at the same time
+        if [ "$proton" = true ] && [ "$wine" = true ]; then
+            >&2 echo "Start with Proton (-p) or Wine (-w)?"
+            quit 1
+        elif [ "$proton" = false ] && [ "$wine" = false ]; then
+            >&2 echo "Only possible to start with Proton (-p) or Wine (-w)."
+            quit 1
+        fi
+
+        # make sure proton and wine are using the same default
+        if  [ "$wine" = true ]; then
+            if  [ "$prefixdir" = "$default_prefixdir_ats" ] \
+                || [ "$prefixdir" = "$default_prefixdir_ets2" ]; then
+                print   "prefixdir is the default while using wine, make sure it" \
+                        "uses the same folder as proton"
+                prefixdir="$prefixdir/pfx"
+            fi
+        fi
+    fi
+
+    # checks for starting while not updating
+    if [ "$startgame" = true ] && [ "$update" = false ]; then
+        # check for game
+        if  ! [ -f "$gamedir/bin/win_x64/eurotrucks2.exe" ] \
+            && ! [ -f "$gamedir/bin/win_x64/amtrucks.exe" ]; then
+            >&2 echo "Game not found in $gamedir"
+            >&2 echo "Need to download (-u) the game?"
+            quit 1
+        fi
+
+        # check for proton
+        if  ! [ -f "$protondir/proton" ] && [ "$proton" = true ]; then
+            >&2 echo "Proton and no update wanted but Proton not found in $protondir"
+            >&2 echo "Need to download (-u) Proton?"
+            quit 1
+        fi
+    fi
+
+    # checks for updating
+    if [ "$update" = true ]; then
+        if [ -z "$accountname" ]; then
+            >&2 echo "Need the steam account name (-n name) to update."
+            quit 1
+        fi
+    fi
+
+    # debug
+    print "Using $steamid"
+    print "gamedir: $gamedir"
+    print "prefixdir: $prefixdir"
+    if [ "$proton" = true ]; then
+        print "protondir: $protondir"
+    fi
+}
+
+{   # https://stackoverflow.com/a/14203146
     # Reset in case getopts has been used previously in the shell.
     OPTIND=1
 
     # parse options
-    while getopts "d:h?uv" opt; do
+    while getopts "g:i:m:n:o:x:h?aepsuvw" opt; do
         case "$opt" in
-        d)	moddir=${OPTARG}
+        g)  gamedir=${OPTARG}
+            ;;
+        i)  appid_proton=${OPTARG}
+            ;;
+        m)	moddir=${OPTARG}
+            ;;
+        n)  accountname=${OPTARG}
+            ;;
+        o)  protondir=${OPTARG}
+            ;;
+        x)  prefixdir=${OPTARG}
             ;;
         h|\?)
             usage
             quit 0
             ;;
-        u)  updonly=true
+        a)  ats=true
+            ;;
+        e)  ets2=true
+            ;;
+        p)  proton=true
+            ;;
+        s)  startgame=true
+            ;;
+        u)  update=true
             ;;
         v)  verbose=true
+            ;;
+        w)  wine=true
             ;;
         esac
     done
@@ -99,105 +465,40 @@ fi
     [ "${1:-}" = "--" ] && shift
 }
 
-# check for GAMEDIR, don't fail if -u is set
-# but also don't fail if -u is set and a wrong GAMEDIR is given
-# because we don't use it anyway
-if [ -z "$1" ] && [ "$updonly" = false ]; then
-    usage
-    quit 0
-elif ! [ -f "$1/bin/win_x64/eurotrucks2.exe" ] \
-        && ! [ -f "$1/bin/win_x64/amtrucks.exe" ] \
-        && [ "$updonly" = false ]; then
-    >&2 echo "ETS2 or ATS not found in GAMEDIR"
-    quit 1
+# fallback to old local folder
+if [ -z "$moddir" ] && [ -d "$scriptdir/truckersmp" ]; then
+    print "no moddir set and fallback found"
+    moddir="$scriptdir/truckersmp"
+elif [ -z "$moddir" ]; then
+    print "no moddir set, setting to default"
+    moddir="$default_moddir"
+fi
+print "$moddir"
+
+# check for errors
+print "checking for errors"
+check_error
+
+# download/update ATS/ETS2 and Proton
+if [ "$update" = true ]; then
+    print "updating game files"
+    update_game
 fi
 
-# print info
-print "Moddir: $moddir"
-print "Scriptdir: $scriptdir"
-if [ "$updonly" = false ]; then
-    print "Gamedir: $1"
-fi
+# always update truckersmp
+print "updating mod files"
+update_mod
 
-# make MODDIR and download missing files
-mkdir -p "$moddir"
-
-# get the fileinfo from the server
-if [ "$verbose" = false ]; then
-    wget --header 'Accept-encoding: identity' -q --show-progress \
-        -O "$filelist" "$listurl/files.json" \
-    || quit 1
-else
-    wget --header 'Accept-encoding: identity' -v \
-        -O "$filelist" "$listurl/files.json" \
-    || quit 1
-fi
-
-# extract md5sums and filenames
-sed -r  -e 's@\{"Files":\[\{@@g' \
-        -e  's@"FilePath":"([a-zA-Z0-9\/_\.-]+)","Type":"[a-zA-Z0-9]+",'\
-'"Md5":"([0-9a-f]{32})"[]\}\{,]{3}@\2 '"$moddir"'\1\n@g' \
-        < "$filelist" \
-        > "$checksums"
-print "$(cat "$checksums")"
-
-# compare existing local files with md5sums and remember wrong files
-files=$(md5sum -c --quiet <"$checksums" 2> /dev/null \
-        | awk -F ':' '{print $1}' \
-        | sed "s@$moddir/@@g")
-print "Files to download:"
-print "$files"
-
-# redownload wrong files
-error=0
-for f in $files; do
-    print "Downloading file $f to $moddir/$(dirname "$f")"
-
-    # make file hierarchy
-    mkdir -p "$moddir/$(dirname "$f")"
-
-    # download file
-    if [ "$verbose" = false ]; then
-        wget --header 'Accept-encoding: identity' -q --show-progress \
-            -O "$moddir/$f" "$dlurl/$f" \
-        || wget --header 'Accept-encoding: identity' -q --show-progress \
-            -O "$moddir/$f" "$dlurlalt/$f" \
-        || error=1
-    else
-        wget --header 'Accept-encoding: identity' -v \
-            -O "$moddir/$f" "$dlurl/$f" \
-        || wget --header 'Accept-encoding: identity' -v \
-            -O "$moddir/$f" "$dlurlalt/$f" \
-        || error=1
+# start truckersmp with proton or wine
+if [ "$startgame" = true ]; then
+    print "starting game with…"
+    if [ "$proton" = true ]; then
+        print "…proton"
+        start_with_proton
+    elif [ "$wine" = true ]; then
+        print "…wine"
+        start_with_wine
     fi
-done
-
-# something went wrong, ask for restart
-if [ "$error" = "1" ] && [ "$updonly" = false ]; then
-    while true; do
-        >&2 echo "Failed to download mod files. Try again? [y/N] "
-        read -r yn
-        case $yn in
-            [Yy]* )
-                rm "$filelist" "$checksums"
-                eval "set -- $arguments"
-                exec "$0" "$@"
-                ;;
-            [Nn]* ) quit 1;;
-            * )     quit 1;;
-        esac
-    done
-elif [ "$error" = "1" ] && [ "$updonly" = true ]; then
-    >&2 echo "Failed to download mod files."
-    quit 1
-fi
-
-echo "Everything up to date"
-
-# start game if -u is not given
-if [ "$updonly" = false ]; then
-    start_game "$1"
 fi
 
 quit 0
-
