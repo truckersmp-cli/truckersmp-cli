@@ -5,6 +5,7 @@ readonly dlurl="https://download.ets2mp.com/files"
 readonly dlurlalt="https://downloads.ets2mp.com/files"
 readonly listurl="https://update.ets2mp.com"
 readonly steamcmdurl="https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
+readonly issueurl="https://github.com/lhark/truckersmp-cli/issues"
 
 # dirs
 readonly XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
@@ -214,11 +215,18 @@ update_mod() {
     fi
 
     # extract md5sums and filenames
-    sed -r  -e 's@\{"Files":\[\{@@g' \
-        -e  's@"FilePath":"([a-zA-Z0-9\/_\.-]+)","Type":"[a-zA-Z0-9]+",'\
-'"Md5":"([0-9a-f]{32})"[]\}\{,]{3}@\2 '"$moddir"'\1\n@g' \
-        < "$filelist" \
-        > "$checksums"
+    if ! cat <<JSON_PARSER | python3 -; then
+import json, sys
+
+with open('${filelist}') as f:
+    files = json.load(f)
+with open('${checksums}', 'w') as f:
+    for item in files['Files']:
+        f.write('{} {}{}\\n'.format(item['Md5'], '${moddir}', item['FilePath']))
+JSON_PARSER
+        >&2 echo "Failed to parse files.json. Please report an issue: $issueurl"
+        quit 1
+    fi
     print "$(cat "$checksums")"
 
     # compare existing local files with md5sums and remember wrong files
