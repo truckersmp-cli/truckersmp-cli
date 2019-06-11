@@ -20,6 +20,7 @@ scriptdir=$(dirname "$(realpath "$0")")
 
 # non changeable dirs
 steamcmddir="$XDG_CACHE_HOME/truckersmp-cli/steamcmd"
+steamdir="$XDG_DATA_HOME/Steam"
 
 # files
 filelist=$(mktemp -t truckersmp-cli.XXXXXXXXXX)
@@ -121,7 +122,7 @@ start_with_proton() {
         # Wait for user login
         if command -v inotifywait > /dev/null 2>&1; then
             print "Waiting for Steam using inotifywait."
-            inotifywait -e modify -qq "$XDG_DATA_HOME/Steam/config/loginusers.vdf"
+            inotifywait -e modify -qq "$steamdir/config/loginusers.vdf"
             print "Steam should now be up and running and the user logged in."
         else
             # fallback to 30 seconds if inotify-tools is not installed
@@ -141,7 +142,7 @@ start_with_proton() {
     print   "SteamGameId=$steamid" \
             "SteamAppId=$steamid" \
             "STEAM_COMPAT_DATA_PATH=$prefixdir" \
-            "STEAM_COMPAT_CLIENT_INSTALL_PATH=$XDG_DATA_HOME/Steam" \
+            "STEAM_COMPAT_CLIENT_INSTALL_PATH=$steamdir" \
             "/usr/bin/env python3 $protondir/proton" \
             "run" \
             "$scriptdir/truckersmp-cli.exe $gamedir $moddir"
@@ -149,7 +150,7 @@ start_with_proton() {
     SteamGameId="$steamid" \
     SteamAppId="$steamid" \
     STEAM_COMPAT_DATA_PATH="$prefixdir" \
-    STEAM_COMPAT_CLIENT_INSTALL_PATH="$XDG_DATA_HOME/Steam" \
+    STEAM_COMPAT_CLIENT_INSTALL_PATH="$steamdir" \
     /usr/bin/env python3    "$protondir/proton" \
                             run \
                             "$scriptdir/truckersmp-cli.exe" \
@@ -391,6 +392,21 @@ check_error() {
                 prefixdir="$prefixdir/pfx"
             fi
         fi
+
+        # check for steam installation
+        if [ "$proton" = true ] && ! [ -e "$steamdir/steam.sh" ]; then
+            print "Didn't found steam in $steamdir"
+
+            # debian based systems are using a special different location for steam
+            # let's try steams legacy path
+            if [ "$proton" = true ] && ! [ -e "$HOME/.steam/steam/steam.sh" ]; then
+                >&2 echo "Unable to locate the steam installation."
+                quit 1
+            else
+                steamdir="$HOME/.steam/steam"
+                print "found steam in $steamdir"
+            fi
+        fi
     fi
 
     # checks for starting while not updating
@@ -426,6 +442,7 @@ check_error() {
     if [ "$proton" = true ]; then
         print "protondir: $protondir"
     fi
+    print "steamdir: $steamdir"
 }
 
 {   # https://stackoverflow.com/a/14203146
