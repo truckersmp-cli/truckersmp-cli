@@ -394,11 +394,11 @@ check_error() {
         fi
 
         # check for steam installation
-        if [ "$proton" = true ] && ! [ -e "$steamdir/steam.sh" ]; then
+        if [ "$proton" = true ] && ! [ -x "$steamdir/steam.sh" ]; then
             # Steam not found in $steamdir, let's try some other possible paths:
 
             # Legacy $HOME/.steam/steam should be a symlink to the steam installation:
-            if [ "$proton" = true ] && [ -e "$HOME/.steam/steam/steam.sh" ]; then
+            if [ -x "$HOME/.steam/steam/steam.sh" ]; then
                 steamdir="$HOME/.steam/steam"
 
             # "This is a new installation, so use a distinct directory to avoid
@@ -406,8 +406,7 @@ check_error() {
             # Debian uses a subdirectory of ~/.steam, to avoid having a mixture
             # of XDG basedirs and traditional dotfiles in the same application."
             # Debian uses $HOME/.steam/debian-installation
-            elif [ "$proton" = true ] && \
-                 [ -e "$HOME/.steam/debian-installation/steam.sh" ]; then
+            elif [ -x "$HOME/.steam/debian-installation/steam.sh" ]; then
                 steamdir="$HOME/.steam/debian-installation"
 
             # "The historical Debian behaviour has been to use ~/.steam as the
@@ -416,7 +415,7 @@ check_error() {
             # from that, but we can't easily disentangle this in existing
             # installations."
             # ~/.steam is the really old legacy path but can still be used
-            elif [ "$proton" = true ] && [ -e "$HOME/.steam/steam.sh" ]; then
+            elif [ -x "$HOME/.steam/steam.sh" ]; then
                 steamdir="$HOME/.steam"
             else
                 >&2 echo "Unable to locate your steam installation."
@@ -457,8 +456,8 @@ check_error() {
     print "prefixdir: $prefixdir"
     if [ "$proton" = true ]; then
         print "protondir: $protondir"
+        print "steamdir: $steamdir"
     fi
-    print "steamdir: $steamdir"
 }
 
 {   # https://stackoverflow.com/a/14203146
