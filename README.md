@@ -35,7 +35,8 @@ When using standard Wine you should start the windows version of Steam first.
                   Default: <i>$XDG_DATA_HOME/truckersmp-cli/$GAME/data</i>
     -i <i>appid</i>    Choose a different appid for Proton
                   Needs an update for changes.
-                  Proton 4.2:	      <i>1054830</i> (Default)
+                  Proton 4.11:      <i>1113280</i> (Default)
+                  Proton 4.2:       <i>1054830</i>
                   Proton 3.16 Beta: <i>996510</i>
                   Proton 3.16:      <i>961940</i>
                   Proton 3.7 Beta:  <i>930400</i>

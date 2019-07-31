@@ -28,7 +28,7 @@ checksums=$(mktemp -t truckersmp-cli.XXXXXXXXXX)
 # variables
 appid_ats="270880"      # https://steamdb.info/app/270880/
 appid_ets2="227300"     # https://steamdb.info/app/227300/
-appid_proton="1054830"  # Proton 4.2 https://steamdb.info/app/1054830/
+appid_proton="1113280"  # Proton 4.11 https://steamdb.info/app/1113280/
 ats=false
 ets2=false
 proton=false
@@ -71,7 +71,8 @@ cat <<HELP_USAGE
                   Default: \$XDG_DATA_HOME/truckersmp-cli/\$GAME/data
     -i appid    Choose a different appid for Proton
                   Needs an update for changes.
-                  Proton 4.2:       1054830 (Default)
+                  Proton 4.11:      1113280 (Default)
+                  Proton 4.2:       1054830
                   Proton 3.16 Beta: 996510
                   Proton 3.16:      961940
                   Proton 3.7 Beta:  930400
@@ -148,6 +149,7 @@ start_with_proton() {
 
     SteamGameId="$steamid" \
     SteamAppId="$steamid" \
+    PROTON_USE_D9VK=1 \
     STEAM_COMPAT_DATA_PATH="$prefixdir" \
     STEAM_COMPAT_CLIENT_INSTALL_PATH="$XDG_DATA_HOME/Steam" \
     /usr/bin/env python3    "$protondir/proton" \
