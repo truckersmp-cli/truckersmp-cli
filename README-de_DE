@@ -1,0 +1,125 @@
+# truckersmp-cli
+
+truckersmp-cli ist einfach zu benutzendes Skript zum Herunterladen von TruckersMP und Starten des Spieles.
+
+Es installiert die Windowsversiond von American Truck Simulator (`-a`) oder Euro Truck Simulator 2 (`-e`)
+updatet mit steamcmd (`-u`). Der Mod wird mit (`-s`) gestartet entweder mit (`-p`) mit Proton aka. Steam Play
+oder Wine (`-w`).
+
+Es braucht eine funktionierende Steam Installation unter `$XDG_DATA_HOME/Steam`, um es mit Proton zu starten
+die Spieldateien zu aktualisieren. Es wird alle Steamprozesse während der Aktualisierung stoppen,
+um zu verhindern, dass Steam nach einem Passwort oder dem Guard Code beim nächsten Start fragt.
+Falls Standard Wine verwendet wird, sollte er st die Windowsversion von Steam gestartet werden.
+
+## Verwendung
+<pre>
+    <b>truckersmp-cli</b> [-a|e] [-p|w] [-hsuv] [-g <i>Pfad</i> -i <i>appid</i> -m <i>Pfad</i> -n <i>Name</i> -o <i>Pfad</i> -x <i>Pfad</i>]
+
+    -a  verwende American Truck Simulator.
+        oder
+    -e  verwende Euro Truck Simulator 2.
+    
+    -p  Start das Spiel mit Proton.
+        oder
+    -w  Start das Spiel mit Wine
+
+    -h  Zeige Hilfe an.
+    -s  Start das Spiel.
+    -u  Aktualisiere das Spiel.
+    -v  ausführlich
+
+    -g <i>Pfad</i>     Wähle einen anderen Pfad zu Spieldateien.
+                  Standard: <i>$XDG_DATA_HOME/truckersmp-cli/$GAME/data</i>
+    -i <i>appid</i>    Wähle eine appid für Proton aus.
+                  Braucht Aktualisierung.
+                  Proton 4.2:	      <i>1054830</i> (Default)
+                  Proton 3.16 Beta: <i>996510</i>
+                  Proton 3.16:      <i>961940</i>
+                  Proton 3.7 Beta:  <i>930400</i>
+                  Proton 3.7:       <i>858280</i>
+                  Siehe unter https://github.com/ValveSoftware/Proton/issues/162 falls 
+                  du eine ältere Version als 3.16 Beta verwenden willst.
+    -m <i>Pfad</i>     Wähle einen anderen Pfad zu den Mod Dateien..
+                  Standard: <i>$XDG_DATA_HOME/truckersmp-cli/TruckersMP</i>
+                  Ausweg: <i>./truckersmp</i>
+    -n <i>Name</i>     Steambenutzername
+                  Dieser muss das Spiel besitzen und idealerweise eingeloggt sein.
+    -o <i>Pfad</i>     Wähle einen anderen Pfad zum Proton Ordner.
+                  Standard: <i>$XDG_DATA_HOME/truckersmp-cli/Proton</i>
+                  Falls eine ältere Version aktualisiert wurden, wird der Ordner umbenannt zu (-i)
+                  oder der Standard Proton Version.
+    -x <i>PFad</i>     Wähle einen anderen Pfad für das Präfix.
+                  Standard: <i>$XDG_DATA_HOME/truckersmp-cli/$GAME/prefix</i>
+</pre>
+
+## Beispiel
+### Euro Truck Simulator 2 installieren
+~~~
+$ ./truckersmp-cli -eu -n steamuser
+~~~
+
+###  Euro Truck Simulator 2 aktualisieren und TruckersMP starten mit Proton
+~~~
+$ ./truckersmp-cli -eusp -n steamuser
+~~~
+
+### Nur TruckersMP starten ohne Euro Truck Simulator 2 zu aktualisieren mit Wine
+Notiz:
+* Stelle sicher, dass Wine Steam in der selben `$WINEPREFIX` läuft!
+* Der Standardpräfixordner ist `$XDG_DATA_HOME/truckersmp-cli/$GAME/prefix`.
+
+~~~
+$ ./truckersmp-cli -esw
+~~~
+
+### Verwende verschiedene Präfixverzeichnisse
+Notiz:
+* Während das Winepräfix direkt auf das Präfixverzeichnis zeigt,
+nutzt Proton den Unterornder `pfx` für das eigentliche Präfix,
+zeigt auf den Oberordner.
+* Das Präfix muss 64 Bit sein. Der 32 Bit Mod ist nicht kompatibel.
+
+~~~
+$ ./truckersmp-cli -esp -x "/path/to/prefix"
+$ ./truckersmp-cli -esw -x "/path/to/prefix/pfx"
+~~~
+
+## Warnung
+* Jedes Mal, wenn `steamcmd` benutzt wird, glaubt der Steam Client, dass ein Spiel mit 0 Bytes aktualisiert wird.
+    https://github.com/ValveSoftware/steam-for-linux/issues/5644
+* Falls Steam läuft, während `steamcmd` die selben Benutzerdaten nutzt, verliert der Steam Client alle
+  Verbindungen und fragt beim nächsten Start nach einem Passwort und einem Guard Code. Dieser Skript schließt
+  alle Steamprozesse bevor es `steamcmd` ausführt. Also **eine Aktualisierung zu starten mit dem Alias des Steam
+  Clients wird nicht funktionieren, das Steam auf das Skript wartet und das Skript auf Steam.
+
+## Abhängigkeiten
+
+### Erforderlich
+* `python` als Version 3
+* `steam` entweder die native Linuxversion mit Proton oder die Windowsversion mit Wine
+* `wget` um die Moddateien herunterzuladen
+
+### Optional
+* `inotify-tools` um zu überprüfen, ob Steam vollständig gestartet ist
+* `steamcmd` zum Aktualisieren von Proton oder der Spieldateien, wird automatisch heruntergeladen, falls nicht `$PATH` vorhanden
+* `wine` als möglicher Ersatz für Proton
+* `git` um das repo zu kopieren und das Skript selbstständig zu aktualisieren
+
+## Installieren ##
+
+Klone das repo wo immer du willst.
+
+## Bauen ##
+
+Du kannst die ausführbare Datei auf Linux bauen. Die mit gelieferte ausführbare Datei wurde schon auf einem Linux Rechner erstellt.
+Installiere einfach mingw64-w64 und dann
+```
+$ make
+```
+
+## Credits ##
+
+Ich inspiriert von  mewrev's [Inject](https://github.com/mewrev/inject) Werkzeug
+und TheUnknownNO's unoffiziellem [TruckersMP-Launcher](https://github.com/TheUnknownNO/TruckersMP-Launcher).
+
+Amit Malik's [article](http://securityxploded.com/dll-injection-and-hooking.php) über DLL Injection war ebenfalls eine große Hilfe.
