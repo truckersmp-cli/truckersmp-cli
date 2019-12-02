@@ -2,14 +2,14 @@
 
 truckersmp-cli ist einfach zu benutzendes Skript zum Herunterladen von TruckersMP und Starten des Spieles.
 
-Es installiert die Windowsversiond von American Truck Simulator (`-a`) oder Euro Truck Simulator 2 (`-e`)
-updatet mit steamcmd (`-u`). Der Mod wird mit (`-s`) gestartet entweder mit (`-p`) mit Proton aka. Steam Play
-oder Wine (`-w`).
+Es installiert die Windowsversion von American Truck Simulator (`-a`) oder Euro Truck Simulator 2 (`-e`) und
+updatet mit steamcmd (`-u`). Der Mod wird mit (`-s`) gestartet und entweder mit Proton (`-p`) aka. Steam Play
+oder Wine (`-w`) ausgeführt.
 
 Es braucht eine funktionierende Steam Installation unter `$XDG_DATA_HOME/Steam`, um es mit Proton zu starten
-die Spieldateien zu aktualisieren. Es wird alle Steamprozesse während der Aktualisierung stoppen,
+und die Spieldateien zu aktualisieren. Es wird alle Steamprozesse während der Aktualisierung stoppen,
 um zu verhindern, dass Steam nach einem Passwort oder dem Guard Code beim nächsten Start fragt.
-Falls Standard Wine verwendet wird, sollte er st die Windowsversion von Steam gestartet werden.
+Falls Wine verwendet wird, sollte zuerst die Windowsversion von Steam gestartet werden.
 
 ## Verwendung
 <pre>
