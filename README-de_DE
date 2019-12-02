@@ -19,16 +19,16 @@ Falls Wine verwendet wird, sollte zuerst die Windowsversion von Steam gestartet 
         oder
     -e  verwende Euro Truck Simulator 2.
     
-    -p  Start das Spiel mit Proton.
+    -p  Starte das Spiel mit Proton.
         oder
-    -w  Start das Spiel mit Wine
+    -w  Starte das Spiel mit Wine
 
     -h  Zeige Hilfe an.
-    -s  Start das Spiel.
+    -s  Starte das Spiel.
     -u  Aktualisiere das Spiel.
     -v  ausführlich
 
-    -g <i>Pfad</i>     Wähle einen anderen Pfad zu Spieldateien.
+    -g <i>Pfad</i>     Wähle einen anderen Pfad zu den Spieldateien.
                   Standard: <i>$XDG_DATA_HOME/truckersmp-cli/$GAME/data</i>
     -i <i>appid</i>    Wähle eine appid für Proton aus.
                   Braucht Aktualisierung.
@@ -43,7 +43,7 @@ Falls Wine verwendet wird, sollte zuerst die Windowsversion von Steam gestartet 
                   Standard: <i>$XDG_DATA_HOME/truckersmp-cli/TruckersMP</i>
                   Ausweg: <i>./truckersmp</i>
     -n <i>Name</i>     Steambenutzername
-                  Dieser muss das Spiel besitzen und idealerweise eingeloggt sein.
+                  Dieser Nutzer muss das Spiel besitzen und idealerweise eingeloggt sein.
     -o <i>Pfad</i>     Wähle einen anderen Pfad zum Proton Ordner.
                   Standard: <i>$XDG_DATA_HOME/truckersmp-cli/Proton</i>
                   Falls eine ältere Version aktualisiert wurden, wird der Ordner umbenannt zu (-i)
@@ -88,9 +88,9 @@ $ ./truckersmp-cli -esw -x "/path/to/prefix/pfx"
 * Jedes Mal, wenn `steamcmd` benutzt wird, glaubt der Steam Client, dass ein Spiel mit 0 Bytes aktualisiert wird.
     https://github.com/ValveSoftware/steam-for-linux/issues/5644
 * Falls Steam läuft, während `steamcmd` die selben Benutzerdaten nutzt, verliert der Steam Client alle
-  Verbindungen und fragt beim nächsten Start nach einem Passwort und einem Guard Code. Dieser Skript schließt
-  alle Steamprozesse bevor es `steamcmd` ausführt. Also **eine Aktualisierung zu starten mit dem Alias des Steam
-  Clients wird nicht funktionieren, das Steam auf das Skript wartet und das Skript auf Steam.
+  Verbindungen und fragt beim nächsten Start nach einem Passwort und einem Steam Guard Code. Dieses Skript schließt
+  alle Steamprozesse bevor es `steamcmd` ausführt. Also eine Aktualisierung mit dem Alias des Steam
+  Clients zu starten wird nicht funktionieren, da Steam auf das Skript wartet und das Skript auf Steam.
 
 ## Abhängigkeiten
 
@@ -107,7 +107,7 @@ $ ./truckersmp-cli -esw -x "/path/to/prefix/pfx"
 
 ## Installieren ##
 
-Klone das repo wo immer du willst.
+Klone das Repo, wo immer du willst.
 
 ## Bauen ##
 
@@ -119,7 +119,7 @@ $ make
 
 ## Credits ##
 
-Ich inspiriert von  mewrev's [Inject](https://github.com/mewrev/inject) Werkzeug
+Ich bin inspiriert worden von  mewrev's [Inject](https://github.com/mewrev/inject) Werkzeug
 und TheUnknownNO's unoffiziellem [TruckersMP-Launcher](https://github.com/TheUnknownNO/TruckersMP-Launcher).
 
 Amit Malik's [article](http://securityxploded.com/dll-injection-and-hooking.php) über DLL Injection war ebenfalls eine große Hilfe.
