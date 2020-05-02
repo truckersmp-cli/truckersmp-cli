@@ -1,0 +1,36 @@
+name: Inject program
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/build_and_upload_inject_program.yaml
+      - truckersmp-cli.c
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .github/workflows/build_and_upload_inject_program.yaml
+      - truckersmp-cli.c
+
+jobs:
+  build_and_upload_inject_program:
+    name: Build and upload inject program
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install gcc-mingw-w64-x86-64
+        run: |
+             sudo apt -q update
+             sudo apt -q install --no-install-recommends gcc-mingw-w64-x86-64
+      - name: Build truckersmp-cli.exe
+             # we need "make clean" because we already have truckersmp-cli.exe
+             # and "make" does nothing even when truckersmp-cli.c is changed
+        run: make clean && make
+      - name: Strip truckersmp-cli.exe
+        run: x86_64-w64-mingw32-strip truckersmp-cli.exe
+      - uses: actions/upload-artifact@v1
+        with:
+          name: ${{ github.event_name }}-${{ github.sha }}
+          path: truckersmp-cli.exe

@@ -1,0 +1,50 @@
+name: proton.json
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/check_proton_json.yaml
+      - proton.json
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .github/workflows/check_proton_json.yaml
+      - proton.json
+
+jobs:
+  check_proton_json:
+    name: Check proton.json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - name: Generate Proton AppId list from proton.json
+        run: |
+             import json
+             import sys
+             with open("proton.json") as f:
+                 proton = json.load(f)
+                 try:
+                     default_is_valid = False
+                     epilog = "Proton AppId list:\n"
+                     for k, v in proton.items():
+                         default_mark = ""
+                         if k == proton["default"]:
+                             default_mark += " (Default)"
+                             default_is_valid = True
+                         if k != "default":
+                             epilog += "    Proton {:13}: {:>10}{}\n".format(
+                               k, v, default_mark)
+                     print(epilog, end="")
+                 except KeyError:
+                     sys.exit(
+                       "** Default version is undefined **\n> {}".format(proton))
+                 if not default_is_valid:
+                     sys.exit(
+                       "** Default version is invalid **\n> {}".format(proton))
+        shell: python
