@@ -629,10 +629,11 @@ When using standard Wine you should start the windows version of Steam first.
 """
     epilog = "Proton AppId list:\n"
     for k, v in AppId.proton.items():
-        if k == "default":
-            break
-        default_mark = " (Default)" if k == AppId.proton["default"] else ""
-        epilog += "    Proton {:13}: {:>10}{}\n".format(k, v, default_mark)
+        default_mark = ""
+        if k == AppId.proton["default"]:
+            default_mark += " (Default)"
+        if k != "default":
+            epilog += "    Proton {:13}: {:>10}{}\n".format(k, v, default_mark)
     ap = argparse.ArgumentParser(
       description=desc, epilog=epilog,
       formatter_class=argparse.RawDescriptionHelpFormatter)
