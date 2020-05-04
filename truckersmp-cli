@@ -473,7 +473,7 @@ Please report an issue: {}""".format(e, URL.issueurl))
 
 
 def get_supported_game_versions():
-    """Returns a dict of game - version pairs"""
+    """Return a dict of game - version pairs."""
     # {
     #     "truckersmp": "0.2.2.6.6",
     #     "ets2": "1.36.2.55",
