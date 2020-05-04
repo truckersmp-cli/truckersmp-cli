@@ -14,6 +14,7 @@ import json
 import locale
 import logging
 import os
+import re
 import shutil
 import signal
 import subprocess as subproc
@@ -36,6 +37,7 @@ class URL:
     steamcmdurl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
     raw_github = "raw.githubusercontent.com"
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
+    truckersmp_api = "https://api.truckersmp.com/v2"
 
 
 class Dir:
@@ -468,6 +470,30 @@ Please report an issue: {}""".format(e, URL.issueurl))
         if not download_files(URL.dlurlalt, dlfiles):
             # something went wrong
             sys.exit("Failed to download mod files.")
+
+
+def get_supported_game_versions():
+    """Returns a dict of game - version pairs"""
+    # {
+    #     "truckersmp": "0.2.2.6.6",
+    #     "ets2": "1.36.2.55",
+    #     "ats": "1.36.1.40"
+    # }
+    try:
+        with urllib.request.urlopen(URL.truckersmp_api + "/version") as f:
+            data = json.loads(f.read())
+    except Exception:
+        return {}
+
+    answer = {}
+    pattern = r"[\D]+$"
+    if "name" in data:
+        answer["truckersmp"] = re.sub(pattern, "", data["name"])
+    if "supported_game_version" in data:
+        answer["ets2"] = re.sub(pattern, "", data["supported_game_version"])
+    if "supported_ats_game_version" in data:
+        answer["ats"] = re.sub(pattern, "", data["supported_ats_game_version"])
+    return answer
 
 
 def update_game():
