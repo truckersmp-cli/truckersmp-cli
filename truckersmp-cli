@@ -36,6 +36,7 @@ class URL:
     steamcmdurl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
     raw_github = "raw.githubusercontent.com"
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
+    truckersmp_api = "https://api.truckersmp.com/v2/version"
 
 
 class Dir:
@@ -478,7 +479,7 @@ def get_supported_game_versions():
     #     "ats": "1.36.1.40"
     # }
     try:
-        with urllib.request.urlopen("https://api.truckersmp.com/v2/version") as f:
+        with urllib.request.urlopen(URL.truckersmp_api) as f:
             data = json.load(f)
 
         return {
