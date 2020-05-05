@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - master
+      - dev
     paths:
       - .github/workflows/check_proton_json.yaml
       - proton.json
   pull_request:
     branches:
       - master
+      - dev
     paths:
       - .github/workflows/check_proton_json.yaml
       - proton.json
