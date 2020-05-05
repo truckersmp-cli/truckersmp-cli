@@ -472,12 +472,15 @@ Please report an issue: {}""".format(e, URL.issueurl))
 
 
 def get_supported_game_versions():
-    """Get TruckersMP-supported game versions via TruckersMP Web API."""
-    # Returns a dict of 'game: version' pairs:
-    # {
-    #     "ets2": "1.36.2.55",
-    #     "ats": "1.36.1.40"
-    # }
+    """
+    Get TruckersMP-supported game versions via TruckersMP Web API.
+
+    Returns a dict of 'game: version' pairs:
+    {
+        "ets2": "1.36.2.55",
+        "ats": "1.36.1.40"
+    }
+    """
     try:
         with urllib.request.urlopen(URL.truckersmp_api) as f:
             data = json.load(f)
