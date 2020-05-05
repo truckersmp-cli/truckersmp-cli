@@ -475,7 +475,6 @@ Please report an issue: {}""".format(e, URL.issueurl))
 def get_supported_game_versions():
     """Return a dict of game - version pairs."""
     # {
-    #     "truckersmp": "0.2.2.6.6",
     #     "ets2": "1.36.2.55",
     #     "ats": "1.36.1.40"
     # }
@@ -487,8 +486,6 @@ def get_supported_game_versions():
 
     answer = {}
     pattern = r"[\D]+$"
-    if "name" in data:
-        answer["truckersmp"] = re.sub(pattern, "", data["name"])
     if "supported_game_version" in data:
         answer["ets2"] = re.sub(pattern, "", data["supported_game_version"])
     if "supported_ats_game_version" in data:
