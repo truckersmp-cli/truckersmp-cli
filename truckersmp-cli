@@ -481,17 +481,14 @@ def get_supported_game_versions():
     # }
     try:
         with urllib.request.urlopen(URL.truckersmp_api + "/version") as f:
-            data = json.loads(f.read())
-    except Exception:
-        return {}
+            data = json.load(f)
 
-    answer = {}
-    pattern = r"[\D]+$"
-    if "supported_game_version" in data:
-        answer["ets2"] = re.sub(pattern, "", data["supported_game_version"])
-    if "supported_ats_game_version" in data:
-        answer["ats"] = re.sub(pattern, "", data["supported_ats_game_version"])
-    return answer
+        return {
+            "ets2": data["supported_game_version"].replace("s", ""),
+            "ats": data["supported_ats_game_version"].replace("s", "")
+        }
+    except Exception:
+        pass
 
 
 def update_game():
