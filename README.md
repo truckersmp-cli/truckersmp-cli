@@ -161,6 +161,11 @@ $ ./truckersmp-cli -esw -x "/path/to/prefix/pfx"
 
 * `python3` 3.3 (released in September 2012) or later
 * `steam` either the native Linux version in use with Proton or the Windows Steam in use with Wine
+* x86_64 version of SDL2 library
+    * `libsdl2-2.0-0` on Debian-based systems
+    * `media-libs/libsdl2` on Gentoo Linux
+    * `sdl2` on Arch Linux
+    * `SDL2` on RPM-based systems
 
 ### Optional
 
