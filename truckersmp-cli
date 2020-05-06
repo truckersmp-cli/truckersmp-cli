@@ -36,6 +36,7 @@ class URL:
     steamcmdurl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
     raw_github = "raw.githubusercontent.com"
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
+    truckersmp_api = "https://api.truckersmp.com/v2/version"
 
 
 class Dir:
@@ -468,6 +469,28 @@ Please report an issue: {}""".format(e, URL.issueurl))
         if not download_files(URL.dlurlalt, dlfiles):
             # something went wrong
             sys.exit("Failed to download mod files.")
+
+
+def get_supported_game_versions():
+    """
+    Get TruckersMP-supported game versions via TruckersMP Web API.
+
+    Returns a dict of 'game: version' pairs:
+    {
+        "ets2": "1.36.2.55",
+        "ats": "1.36.1.40"
+    }
+    """
+    try:
+        with urllib.request.urlopen(URL.truckersmp_api) as f:
+            data = json.load(f)
+
+        return {
+            "ets2": data["supported_game_version"].replace("s", ""),
+            "ats": data["supported_ats_game_version"].replace("s", "")
+        }
+    except Exception:
+        return None
 
 
 def update_game():
