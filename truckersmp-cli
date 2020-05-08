@@ -8,6 +8,7 @@ This script downloads/updates games and starts games with Wine/Proton.
 
 import argparse
 import hashlib
+import html.parser
 import http.client
 import io
 import json
@@ -37,6 +38,7 @@ class URL:
     raw_github = "raw.githubusercontent.com"
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
     truckersmp_api = "https://api.truckersmp.com/v2/version"
+    truckersmp_stats = "https://stats.truckersmp.com"
 
 
 class Dir:
@@ -90,6 +92,39 @@ class AppId:
         "ets2":         227300,        # https://steamdb.info/app/227300/
     }
     proton = {}
+
+
+class DowngradeHTMLParser(html.parser.HTMLParser):
+    """Extract downgrade information from html."""
+
+    _data = {}
+    _downgrade_flag = False
+
+    def handle_starttag(self, tag, attrs):
+        """HTML start tag handler."""
+        for attr in attrs:
+            if (attr[0] == "href"
+                    and len(attr) > 1
+                    and attr[1] == "https://truckersmp.com/kb/26"):
+                self._downgrade_flag = True
+                break
+
+    def handle_endtag(self, tag):
+        """HTML end tag handler."""
+        self._downgrade_flag = False
+
+    def handle_data(self, data):
+        """HTML data handler."""
+        if self._downgrade_flag:
+            if "ETS2" in data:
+                self._data["ets2"] = True
+            if "ATS" in data:
+                self._data["ats"] = True
+
+    @property
+    def data(self):
+        """Return downgrade information."""
+        return self._data
 
 
 def download_files(host, files_to_download, progress_count=None):
@@ -471,6 +506,24 @@ Please report an issue: {}""".format(e, URL.issueurl))
             sys.exit("Failed to download mod files.")
 
 
+def get_beta_branch_name(game_name="ets2"):
+    """
+    Get the current required beta branch name to comply with TruckersMP.
+
+    Returns a string containing the name (eg. "temporary_1_36") or None
+    """
+    try:
+        parser = DowngradeHTMLParser()
+        with urllib.request.urlopen(URL.truckersmp_stats) as f:
+            parser.feed(f.read().decode("utf-8"))
+
+        if parser.data[game_name] is True:
+            version = get_supported_game_versions()[game_name].split('.')
+            return "temporary_{}_{}".format(version[0], version[1])
+    except Exception:
+        return None
+
+
 def get_supported_game_versions():
     """
     Get TruckersMP-supported game versions via TruckersMP Web API.
@@ -547,6 +600,13 @@ def update_game():
            "+app_update", str(args.proton_appid), "validate",
            "+quit"])
 
+    game = "ats" if args.ats else "ets2"
+    branch = ""
+    if not args.beta and get_beta_branch_name(game) is not None:
+        branch = get_beta_branch_name(game)
+    elif args.beta:
+        branch = args.beta
+
     # use steamcmd to update the chosen game
     logging.debug("Updating Game (AppId:{})".format(args.steamid))
     logging.info("""Command:
@@ -557,7 +617,7 @@ def update_game():
     +app_update {}{} validate
     +quit""".format(
       steamcmd, args.account, args.gamedir, args.steamid,
-      " -beta {}".format(args.beta) if args.beta else ""))
+      " -beta {}".format(branch) if branch else ""))
     cmdline = [
         steamcmd,
         "+@sSteamCmdForcePlatformType", "windows",
@@ -565,9 +625,9 @@ def update_game():
         "+force_install_dir", args.gamedir,
         "+app_update", args.steamid,
     ]
-    if args.beta:
+    if branch:
         cmdline.append("-beta")
-        cmdline.append(args.beta)
+        cmdline.append(branch)
     cmdline.append("validate")
     cmdline.append("+quit")
     subproc.call(cmdline)
