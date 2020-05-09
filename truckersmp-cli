@@ -605,7 +605,7 @@ def update_game():
            "+app_update", str(args.proton_appid), "validate",
            "+quit"])
 
-    branch = ""
+    branch = "public"
     if args.beta:
         branch = args.beta
     else:
@@ -621,22 +621,19 @@ def update_game():
     +@sSteamCmdForcePlatformType windows
     +login {}
     +force_install_dir {}
-    +app_update {}{} validate
+    +app_update {} -beta {} validate
     +quit""".format(
-      steamcmd, args.account, args.gamedir, args.steamid,
-      " -beta {}".format(branch) if branch else ""))
+      steamcmd, args.account, args.gamedir, args.steamid, branch))
     cmdline = [
         steamcmd,
         "+@sSteamCmdForcePlatformType", "windows",
         "+login", args.account,
         "+force_install_dir", args.gamedir,
         "+app_update", args.steamid,
+        "-beta", branch,
+        "validate",
+        "+quit"
     ]
-    if branch:
-        cmdline.append("-beta")
-        cmdline.append(branch)
-    cmdline.append("validate")
-    cmdline.append("+quit")
     subproc.call(cmdline)
 
 
