@@ -39,6 +39,7 @@ class URL:
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
     truckersmp_api = "https://api.truckersmp.com/v2/version"
     truckersmp_stats = "https://stats.truckersmp.com"
+    truckersmp_downgrade_help = "https://truckersmp.com/kb/26"
 
 
 class Dir:
@@ -105,7 +106,7 @@ class DowngradeHTMLParser(html.parser.HTMLParser):
         for attr in attrs:
             if (attr[0] == "href"
                     and len(attr) > 1
-                    and attr[1] == "https://truckersmp.com/kb/26"):
+                    and attr[1] == URL.truckersmp_downgrade_help):
                 self._downgrade_flag = True
                 break
 
