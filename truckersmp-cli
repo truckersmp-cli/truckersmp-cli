@@ -98,7 +98,7 @@ class AppId:
 class DowngradeHTMLParser(html.parser.HTMLParser):
     """Extract downgrade information from HTML code at stats.truckersmp.com."""
 
-    _data = {}
+    _data = {"ets2": False, "ats": False}
     _is_downgrade_node = False
 
     def handle_starttag(self, tag, attrs):
