@@ -99,7 +99,7 @@ class DowngradeHTMLParser(html.parser.HTMLParser):
     """Extract downgrade information from HTML code at stats.truckersmp.com."""
 
     _data = {}
-    _downgrade_flag = False
+    _is_downgrade_node = False
 
     def handle_starttag(self, tag, attrs):
         """HTML start tag handler."""
@@ -107,16 +107,16 @@ class DowngradeHTMLParser(html.parser.HTMLParser):
             if (attr[0] == "href"
                     and len(attr) > 1
                     and attr[1] == URL.truckersmp_downgrade_help):
-                self._downgrade_flag = True
+                self._is_downgrade_node = True
                 break
 
     def handle_endtag(self, tag):
         """HTML end tag handler."""
-        self._downgrade_flag = False
+        self._is_downgrade_node = False
 
     def handle_data(self, data):
         """HTML data handler."""
-        if self._downgrade_flag:
+        if self._is_downgrade_node:
             if "ETS2" in data:
                 self._data["ets2"] = True
             if "ATS" in data:
