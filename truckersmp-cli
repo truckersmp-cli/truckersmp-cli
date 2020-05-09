@@ -95,7 +95,7 @@ class AppId:
 
 
 class DowngradeHTMLParser(html.parser.HTMLParser):
-    """Extract downgrade information from html."""
+    """Extract downgrade information from HTML code at stats.truckersmp.com."""
 
     _data = {}
     _downgrade_flag = False
@@ -510,16 +510,20 @@ def get_beta_branch_name(game_name="ets2"):
     """
     Get the current required beta branch name to comply with TruckersMP.
 
-    Returns a string containing the name (eg. "temporary_1_36") or None
+    If downgrade is needed, this returns a branch name that can be used
+    to install TruckersMP-compatible versions of games (e.g. "temporary_1_36")
+    on success or None on error.
+    If downgrade is not needed, this returns None.
     """
     try:
         parser = DowngradeHTMLParser()
         with urllib.request.urlopen(URL.truckersmp_stats) as f:
             parser.feed(f.read().decode("utf-8"))
 
-        if parser.data[game_name] is True:
-            version = get_supported_game_versions()[game_name].split('.')
+        if parser.data[game_name]:
+            version = get_supported_game_versions()[game_name].split(".")
             return "temporary_{}_{}".format(version[0], version[1])
+        return None
     except Exception:
         return None
 
@@ -600,12 +604,14 @@ def update_game():
            "+app_update", str(args.proton_appid), "validate",
            "+quit"])
 
-    game = "ats" if args.ats else "ets2"
     branch = ""
-    if not args.beta and get_beta_branch_name(game) is not None:
-        branch = get_beta_branch_name(game)
-    elif args.beta:
+    if args.beta:
         branch = args.beta
+    else:
+        game = "ats" if args.ats else "ets2"
+        beta_branch_name = get_beta_branch_name(game)
+        if beta_branch_name:
+            branch = beta_branch_name
 
     # use steamcmd to update the chosen game
     logging.debug("Updating Game (AppId:{})".format(args.steamid))
