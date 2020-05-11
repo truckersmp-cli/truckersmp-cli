@@ -9,6 +9,7 @@ This script downloads/updates games and starts games with Wine/Proton.
 import argparse
 import ctypes
 import hashlib
+import html.parser
 import http.client
 import io
 import json
@@ -38,6 +39,9 @@ class URL:
     steamcmdurl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
     raw_github = "raw.githubusercontent.com"
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
+    truckersmp_api = "https://api.truckersmp.com/v2/version"
+    truckersmp_stats = "https://stats.truckersmp.com"
+    truckersmp_downgrade_help = "https://truckersmp.com/kb/26"
 
 
 class Dir:
@@ -92,6 +96,39 @@ class AppId:
         "ets2":         227300,        # https://steamdb.info/app/227300/
     }
     proton = {}
+
+
+class DowngradeHTMLParser(html.parser.HTMLParser):
+    """Extract downgrade information from HTML code at stats.truckersmp.com."""
+
+    _data = {"ets2": False, "ats": False}
+    _is_downgrade_node = False
+
+    def handle_starttag(self, tag, attrs):
+        """HTML start tag handler."""
+        for attr in attrs:
+            if (attr[0] == "href"
+                    and len(attr) > 1
+                    and attr[1] == URL.truckersmp_downgrade_help):
+                self._is_downgrade_node = True
+                break
+
+    def handle_endtag(self, tag):
+        """HTML end tag handler."""
+        self._is_downgrade_node = False
+
+    def handle_data(self, data):
+        """HTML data handler."""
+        if self._is_downgrade_node:
+            if "ETS2" in data:
+                self._data["ets2"] = True
+            if "ATS" in data:
+                self._data["ats"] = True
+
+    @property
+    def data(self):
+        """Return downgrade information."""
+        return self._data
 
 
 def check_libsdl2():
@@ -492,6 +529,50 @@ Please report an issue: {}""".format(e, URL.issueurl))
             sys.exit("Failed to download mod files.")
 
 
+def get_beta_branch_name(game_name="ets2"):
+    """
+    Get the current required beta branch name to comply with TruckersMP.
+
+    If downgrade is needed, this returns a branch name that can be used
+    to install TruckersMP-compatible versions of games (e.g. "temporary_1_36")
+    on success or None on error.
+    If downgrade is not needed, this returns None.
+    """
+    try:
+        parser = DowngradeHTMLParser()
+        with urllib.request.urlopen(URL.truckersmp_stats) as f:
+            parser.feed(f.read().decode("utf-8"))
+
+        if parser.data[game_name]:
+            version = get_supported_game_versions()[game_name].split(".")
+            return "temporary_{}_{}".format(version[0], version[1])
+        return None
+    except Exception:
+        return None
+
+
+def get_supported_game_versions():
+    """
+    Get TruckersMP-supported game versions via TruckersMP Web API.
+
+    Returns a dict of 'game: version' pairs:
+    {
+        "ets2": "1.36.2.55",
+        "ats": "1.36.1.40"
+    }
+    """
+    try:
+        with urllib.request.urlopen(URL.truckersmp_api) as f:
+            data = json.load(f)
+
+        return {
+            "ets2": data["supported_game_version"].replace("s", ""),
+            "ats": data["supported_ats_game_version"].replace("s", "")
+        }
+    except Exception:
+        return None
+
+
 def update_game():
     """Update game and Proton."""
     # make sure steam is closed before updating
@@ -546,6 +627,15 @@ def update_game():
            "+app_update", str(args.proton_appid), "validate",
            "+quit"])
 
+    branch = "public"
+    if args.beta:
+        branch = args.beta
+    else:
+        game = "ats" if args.ats else "ets2"
+        beta_branch_name = get_beta_branch_name(game)
+        if beta_branch_name:
+            branch = beta_branch_name
+
     # use steamcmd to update the chosen game
     logging.debug("Updating Game (AppId:{})".format(args.steamid))
     logging.info("""Command:
@@ -553,22 +643,19 @@ def update_game():
     +@sSteamCmdForcePlatformType windows
     +login {}
     +force_install_dir {}
-    +app_update {}{} validate
+    +app_update {} -beta {} validate
     +quit""".format(
-      steamcmd, args.account, args.gamedir, args.steamid,
-      " -beta {}".format(args.beta) if args.beta else ""))
+      steamcmd, args.account, args.gamedir, args.steamid, branch))
     cmdline = [
         steamcmd,
         "+@sSteamCmdForcePlatformType", "windows",
         "+login", args.account,
         "+force_install_dir", args.gamedir,
         "+app_update", args.steamid,
+        "-beta", branch,
+        "validate",
+        "+quit"
     ]
-    if args.beta:
-        cmdline.append("-beta")
-        cmdline.append(args.beta)
-    cmdline.append("validate")
-    cmdline.append("+quit")
     subproc.call(cmdline)
 
 
