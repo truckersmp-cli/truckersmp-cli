@@ -430,7 +430,7 @@ def start_with_wine():
     env["WINEARCH"] = "win64"
     env["WINEPREFIX"] = args.prefixdir
     env["WINEDLLOVERRIDES"] = "d3d11=;dxgi=" if not args.enable_d3d11 else ""
-    argv = ["wine", ]
+    argv = [wine, ]
     if args.singleplayer:
         exename = "eurotrucks2.exe" if args.ets2 else "amtrucks.exe"
         gamepath = os.path.join(args.gamedir, "bin/win_x64", exename)
@@ -444,8 +444,8 @@ def start_with_wine():
   WINEARCH=win64
   WINEPREFIX={}
   WINEDLLOVERRIDES="{}"
-  wine {} {} {}""".format(
-      env["WINEPREFIX"], env["WINEDLLOVERRIDES"], argv[-3], argv[-2], argv[-1]))
+  {} {} {} {}""".format(
+      env["WINEPREFIX"], env["WINEDLLOVERRIDES"], wine, argv[-3], argv[-2], argv[-1]))
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
         logging.info("Wine output:\n" + output.decode("utf-8"))
