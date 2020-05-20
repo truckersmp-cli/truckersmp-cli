@@ -25,6 +25,7 @@ import tarfile
 import time
 import urllib.parse
 import urllib.request
+import vdf
 from getpass import getuser
 from gettext import ngettext
 
@@ -529,6 +530,27 @@ Please report an issue: {}""".format(e, URL.issueurl))
             sys.exit("Failed to download mod files.")
 
 
+def get_current_steam_user():
+    """
+    Get the current AccountName with saved login credentials.
+
+    Returns the found steam login name or None.
+    """
+    for path in File.loginusers_paths:
+        try:
+            login_vdf = vdf.parse(open(path))
+
+            for _, info in login_vdf["users"].items():
+                if info["MostRecent"] == "1" and info["RememberPassword"] == "1":
+                    return info["AccountName"]
+
+        except Exception:
+            pass
+
+    logging.debug("Unable to find logged in user.")
+    return None
+
+
 def get_beta_branch_name(game_name="ets2"):
     """
     Get the current required beta branch name to comply with TruckersMP.
@@ -784,6 +806,7 @@ When using standard Wine you should start the windows version of Steam first.
               Fallback: ./truckersmp]""")
     ap.add_argument(
       "-n", "--account", metavar="NAME", type=str,
+      default=get_current_steam_user(),
       help="""steam account name to use
               (This account should own the game and ideally is logged in
               with saved credentials)""")
