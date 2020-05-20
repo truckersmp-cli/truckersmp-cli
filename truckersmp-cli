@@ -547,7 +547,7 @@ def get_current_steam_user():
         except Exception:
             pass
 
-    logging.debug("Unable to find logged in user.")
+    print("** INFO **  Unable to find logged in user automatically.")
     return None
 
 
