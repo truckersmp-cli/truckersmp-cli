@@ -25,9 +25,10 @@ import tarfile
 import time
 import urllib.parse
 import urllib.request
-import vdf
 from getpass import getuser
 from gettext import ngettext
+
+import vdf
 
 
 class URL:
