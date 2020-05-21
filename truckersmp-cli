@@ -535,7 +535,8 @@ def get_current_steam_user():
     """
     Get the current AccountName with saved login credentials.
 
-    Returns the found steam login name or None.
+    If successful this returns the AccountName of the user with saved credentials.
+    Otherwise this returns None.
     """
     for path in File.loginusers_paths:
         try:
@@ -544,7 +545,6 @@ def get_current_steam_user():
             for _, info in login_vdf["users"].items():
                 if info["MostRecent"] == "1" and info["RememberPassword"] == "1":
                     return info["AccountName"]
-
         except Exception:
             pass
     return None
