@@ -547,8 +547,6 @@ def get_current_steam_user():
 
         except Exception:
             pass
-
-    print("** INFO **  Unable to find logged in user automatically.")
     return None
 
 
@@ -735,7 +733,10 @@ Need to download (-u) Proton?""".format(args.protondir))
 
     # checks for updating
     if args.update and not args.account:
-        sys.exit("Need the steam account name (-n name) to update.")
+        args.account = get_current_steam_user()
+        if not args.account:
+            logging.info("Unable to find logged in steam user automatically.")
+            sys.exit("Need the steam account name (-n name) to update.")
 
     # info
     logging.info("AppId/GameId: {} ({})".format(args.steamid, game))
@@ -807,7 +808,6 @@ When using standard Wine you should start the windows version of Steam first.
               Fallback: ./truckersmp]""")
     ap.add_argument(
       "-n", "--account", metavar="NAME", type=str,
-      default=get_current_steam_user(),
       help="""steam account name to use
               (This account should own the game and ideally is logged in
               with saved credentials)""")
