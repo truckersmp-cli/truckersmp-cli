@@ -540,9 +540,10 @@ def get_current_steam_user():
     """
     for path in File.loginusers_paths:
         try:
-            login_vdf = vdf.parse(open(path))
+            with open(path) as f:
+                login_vdf = vdf.parse(f)
 
-            for _, info in login_vdf["users"].items():
+            for info in login_vdf["users"].values():
                 if info["MostRecent"] == "1" and info["RememberPassword"] == "1":
                     return info["AccountName"]
         except Exception:
