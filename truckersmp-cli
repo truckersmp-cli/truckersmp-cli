@@ -28,7 +28,12 @@ import urllib.request
 from getpass import getuser
 from gettext import ngettext
 
-import vdf
+vdf_is_available = False
+try:
+    import vdf
+    vdf_is_available = True
+except ImportError:
+    pass
 
 
 class URL:
@@ -538,6 +543,9 @@ def get_current_steam_user():
     If successful this returns the AccountName of the user with saved credentials.
     Otherwise this returns None.
     """
+    if not vdf_is_available:
+        return None
+
     for path in File.loginusers_paths:
         try:
             with open(path) as f:
