@@ -552,11 +552,11 @@ def get_current_steam_user():
                 login_vdf = vdf.parse(f)
 
             for info in login_vdf["users"].values():
-                if (("RememberPassword" in info and info["RememberPassword"] == "1") and
-                        ("MostRecent" in info and info["MostRecent"] == "1" or
-                         "mostrecent" in info and info["mostrecent"] == "1")):
-                    if "AccountName" in info:
-                        return info["AccountName"]
+                remember = "RememberPassword" in info and info["RememberPassword"] == "1"
+                recent_uc = "MostRecent" in info and info["MostRecent"] == "1"
+                recent_lc = "mostrecent" in info and info["mostrecent"] == "1"
+                if remember and (recent_lc or recent_uc) and "AccountName" in info:
+                    return info["AccountName"]
         except Exception:
             pass
     return None
