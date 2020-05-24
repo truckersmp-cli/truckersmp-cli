@@ -381,11 +381,9 @@ def start_with_proton():
     if args.singleplayer:
         exename = "eurotrucks2.exe" if args.ets2 else "amtrucks.exe"
         gamepath = os.path.join(args.gamedir, "bin/win_x64", exename)
-        for arg in (gamepath, "-nointro", "-64bit"):
-            argv.append(arg)
+        argv += gamepath, "-nointro", "-64bit"
     else:
-        for arg in (File.inject_exe, args.gamedir, args.moddir):
-            argv.append(arg)
+        argv += File.inject_exe, args.gamedir, args.moddir
     logging.info("""Startup command:
   SteamGameId={}
   SteamAppId={}
@@ -434,11 +432,9 @@ def start_with_wine():
     if args.singleplayer:
         exename = "eurotrucks2.exe" if args.ets2 else "amtrucks.exe"
         gamepath = os.path.join(args.gamedir, "bin/win_x64", exename)
-        for arg in (gamepath, "-nointro", "-64bit"):
-            argv.append(arg)
+        argv += gamepath, "-nointro", "-64bit"
     else:
-        for arg in (File.inject_exe, args.gamedir, args.moddir):
-            argv.append(arg)
+        argv += File.inject_exe, args.gamedir, args.moddir
     logging.info("""Startup command:
   WINEDEBUG=-all
   WINEARCH=win64
