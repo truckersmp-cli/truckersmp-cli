@@ -542,10 +542,9 @@ def get_current_steam_user():
 
     If successful this returns the AccountName of the user with saved credentials.
     Otherwise this returns None.
-    """
-    if not vdf_is_available:
-        return None
 
+    This function depends on the package "vdf".
+    """
     for path in File.loginusers_paths:
         try:
             with open(path) as f:
@@ -745,7 +744,8 @@ Need to download (-u) Proton?""".format(args.protondir))
 
     # checks for updating
     if args.update and not args.account:
-        args.account = get_current_steam_user()
+        if vdf_is_available:
+            args.account = get_current_steam_user()
         if not args.account:
             logging.info("Unable to find logged in steam user automatically.")
             sys.exit("Need the steam account name (-n name) to update.")
