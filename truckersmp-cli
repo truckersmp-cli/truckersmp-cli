@@ -28,6 +28,13 @@ import urllib.request
 from getpass import getuser
 from gettext import ngettext
 
+vdf_is_available = False
+try:
+    import vdf
+    vdf_is_available = True
+except ImportError:
+    pass
+
 
 class URL:
     """URLs."""
@@ -525,6 +532,31 @@ Please report an issue: {}""".format(e, URL.issueurl))
             sys.exit("Failed to download mod files.")
 
 
+def get_current_steam_user():
+    """
+    Get the current AccountName with saved login credentials.
+
+    If successful this returns the AccountName of the user with saved credentials.
+    Otherwise this returns None.
+
+    This function depends on the package "vdf".
+    """
+    for path in File.loginusers_paths:
+        try:
+            with open(path) as f:
+                login_vdf = vdf.parse(f)
+
+            for info in login_vdf["users"].values():
+                remember = "RememberPassword" in info and info["RememberPassword"] == "1"
+                recent_uc = "MostRecent" in info and info["MostRecent"] == "1"
+                recent_lc = "mostrecent" in info and info["mostrecent"] == "1"
+                if remember and (recent_lc or recent_uc) and "AccountName" in info:
+                    return info["AccountName"]
+        except Exception:
+            pass
+    return None
+
+
 def get_beta_branch_name(game_name="ets2"):
     """
     Get the current required beta branch name to comply with TruckersMP.
@@ -708,7 +740,11 @@ Need to download (-u) Proton?""".format(args.protondir))
 
     # checks for updating
     if args.update and not args.account:
-        sys.exit("Need the steam account name (-n name) to update.")
+        if vdf_is_available:
+            args.account = get_current_steam_user()
+        if not args.account:
+            logging.info("Unable to find logged in steam user automatically.")
+            sys.exit("Need the steam account name (-n name) to update.")
 
     # info
     logging.info("AppId/GameId: {} ({})".format(args.steamid, game))
