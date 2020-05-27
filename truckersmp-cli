@@ -788,19 +788,29 @@ When using standard Wine you should start the windows version of Steam first.
       help="use American Truck Simulator", action="store_true")
     ap.add_argument(
       "-e", "--ets2",
-      help="use Euro Truck Simulator 2", action="store_true")
+      help="""use Euro Truck Simulator 2
+              [Default if neither ATS or ETS2 are specified] """,
+      action="store_true")
     ap.add_argument(
       "-p", "--proton",
-      help="start the game with Proton", action="store_true")
+      help="""start the game with Proton
+              [Default on Linux if neither Proton or Wine are specified] """,
+      action="store_true")
     ap.add_argument(
       "-w", "--wine",
-      help="start the game with Wine", action="store_true")
+      help="""start the game with Wine
+              [Default on other systems if neither Proton or Wine are specified]""",
+      action="store_true")
     ap.add_argument(
       "-s", "--start",
-      help="start the game", action="store_true")
+      help="""start the game
+              [Default if neither start or update are specified]""",
+      action="store_true")
     ap.add_argument(
       "-u", "--update",
-      help="update the game", action="store_true")
+      help="""update the game
+              [Default if neither start or update are specified]""",
+      action="store_true")
     ap.add_argument(
       "-v", "--verbose",
       help="verbose output (none:error, once:info, twice or more:debug)",
