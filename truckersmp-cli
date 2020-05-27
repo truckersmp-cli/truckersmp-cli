@@ -713,7 +713,12 @@ def check_args_errors():
         if args.proton and args.wine:
             sys.exit("Start with Proton (-p) or Wine (-w)?")
         elif not args.proton and not args.wine:
-            args.proton = True
+            if platform.system() == "Linux":
+                logging.info("Platform is Linux, use Proton")
+                args.proton = True
+            else:
+                logging.info("Platform is not Linux, use Wine")
+                args.wine = True
 
         # make sure proton and wine are using the same default
         if args.wine:
