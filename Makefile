@@ -1,19 +1,21 @@
 CC=x86_64-w64-mingw32-gcc
 
-all: truckersmp-cli.exe _truckersmp-cli
+all: truckersmp-cli.exe _truckersmp-cli truckersmp-cli.bash
 
 truckersmp-cli.exe: truckersmp-cli.c
-	$(CC) $< -o $@
+	@$(CC) $< -o $@
 
 _truckersmp-cli:
-	# genzshcomp <(./truckersmp-cli --help) > _truckermp-cli
-	if which genzshcomp &> /dev/null; then \
-		./truckersmp-cli --help > helptext; \
-		genzshcomp helptext > _truckersmp-cli; \
-		rm -f helptext; \
+	@if command -v genzshcomp > /dev/null; then \
+		./truckersmp-cli --help | genzshcomp -f zsh > _truckersmp-cli; \
+	fi
+
+truckersmp-cli.bash:
+	@if command -v genzshcomp > /dev/null; then \
+		./truckersmp-cli --help | genzshcomp -f bash > truckersmp-cli.bash; \
 	fi
 
 clean:
-	rm -f truckersmp-cli.exe _truckersmp-cli
+	rm -f truckersmp-cli.exe _truckersmp-cli truckersmp-cli.bash
 
 .PHONY: clean
