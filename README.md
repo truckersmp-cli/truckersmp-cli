@@ -177,7 +177,7 @@ $ ./truckersmp-cli -esw -x "/path/to/prefix/pfx"
 
 ### Optional
 
-* [`genzshcomp`][python-genzshcomp] to generate zsh completions
+* [`genzshcomp`][python-genzshcomp] to generate bash/zsh completions
 
 ## Install
 
