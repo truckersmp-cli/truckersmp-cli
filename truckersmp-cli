@@ -691,6 +691,7 @@ def check_args_errors():
     """Check command-line arguments."""
     # checks for updating and/or starting
     if not args.update and not args.start:
+        logging.info("--update/--start not specified, doing both.")
         args.start = True
         args.update = True
 
@@ -698,6 +699,7 @@ def check_args_errors():
     if args.ats and args.ets2:
         sys.exit("It's only possible to use one game at a time.")
     elif not args.ats and not args.ets2:
+        logging.info("--ats/--ets2 not specified, choosing ETS2.")
         args.ets2 = True
 
     game = "ats" if args.ats else "ets2"
