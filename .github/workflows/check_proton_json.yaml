@@ -7,14 +7,14 @@ on:
       - dev
     paths:
       - .github/workflows/check_proton_json.yaml
-      - proton.json
+      - truckersmp_cli/proton.json
   pull_request:
     branches:
       - master
       - dev
     paths:
       - .github/workflows/check_proton_json.yaml
-      - proton.json
+      - truckersmp_cli/proton.json
 
 jobs:
   check_proton_json:
@@ -29,7 +29,7 @@ jobs:
         run: |
              import json
              import sys
-             with open("proton.json") as f:
+             with open("truckersmp_cli/proton.json") as f:
                  proton = json.load(f)
                  try:
                      default_is_valid = False

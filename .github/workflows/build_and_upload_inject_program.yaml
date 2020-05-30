@@ -31,8 +31,8 @@ jobs:
              # and "make" does nothing even when truckersmp-cli.c is changed
         run: make clean && make
       - name: Strip truckersmp-cli.exe
-        run: x86_64-w64-mingw32-strip truckersmp-cli.exe
+        run: x86_64-w64-mingw32-strip truckersmp_cli/truckersmp-cli.exe
       - uses: actions/upload-artifact@v1
         with:
           name: ${{ github.event_name }}-${{ github.sha }}
-          path: truckersmp-cli.exe
+          path: truckersmp_cli/truckersmp-cli.exe
