@@ -691,14 +691,16 @@ def check_args_errors():
     """Check command-line arguments."""
     # checks for updating and/or starting
     if not args.update and not args.start:
-        print(arg_parser.format_help(), end="")
-        sys.exit("\nWhat to do? Starting (-s) or updating (-u) the game?")
+        logging.info("--update/--start not specified, doing both.")
+        args.start = True
+        args.update = True
 
     # make sure only one game is chosen
     if args.ats and args.ets2:
         sys.exit("It's only possible to use one game at a time.")
     elif not args.ats and not args.ets2:
-        sys.exit("Need at least one game. ATS (-a) or ETS2 (-e)")
+        logging.info("--ats/--ets2 not specified, choosing ETS2.")
+        args.ets2 = True
 
     game = "ats" if args.ats else "ets2"
     args.steamid = str(AppId.game[game])
@@ -713,7 +715,12 @@ def check_args_errors():
         if args.proton and args.wine:
             sys.exit("Start with Proton (-p) or Wine (-w)?")
         elif not args.proton and not args.wine:
-            sys.exit("Only possible to start with Proton (-p) or Wine (-w).")
+            if platform.system() == "Linux":
+                logging.info("Platform is Linux, use Proton")
+                args.proton = True
+            else:
+                logging.info("Platform is not Linux, use Wine")
+                args.wine = True
 
         # make sure proton and wine are using the same default
         if args.wine:
@@ -783,19 +790,29 @@ When using standard Wine you should start the windows version of Steam first.
       help="use American Truck Simulator", action="store_true")
     ap.add_argument(
       "-e", "--ets2",
-      help="use Euro Truck Simulator 2", action="store_true")
+      help="""use Euro Truck Simulator 2
+              [Default if neither ATS or ETS2 are specified] """,
+      action="store_true")
     ap.add_argument(
       "-p", "--proton",
-      help="start the game with Proton", action="store_true")
+      help="""start the game with Proton
+              [Default on Linux if neither Proton or Wine are specified] """,
+      action="store_true")
     ap.add_argument(
       "-w", "--wine",
-      help="start the game with Wine", action="store_true")
+      help="""start the game with Wine
+              [Default on other systems if neither Proton or Wine are specified]""",
+      action="store_true")
     ap.add_argument(
       "-s", "--start",
-      help="start the game", action="store_true")
+      help="""start the game
+              [Default if neither start or update are specified]""",
+      action="store_true")
     ap.add_argument(
       "-u", "--update",
-      help="update the game", action="store_true")
+      help="""update the game
+              [Default if neither start or update are specified]""",
+      action="store_true")
     ap.add_argument(
       "-v", "--verbose",
       help="verbose output (none:error, once:info, twice or more:debug)",

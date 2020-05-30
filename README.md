@@ -24,12 +24,12 @@ When using standard Wine you should start the windows version of Steam first.
 Short option|Long option|Description
 ---|---|---
 `-a`|`--ats`|Use American Truck Simulator
-`-e`|`--ets2`|Use Euro Truck Simulator 2
-`-p`|`--proton`|Start the game with Proton
-`-w`|`--wine`|Start the game with Wine
+`-e`|`--ets2`|Use Euro Truck Simulator 2 [Default if neither ATS or ETS2 are specified]
+`-p`|`--proton`|Start the game with Proton [Default on Linux if neither Proton or Wine are specified]
+`-w`|`--wine`|Start the game with Wine [Default on other systems if neither Proton or Wine are specified]
 `-h`|`--help`|Show help
-`-s`|`--start`|Start the game
-`-u`|`--update`|Update the game
+`-s`|`--start`|Start the game [Default if neither start or update are specified]
+`-u`|`--update`|Update the game [Default if neither start or update are specified]
 `-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
 `-g DIR`|`--gamedir DIR`|Choose a different directory for the game files [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`]
 `-i APPID`|`--proton-appid APPID`|Choose a different AppId for Proton (Needs an update for changes)
