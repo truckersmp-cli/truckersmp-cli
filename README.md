@@ -223,7 +223,7 @@ $ cp truckersmp-cli.bash ${XDG_DATA_HOME:-~/.local/share}/bash-completion/comple
 
 Copy `_truckersmp-cli` to a directory that is part of `$fpath`.
 
-```sh
+```zsh
 # Example: `_truckersmp-cli` is already placed in ~/.zsh.d/comp/
 fpath=(~/.zsh.d/comp/ $fpath)
 autoload -U ~/.zsh.d/comp/*(:t)
