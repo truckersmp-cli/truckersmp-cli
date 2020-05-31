@@ -221,14 +221,7 @@ $ cp truckersmp-cli.bash ${XDG_DATA_HOME:-~/.local/share}/bash-completion/comple
 
 #### zsh
 
-Copy `_truckersmp-cli` to a directory that is part of `$fpath`.
-
-```zsh
-# Example: `_truckersmp-cli` is already placed in ~/.zsh.d/comp/
-fpath=(~/.zsh.d/comp/ $fpath)
-autoload -U ~/.zsh.d/comp/*(:t)
-autoload -Uz compinit && compinit
-```
+Copy `_truckersmp-cli` to a directory that is part of `$fpath` and run `compinit`.
 
 ## Credits
 
