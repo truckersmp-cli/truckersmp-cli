@@ -214,7 +214,7 @@ zsh|`/usr/share/zsh/site-functions/`, `/usr/local/share/zsh/site-functions/`
 
 Copy `truckersmp-cli.bash` to `$XDG_DATA_HOME/bash-completion/completions/truckersmp-cli`.
 
-```sh
+```
 $ mkdir -p ${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions
 $ cp truckersmp-cli.bash ${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions/truckersmp-cli
 ```
