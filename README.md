@@ -187,7 +187,7 @@ Just clone this repository wherever you want.
 
 If [`genzshcomp`][python-genzshcomp] is installed, `make` generates shell completion files for bash (bash-completion) and zsh.
 
-They enable completion of available options.
+They enable tab-completion of available command-line options.
 
 #### System-wide installation
 
@@ -196,8 +196,8 @@ Shell|System-wide search paths
 bash|`$(pkg-config --variable=completionsdir bash-completion)` (e.g. `/usr/share/bash-completion/completions/`)
 zsh|`/usr/share/zsh/site-functions/`, `/usr/local/share/zsh/site-functions/`
 
-* bash-completion file `truckersmp-cli.bash` needs to be renamed to `truckersmp-cli`
-* Debian-based systems have `/usr/share/zsh/vendor-completions/` directory for zsh completions
+* The bash-completion file `truckersmp-cli.bash` needs to be renamed to `truckersmp-cli`
+* Debian-based systems are using the `/usr/share/zsh/vendor-completions/` directory for zsh completions
 
 #### Per-user installation
 
@@ -206,8 +206,8 @@ zsh|`/usr/share/zsh/site-functions/`, `/usr/local/share/zsh/site-functions/`
 Copy `truckersmp-cli.bash` to `$XDG_DATA_HOME/bash-completion/completions/truckersmp-cli`.
 
 ```
-$ mkdir -p ${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions
-$ cp truckersmp-cli.bash ${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions/truckersmp-cli
+$ mkdir -p "${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions"
+$ cp truckersmp-cli.bash "${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions/truckersmp-cli"
 ```
 
 ##### zsh
