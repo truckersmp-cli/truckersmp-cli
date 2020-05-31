@@ -4,7 +4,6 @@ about: Create a report to help us improve
 title: ''
 labels: ''
 assignees: ''
-
 ---
 
 [comment]: # (Run your command with additional informational output [-v] and try to pinpoint the problem first.)
@@ -35,13 +34,12 @@ when running the command with debug output [-vv]
 
 [comment]: # (If applicable, add screenshots to help explain your problem:)
 
-![Screenshot 1](url)
 </details>
 
 ## Information
  - OS: [e.g. Ubuntu 20.04, Arch Linux]
- - Proton or Wine version: [e.g. `5.0-11`]
- - truckersmp-cli version: [e.g. `2020.0`]
+ - Proton or Wine version: [e.g. `Proton 5.0-7`, `Wine 5.9`]
+ - truckersmp-cli version: [e.g. `0.1.0`]
 
 ## Additional context
 Add any other context about the problem here.
