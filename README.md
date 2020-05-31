@@ -192,6 +192,44 @@ machine. Just install mingw-w64 and then
 $ make
 ```
 
+## bash/zsh completion
+
+If [`genzshcomp`][python-genzshcomp] is installed, `make` generates shell completion files for bash (bash-completion) and zsh.
+
+They enable completion of available options.
+
+### System-wide installation
+
+Shell|System-wide search paths
+---|---
+bash|`$(pkg-config --variable=completionsdir bash-completion)` (e.g. `/usr/share/bash-completion/completions/`)
+zsh|`/usr/share/zsh/site-functions/`, `/usr/local/share/zsh/site-functions/`
+
+* bash-completion file `truckersmp-cli.bash` needs to be renamed to `truckersmp-cli`
+* Debian-based systems have `/usr/share/zsh/vendor-completions/` directory for zsh completions
+
+### Per-user installation
+
+#### bash
+
+Copy `truckersmp-cli.bash` to `$XDG_DATA_HOME/bash-completion/completions/truckersmp-cli`.
+
+```sh
+$ mkdir -p ${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions
+$ cp truckersmp-cli.bash ${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions/truckersmp-cli
+```
+
+#### zsh
+
+Copy `_truckersmp-cli` to a directory that is part of `$fpath`.
+
+```sh
+# Example: `_truckersmp-cli` is already placed in ~/.zsh.d/comp/
+fpath=(~/.zsh.d/comp/ $fpath)
+autoload -U ~/.zsh.d/comp/*(:t)
+autoload -Uz compinit && compinit
+```
+
 ## Credits
 
 I was greatly inspired by mewrev's [Inject](https://github.com/mewrev/inject) tool
