@@ -193,7 +193,7 @@ They enable tab-completion of available command-line options.
 
 Shell|System-wide search paths
 ---|---
-bash|`$(pkg-config --variable=completionsdir bash-completion)` (e.g. `/usr/share/bash-completion/completions/`)
+bash|`$(pkg-config --variable=completionsdir bash-completion)` (e.g. `/usr/share/bash-completion/completions/`), `/usr/local/share/bash-completion/completions/`
 zsh|`/usr/share/zsh/site-functions/`, `/usr/local/share/zsh/site-functions/`
 
 * The bash-completion file `truckersmp-cli.bash` needs to be renamed to `truckersmp-cli`
