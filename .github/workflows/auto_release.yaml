@@ -1,0 +1,94 @@
+name: Automatic release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - RELEASE
+
+jobs:
+  release:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetch all history for all tags and branches
+        run: git fetch --prune --unshallow
+      - name: Set release tag
+        id: set_release_tag
+        run: |
+             tag="$(cat RELEASE)"
+             git tag "$tag"
+             echo "::set-output name=tag::$tag"
+      - name: Push new tag to master
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tags: true
+      - name: Install gcc-mingw-w64-x86-64
+        run: |
+             sudo apt -q update
+             sudo apt -q install --no-install-recommends gcc-mingw-w64-x86-64
+      - name: Build truckersmp-cli.exe
+        run: make
+      - name: Strip truckersmp-cli.exe
+        run: x86_64-w64-mingw32-strip truckersmp_cli/truckersmp-cli.exe
+      - name: Compress files
+        id: compress_files
+        run: |
+             tag="${{ steps.set_release_tag.outputs.tag }}"
+             tardir="$(basename ${{ github.repository }})-$tag"
+             mkdir -p .output/$tardir
+             mv * .output/$tardir
+             tar cvf output.tar -C .output $tardir
+             zstd --ultra -20 output.tar -o output.tar.zst
+             xz output.tar
+             echo "::set-output name=tarfilename::${tardir}.tar"
+             echo "::set-output name=version::$tag"
+      - name: Generate changelog
+        id: generate_changelog
+        run: |
+             import subprocess as subproc
+             args = ("git", "tag", "-l", "--sort=-v:refname")
+             basetag = subproc.check_output(args).decode("utf-8").splitlines()[1]
+             args = (
+               "git", "log",
+               "--format= * [%h] %s", "--no-merges", "--reverse", basetag + "..",
+             )
+             output = subproc.check_output(args).decode("utf-8")
+             body = ""
+             if output:
+                 body += "## Changes since {}%0A".format(basetag)
+                 body += output.replace("\n", "%0A")
+             print("::set-output name=body::" + body)
+        shell: python
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.set_release_tag.outputs.tag }}
+          release_name: Release ${{ steps.compress_files.outputs.version }}
+          body: ${{ steps.generate_changelog.outputs.body }}
+          draft: false
+          prerelease: false
+      - name: Upload release asset (tar.xz)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: output.tar.xz
+          asset_name: ${{ steps.compress_files.outputs.tarfilename }}.xz
+          asset_content_type: application/x-tar
+      - name: Upload release asset (tar.zst)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: output.tar.zst
+          asset_name: ${{ steps.compress_files.outputs.tarfilename }}.zst
+          asset_content_type: application/x-tar
