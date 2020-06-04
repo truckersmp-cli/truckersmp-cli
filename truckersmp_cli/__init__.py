@@ -26,6 +26,13 @@ import urllib.request
 from getpass import getuser
 from gettext import ngettext
 
+pkg_resources_is_available = False
+try:
+    import pkg_resources
+    pkg_resources_is_available = True
+except ImportError:
+    pass
+
 vdf_is_available = False
 try:
     import vdf
@@ -879,6 +886,10 @@ When using standard Wine you should start the windows version of Steam first.
       help="""start singleplayer game, useful for save editing,
               using/testing DXVK in singleplayer, etc.""",
       action="store_true")
+    ap.add_argument(
+      "--version",
+      help="""print version information and quit""",
+      action="store_true")
 
     return ap
 
@@ -904,6 +915,17 @@ def main():
     # parse options
     arg_parser = create_arg_parser()
     args = arg_parser.parse_args()
+
+    # print version
+    if args.version:
+        version = "unknown"
+        try:
+            if pkg_resources_is_available:
+                version = pkg_resources.get_distribution(__package__).version
+        except pkg_resources.DistributionNotFound:
+            pass
+        print(version)
+        sys.exit()
 
     # initialize logging
     formatter = logging.Formatter("** {levelname} **  {message}", style="{")
