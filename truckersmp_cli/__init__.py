@@ -26,6 +26,13 @@ import urllib.request
 from getpass import getuser
 from gettext import ngettext
 
+pkg_resources_is_available = False
+try:
+    import pkg_resources
+    pkg_resources_is_available = True
+except ImportError:
+    pass
+
 vdf_is_available = False
 try:
     import vdf
@@ -53,22 +60,26 @@ class Dir:
     """Directories."""
 
     XDG_DATA_HOME = os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
+    XDG_DATA_DIRS = os.getenv("XDG_DATA_DIRS", "/usr/local/share/:/usr/share/").split(":")
+    data_home = os.path.join(XDG_DATA_HOME, "truckersmp-cli")
+    data_dirs = [os.path.join(path, "truckersmp-cli") for path in XDG_DATA_DIRS]
+
     default_gamedir = {
         "ats": os.path.join(
-          XDG_DATA_HOME, "truckersmp-cli/American Truck Simulator/data"),
+          data_home, "American Truck Simulator/data"),
         "ets2": os.path.join(
-          XDG_DATA_HOME, "truckersmp-cli/Euro Truck Simulator 2/data"),
+          data_home, "Euro Truck Simulator 2/data"),
     }
     default_prefixdir = {
         "ats": os.path.join(
-          XDG_DATA_HOME, "truckersmp-cli/American Truck Simulator/prefix"),
+          data_home, "American Truck Simulator/prefix"),
         "ets2": os.path.join(
-          XDG_DATA_HOME, "truckersmp-cli/Euro Truck Simulator 2/prefix"),
+          data_home, "Euro Truck Simulator 2/prefix"),
     }
-    default_moddir = os.path.join(XDG_DATA_HOME, "truckersmp-cli/TruckersMP")
-    default_protondir = os.path.join(XDG_DATA_HOME, "truckersmp-cli/Proton")
-    steamcmddir = os.path.join(XDG_DATA_HOME, "truckersmp-cli/steamcmd")
-    dllsdir = os.path.join(XDG_DATA_HOME, "truckersmp-cli/dlls")
+    default_moddir = os.path.join(data_home, "TruckersMP")
+    default_protondir = os.path.join(data_home, "Proton")
+    steamcmddir = os.path.join(data_home, "steamcmd")
+    dllsdir = os.path.join(data_home, "dlls")
     scriptdir = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -85,8 +96,6 @@ class File:
         # Debian-based systems, new path
         os.path.join(os.path.expanduser("~/.steam/debian-installation"), loginvdf_inner),
     ]
-    proton_json = os.path.join(Dir.scriptdir, "proton.json")
-    inject_exe = os.path.join(Dir.scriptdir, "truckersmp-cli.exe")
     overlayrenderer_inner = "ubuntu12_64/gameoverlayrenderer.so"
     d3dcompiler_47 = os.path.join(Dir.dllsdir, "d3dcompiler_47.dll")
     d3dcompiler_47_md5 = "b2cc65e1930e75f563078c6a20221b37"
@@ -388,7 +397,7 @@ def start_with_proton():
         gamepath = os.path.join(args.gamedir, "bin/win_x64", exename)
         argv += gamepath, "-nointro", "-64bit"
     else:
-        argv += File.inject_exe, args.gamedir, args.moddir
+        argv += get_datafile("truckersmp-cli.exe"), args.gamedir, args.moddir
     logging.info("""Startup command:
   SteamGameId={}
   SteamAppId={}
@@ -439,7 +448,7 @@ def start_with_wine():
         gamepath = os.path.join(args.gamedir, "bin/win_x64", exename)
         argv += gamepath, "-nointro", "-64bit"
     else:
-        argv += File.inject_exe, args.gamedir, args.moddir
+        argv += get_datafile("truckersmp-cli.exe"), args.gamedir, args.moddir
     logging.info("""Startup command:
   WINEDEBUG=-all
   WINEARCH=win64
@@ -528,6 +537,38 @@ Please report an issue: {}""".format(e, URL.issueurl))
         if not download_files(URL.dlurlalt, dlfiles):
             # something went wrong
             sys.exit("Failed to download mod files.")
+
+
+def get_datafile(name):
+    """
+    Get the given named datafile path.
+
+    If successful this returns the found filepath.
+    Otherwise this returns None.
+    The datafile will be searched in the following folder path order:
+    * scriptdir/
+    * XDG_DATA_HOME/truckersmp-cli/
+    * XDG_DATA_DIRS/truckersmp-cli/
+    * pkg_resource/
+    """
+    paths = [Dir.scriptdir, ]
+    paths += [Dir.data_home, ]
+    paths += Dir.data_dirs
+
+    for path in paths:
+        try:
+            filepath = os.path.join(path, name)
+            if os.path.isfile(filepath):
+                logging.debug("Found datafile: {}".format(filepath))
+                return filepath
+        except Exception:
+            pass
+
+    # https://setuptools.readthedocs.io/en/latest/pkg_resources.html#resourcemanager-api
+    if pkg_resources_is_available and pkg_resources.resource_exists(__package__, name):
+        return pkg_resources.resource_filename(__package__, name)
+
+    return None
 
 
 def get_current_steam_user():
@@ -896,7 +937,7 @@ def main():
     # example:
     #     {"5.0": 1245040, "4.11": 1113280, "default": "5.0"}
     try:
-        with open(File.proton_json) as f:
+        with open(get_datafile("proton.json")) as f:
             AppId.proton = json.load(f)
     except Exception as e:
         sys.exit("Failed to load proton.json: {}".format(e))
