@@ -918,13 +918,28 @@ def main():
 
     # print version
     if args.version:
-        version = "unknown"
+        version = ""
         try:
-            if pkg_resources_is_available:
-                version = pkg_resources.get_distribution(__package__).version
-        except pkg_resources.DistributionNotFound:
+            # try to load "RELEASE" file for release assets or cloned git directory
+            with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f:
+                version += f.readline().rstrip()
+        except Exception:
             pass
-        print(version)
+        if version:
+            try:
+                # try to get git commit hash, and append it if succeeded
+                version += subproc.check_output(
+                  ("git", "log", "-1", "--format= (%h)")).decode("utf-8").rstrip()
+            except Exception:
+                pass
+        else:
+            # try to get version from Python package
+            try:
+                if pkg_resources_is_available:
+                    version += pkg_resources.get_distribution(__package__).version
+            except pkg_resources.DistributionNotFound:
+                pass
+        print(version if version else "unknown")
         sys.exit()
 
     # initialize logging
