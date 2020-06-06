@@ -9,10 +9,13 @@ on:
 
 jobs:
   release:
-    name: Publish GitHub release
+    name: Publish GitHub release and PyPI package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
       - name: Fetch all history for all tags and branches
         run: git fetch --prune --unshallow
       - name: Set release tag
@@ -92,3 +95,13 @@ jobs:
           asset_path: output.tar.zst
           asset_name: ${{ steps.compress_files.outputs.tarfilename }}.zst
           asset_content_type: application/x-tar
+      - name: Upload package to PyPI
+        if: github.repository == 'kakurasan/truckersmp-cli'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+             pip install twine wheel
+             cd .output/*
+             python setup.py sdist bdist_wheel
+             twine upload dist/*
