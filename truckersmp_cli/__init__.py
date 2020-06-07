@@ -936,8 +936,7 @@ When using standard Wine you should start the windows version of Steam first.
     ap.add_argument(
       "--self-update",
       help="""update files to the latest release.
-              Note: Python package users should use
-              "pip install truckersmp-cli --upgrade" instead""",
+              Note: Python package users should use pip instead""",
       action="store_true")
     ap.add_argument(
       "--version",
