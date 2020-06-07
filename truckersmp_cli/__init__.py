@@ -194,22 +194,17 @@ def perform_self_update():
 
     # update files
     archive_dir = os.path.join(topdir, "truckersmp-cli-" + release)
-    logging.info("Removing old 'truckersmp_cli' directory")
-    shutil.rmtree(os.path.join(topdir, "truckersmp_cli"))
-    for root, dirs, files in os.walk(archive_dir):
-        for d in dirs:
-            srcpath = os.path.join(root, d)
-            dstpath = os.path.join(topdir, d)
-            logging.info("Replacing {} with {}".format(dstpath, srcpath))
-            os.replace(srcpath, dstpath)
+    for root, dirs, files in os.walk(archive_dir, topdown=False):
+        inner_root = root[len(archive_dir):]
+        destdir = topdir + inner_root
+        logging.debug("Creating directory {}".format(destdir))
+        os.makedirs(destdir, exist_ok=True)
         for f in files:
             srcpath = os.path.join(root, f)
-            dstpath = os.path.join(topdir, f)
-            logging.info("Replacing {} with {}".format(dstpath, srcpath))
+            dstpath = os.path.join(topdir + inner_root, f)
+            logging.info("Copying {} as {}".format(srcpath, dstpath))
             os.replace(srcpath, dstpath)
-
-    # remove archive directory
-    os.rmdir(archive_dir)
+        os.rmdir(root)
 
     # done
     logging.info("Self update complete")
