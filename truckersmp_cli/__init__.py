@@ -201,7 +201,7 @@ def perform_self_update():
         os.makedirs(destdir, exist_ok=True)
         for f in files:
             srcpath = os.path.join(root, f)
-            dstpath = os.path.join(topdir + inner_root, f)
+            dstpath = os.path.join(destdir, f)
             logging.info("Copying {} as {}".format(srcpath, dstpath))
             os.replace(srcpath, dstpath)
         os.rmdir(root)
