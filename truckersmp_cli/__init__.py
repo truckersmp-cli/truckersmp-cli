@@ -186,20 +186,20 @@ def perform_self_update():
 
     # unpack the archive
     logging.info("Unpacking archive {}".format(archive_url))
-    os.chdir(os.path.dirname(Dir.scriptdir))
+    topdir = os.path.dirname(Dir.scriptdir)
     try:
         with tarfile.open(fileobj=io.BytesIO(asset_archive), mode="r:xz") as f:
-            f.extractall(".")
+            f.extractall(topdir)
     except Exception as e:
         sys.exit("Failed to unpack release asset file: {}".format(e))
 
     # update files
-    archive_dir = "truckersmp-cli-" + release
+    archive_dir = os.path.join(topdir, "truckersmp-cli-" + release)
     logging.info("Removing old 'truckersmp_cli' directory")
-    shutil.rmtree("truckersmp_cli")
+    shutil.rmtree(os.path.join(topdir, "truckersmp_cli"))
     for item in glob.iglob(archive_dir + "/*"):
         logging.info("Updating {}".format(item))
-        os.replace(item, os.path.basename(item))
+        os.replace(item, os.path.join(topdir, os.path.basename(item)))
 
     # remove archive directory
     os.rmdir(archive_dir)
