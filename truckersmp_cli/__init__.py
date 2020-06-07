@@ -149,10 +149,11 @@ class DowngradeHTMLParser(html.parser.HTMLParser):
 
 def perform_self_update():
     """
-    Update files to latest release.
+    Update files to latest release. Do nothing for Python package.
 
-    This function retrieves the URL to latest GitHub release asset (.tar.xz)
-    and replaces existing files with extracted files.
+    This function checks the latest GitHub release first.
+    If local version is not up-to-date, this function retrieves the URL to latest
+    GitHub release asset (.tar.xz) and replaces existing files with extracted files.
     """
     # we don't update when Python package is used
     try:
@@ -174,7 +175,7 @@ def perform_self_update():
         logging.info("Already up-to-date.")
         return
 
-    # download the release asset
+    # retrieve the release asset
     archive_url = URL.rel_tarxz_tmpl.format(release)
     logging.info("Retrieving release asset {}".format(archive_url))
     try:
