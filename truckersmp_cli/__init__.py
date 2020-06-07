@@ -6,7 +6,6 @@ Licensed under MIT.
 
 import argparse
 import ctypes
-import glob
 import hashlib
 import html.parser
 import http.client
@@ -197,9 +196,17 @@ def perform_self_update():
     archive_dir = os.path.join(topdir, "truckersmp-cli-" + release)
     logging.info("Removing old 'truckersmp_cli' directory")
     shutil.rmtree(os.path.join(topdir, "truckersmp_cli"))
-    for item in glob.iglob(archive_dir + "/*"):
-        logging.info("Updating {}".format(item))
-        os.replace(item, os.path.join(topdir, os.path.basename(item)))
+    for root, dirs, files in os.walk(archive_dir):
+        for d in dirs:
+            srcpath = os.path.join(root, d)
+            dstpath = os.path.join(topdir, d)
+            logging.info("Replacing {} with {}".format(dstpath, srcpath))
+            os.replace(srcpath, dstpath)
+        for f in files:
+            srcpath = os.path.join(root, f)
+            dstpath = os.path.join(topdir, f)
+            logging.info("Replacing {} with {}".format(dstpath, srcpath))
+            os.replace(srcpath, dstpath)
 
     # remove archive directory
     os.rmdir(archive_dir)
