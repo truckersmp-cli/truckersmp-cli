@@ -943,7 +943,7 @@ When using standard Wine you should start the windows version of Steam first.
       action="store_true")
     ap.add_argument(
       "--self-update",
-      help="""update files to the latest release.
+      help="""update files to the latest release and quit.
               Note: Python package users should use pip instead""",
       action="store_true")
     ap.add_argument(
