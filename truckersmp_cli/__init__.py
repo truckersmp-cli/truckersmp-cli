@@ -151,7 +151,7 @@ def perform_self_update():
     Update files to latest release. Do nothing for Python package.
 
     This function checks the latest GitHub release first.
-    If local version is not up-to-date, this function retrieves the URL to latest
+    If local version is not up-to-date, this function retrieves the latest
     GitHub release asset (.tar.xz) and replaces existing files with extracted files.
     """
     # we don't update when Python package is used
@@ -194,7 +194,7 @@ def perform_self_update():
 
     # update files
     archive_dir = os.path.join(topdir, "truckersmp-cli-" + release)
-    for root, dirs, files in os.walk(archive_dir, topdown=False):
+    for root, _dirs, files in os.walk(archive_dir, topdown=False):
         inner_root = root[len(archive_dir):]
         destdir = topdir + inner_root
         logging.debug("Creating directory {}".format(destdir))
@@ -938,7 +938,7 @@ When using standard Wine you should start the windows version of Steam first.
       action="store_true")
     ap.add_argument(
       "--self-update",
-      help="""update files to the latest release and quit.
+      help="""update files to the latest release and quit
               Note: Python package users should use pip instead""",
       action="store_true")
     ap.add_argument(
