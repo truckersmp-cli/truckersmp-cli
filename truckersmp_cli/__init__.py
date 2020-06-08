@@ -44,16 +44,19 @@ except ImportError:
 class URL:
     """URLs."""
 
+    project = "https://github.com/lhark/truckersmp-cli"
     dlurl = "download.ets2mp.com"
     dlurlalt = "failover.truckersmp.com"
     listurl = "https://update.ets2mp.com/files.json"
-    issueurl = "https://github.com/lhark/truckersmp-cli/issues"
     steamcmdurl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
     raw_github = "raw.githubusercontent.com"
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
     truckersmp_api = "https://api.truckersmp.com/v2/version"
     truckersmp_stats = "https://stats.truckersmp.com"
     truckersmp_downgrade_help = "https://truckersmp.com/kb/26"
+    issueurl = project + "/issues"
+    release = project + "/raw/master/RELEASE"
+    rel_tarxz_tmpl = project + "/releases/download/{0}/truckersmp-cli-{0}.tar.xz"
 
 
 class Dir:
@@ -141,6 +144,70 @@ class DowngradeHTMLParser(html.parser.HTMLParser):
     def data(self):
         """Return downgrade information."""
         return self._data
+
+
+def perform_self_update():
+    """
+    Update files to latest release. Do nothing for Python package.
+
+    This function checks the latest GitHub release first.
+    If local version is not up-to-date, this function retrieves the latest
+    GitHub release asset (.tar.xz) and replaces existing files with extracted files.
+    """
+    # we don't update when Python package is used
+    try:
+        with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f:
+            current_release = f.readline().rstrip()
+    except Exception:
+        sys.exit("'RELEASE' file doesn't exist. Self update aborted.")
+
+    # get latest release
+    logging.info("Retrieving RELEASE from master")
+    try:
+        with urllib.request.urlopen(URL.release) as f:
+            release = f.readline().rstrip().decode("ascii")
+    except Exception as e:
+        sys.exit("Failed to retrieve RELEASE file: {}".format(e))
+
+    # do nothing if the installed version is latest
+    if release == current_release:
+        logging.info("Already up-to-date.")
+        return
+
+    # retrieve the release asset
+    archive_url = URL.rel_tarxz_tmpl.format(release)
+    logging.info("Retrieving release asset {}".format(archive_url))
+    try:
+        with urllib.request.urlopen(archive_url) as f:
+            asset_archive = f.read()
+    except Exception as e:
+        sys.exit("Failed to retrieve release asset file: {}".format(e))
+
+    # unpack the archive
+    logging.info("Unpacking archive {}".format(archive_url))
+    topdir = os.path.dirname(Dir.scriptdir)
+    try:
+        with tarfile.open(fileobj=io.BytesIO(asset_archive), mode="r:xz") as f:
+            f.extractall(topdir)
+    except Exception as e:
+        sys.exit("Failed to unpack release asset file: {}".format(e))
+
+    # update files
+    archive_dir = os.path.join(topdir, "truckersmp-cli-" + release)
+    for root, _dirs, files in os.walk(archive_dir, topdown=False):
+        inner_root = root[len(archive_dir):]
+        destdir = topdir + inner_root
+        logging.debug("Creating directory {}".format(destdir))
+        os.makedirs(destdir, exist_ok=True)
+        for f in files:
+            srcpath = os.path.join(root, f)
+            dstpath = os.path.join(destdir, f)
+            logging.info("Copying {} as {}".format(srcpath, dstpath))
+            os.replace(srcpath, dstpath)
+        os.rmdir(root)
+
+    # done
+    logging.info("Self update complete")
 
 
 def check_libsdl2():
@@ -463,23 +530,6 @@ def start_with_wine():
 
 def update_mod():
     """Download missing or outdated "multiplayer mod" files."""
-    # update the script itself when origin/master is checked out
-    try:
-        out = subproc.check_output(
-          ["git", "-C", Dir.scriptdir,
-           "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"])
-        if out == b"origin/master\n":
-            logging.debug(
-              "This script is checked out with git, upstream is origin/master")
-            logging.debug("Running git pull")
-            subproc.check_call(
-              ["git", "-C", Dir.scriptdir, "pull"],
-              stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
-        else:
-            raise Exception
-    except Exception:
-        logging.debug("Better not to do self update")
-
     if not os.path.isdir(args.moddir):
         logging.debug("Creating directory {}".format(args.moddir))
         os.makedirs(args.moddir, exist_ok=True)
@@ -887,6 +937,11 @@ When using standard Wine you should start the windows version of Steam first.
               using/testing DXVK in singleplayer, etc.""",
       action="store_true")
     ap.add_argument(
+      "--self-update",
+      help="""update files to the latest release and quit
+              Note: Python package users should use pip instead""",
+      action="store_true")
+    ap.add_argument(
       "--version",
       help="""print version information and quit""",
       action="store_true")
@@ -954,6 +1009,11 @@ def main():
         file_handler = logging.FileHandler(args.logfile, mode="w")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
+    # self update
+    if args.self_update:
+        perform_self_update()
+        sys.exit()
 
     # fallback to old local folder
     if not args.moddir:
