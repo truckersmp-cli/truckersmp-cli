@@ -920,7 +920,7 @@ When using standard Wine you should start the windows version of Steam first.
       help="use OpenGL-based D3D11 instead of DXVK when using Proton",
       action="store_true")
     ap.add_argument(
-      "--enable-d3d11",
+      "-d", "--enable-d3d11",
       help="use Direct3D 11 instead of OpenGL",
       action="store_true")
     ap.add_argument(
