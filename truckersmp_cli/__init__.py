@@ -928,7 +928,7 @@ When using standard Wine you should start the windows version of Steam first.
       help="disable Steam Overlay when using Proton",
       action="store_true")
     ap.add_argument(
-      "--beta", metavar="VERSION", type=str,
+      "-b", "--beta", metavar="VERSION", type=str,
       help="""set game version to VERSION,
               useful for downgrading (e.g. "temporary_1_35")""")
     ap.add_argument(
