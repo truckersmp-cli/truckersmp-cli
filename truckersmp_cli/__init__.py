@@ -911,7 +911,7 @@ When using standard Wine you should start the windows version of Steam first.
       help="""choose a different directory for the prefix
               [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix]""")
     ap.add_argument(
-      "-c", "--activate-native-d3dcompiler-47",
+      "--activate-native-d3dcompiler-47",
       help="""activate native 64-bit d3dcompiler_47.dll when starting
               (Needed for D3D11 renderer)""",
       action="store_true")
