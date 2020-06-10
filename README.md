@@ -38,7 +38,7 @@ Short option|Long option|Description
 `-o DIR`|`--protondir DIR`|Choose a different Proton directory [Default: $XDG_DATA_HOME/truckersmp-cli/Proton]
 `-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended [Default: Empty string (only stderr)] Note: Messages from Steam/steamcmd won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
 `-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]
-`-c`|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
+(Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
 (Not available)|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
@@ -67,7 +67,7 @@ Version|AppId
     * DXVK 1.4.6 or newer is needed because older versions have rendering issue. If you're using Proton, use 4.11-10 or newer.
 * **Windows native 64-bit `d3dcompiler_47.dll` is needed.** This is not needed for singleplayer.
     * Without native DLL, TruckersMP login screen will not be shown.
-    * When `-c`(`--activate-native-d3dcompiler-47`) is specified with `-s`(`--start`), `truckersmp-cli` downloads/activates the DLL.
+    * When `--activate-native-d3dcompiler-47` is specified with `-s`(`--start`), `truckersmp-cli` downloads/activates the DLL.
     * Once the DLL is activated, no need to specify `-c` option again.
 * Proton uses DXVK by default.
     * When using Proton, wined3d can be used by specifying `--use-wined3d`, but it's not recommended because this is slower than OpenGL.
