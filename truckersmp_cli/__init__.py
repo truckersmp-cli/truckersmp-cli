@@ -844,34 +844,18 @@ When using standard Wine you should start the windows version of Steam first.
       "-a", "--ats",
       help="use American Truck Simulator", action="store_true")
     ap.add_argument(
+      "-b", "--beta", metavar="VERSION", type=str,
+      help="""set game version to VERSION,
+              useful for downgrading (e.g. "temporary_1_35")""")
+    ap.add_argument(
+      "-d", "--enable-d3d11",
+      help="use Direct3D 11 instead of OpenGL",
+      action="store_true")
+    ap.add_argument(
       "-e", "--ets2",
       help="""use Euro Truck Simulator 2
               [Default if neither ATS or ETS2 are specified] """,
       action="store_true")
-    ap.add_argument(
-      "-p", "--proton",
-      help="""start the game with Proton
-              [Default on Linux if neither Proton or Wine are specified] """,
-      action="store_true")
-    ap.add_argument(
-      "-w", "--wine",
-      help="""start the game with Wine
-              [Default on other systems if neither Proton or Wine are specified]""",
-      action="store_true")
-    ap.add_argument(
-      "-s", "--start",
-      help="""start the game
-              [Default if neither start or update are specified]""",
-      action="store_true")
-    ap.add_argument(
-      "-u", "--update",
-      help="""update the game
-              [Default if neither start or update are specified]""",
-      action="store_true")
-    ap.add_argument(
-      "-v", "--verbose",
-      help="verbose output (none:error, once:info, twice or more:debug)",
-      action="count")
     ap.add_argument(
       "-g", "--gamedir", metavar="DIR", type=str,
       help="""choose a different directory for the game files
@@ -881,6 +865,14 @@ When using standard Wine you should start the windows version of Steam first.
       default=AppId.proton[AppId.proton["default"]],
       help="""choose a different AppId for Proton (Needs an update for changes)
               [Default: {}]""".format(AppId.proton[AppId.proton["default"]]))
+    ap.add_argument(
+      "-l", "--logfile", metavar="LOG", type=str,
+      default="",
+      help="""write log into LOG, "-vv" option is recommended
+              [Default: Empty string (only stderr)]
+              Note: Messages from Steam/steamcmd won't be written,
+              only from this script (Game logs are written into
+              "My Documents/{ETS2,ATS}MP/logs/client_*.log")""")
     ap.add_argument(
       "-m", "--moddir", metavar="DIR", type=str,
       help="""choose a different directory for the mod files
@@ -899,13 +891,29 @@ When using standard Wine you should start the windows version of Steam first.
               While updating any previous version in this folder gets changed
               to the given (-i) or default Proton version""")
     ap.add_argument(
-      "-l", "--logfile", metavar="LOG", type=str,
-      default="",
-      help="""write log into LOG, "-vv" option is recommended
-              [Default: Empty string (only stderr)]
-              Note: Messages from Steam/steamcmd won't be written,
-              only from this script (Game logs are written into
-              "My Documents/{ETS2,ATS}MP/logs/client_*.log")""")
+      "-p", "--proton",
+      help="""start the game with Proton
+              [Default on Linux if neither Proton or Wine are specified] """,
+      action="store_true")
+    ap.add_argument(
+      "-s", "--start",
+      help="""start the game
+              [Default if neither start or update are specified]""",
+      action="store_true")
+    ap.add_argument(
+      "-u", "--update",
+      help="""update the game
+              [Default if neither start or update are specified]""",
+      action="store_true")
+    ap.add_argument(
+      "-v", "--verbose",
+      help="verbose output (none:error, once:info, twice or more:debug)",
+      action="count")
+    ap.add_argument(
+      "-w", "--wine",
+      help="""start the game with Wine
+              [Default on other systems if neither Proton or Wine are specified]""",
+      action="store_true")
     ap.add_argument(
       "-x", "--prefixdir", metavar="DIR", type=str,
       help="""choose a different directory for the prefix
@@ -916,30 +924,22 @@ When using standard Wine you should start the windows version of Steam first.
               (Needed for D3D11 renderer)""",
       action="store_true")
     ap.add_argument(
-      "--use-wined3d",
-      help="use OpenGL-based D3D11 instead of DXVK when using Proton",
-      action="store_true")
-    ap.add_argument(
-      "-d", "--enable-d3d11",
-      help="use Direct3D 11 instead of OpenGL",
-      action="store_true")
-    ap.add_argument(
       "--disable-proton-overlay",
       help="disable Steam Overlay when using Proton",
       action="store_true")
     ap.add_argument(
-      "-b", "--beta", metavar="VERSION", type=str,
-      help="""set game version to VERSION,
-              useful for downgrading (e.g. "temporary_1_35")""")
+      "--self-update",
+      help="""update files to the latest release and quit
+              Note: Python package users should use pip instead""",
+      action="store_true")
     ap.add_argument(
       "--singleplayer",
       help="""start singleplayer game, useful for save editing,
               using/testing DXVK in singleplayer, etc.""",
       action="store_true")
     ap.add_argument(
-      "--self-update",
-      help="""update files to the latest release and quit
-              Note: Python package users should use pip instead""",
+      "--use-wined3d",
+      help="use OpenGL-based D3D11 instead of DXVK when using Proton",
       action="store_true")
     ap.add_argument(
       "--version",

@@ -23,27 +23,27 @@ When using standard Wine you should start the windows version of Steam first.
 
 Short option|Long option|Description
 ---|---|---
-`-a`|`--ats`|Use American Truck Simulator
-`-e`|`--ets2`|Use Euro Truck Simulator 2 [Default if neither ATS or ETS2 are specified]
-`-p`|`--proton`|Start the game with Proton [Default on Linux if neither Proton or Wine are specified]
-`-w`|`--wine`|Start the game with Wine [Default on other systems if neither Proton or Wine are specified]
 `-h`|`--help`|Show help
-`-s`|`--start`|Start the game [Default if neither start or update are specified]
-`-u`|`--update`|Update the game [Default if neither start or update are specified]
-`-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
+`-a`|`--ats`|Use American Truck Simulator
+`-b`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
+`-d`|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
+`-e`|`--ets2`|Use Euro Truck Simulator 2 [Default if neither ATS or ETS2 are specified]
 `-g DIR`|`--gamedir DIR`|Choose a different directory for the game files [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`]
 `-i APPID`|`--proton-appid APPID`|Choose a different AppId for Proton (Needs an update for changes)
+`-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended [Default: Empty string (only stderr)] Note: Messages from Steam/steamcmd won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
 `-m DIR`|`--moddir DIR`|Choose a different directory for the mod files [Default: `$XDG_DATA_HOME/truckersmp-cli/TruckersMP`, Fallback: `./truckersmp`]
 `-n NAME`|`--account NAME`|Steam account name to use
 `-o DIR`|`--protondir DIR`|Choose a different Proton directory [Default: $XDG_DATA_HOME/truckersmp-cli/Proton]
-`-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended [Default: Empty string (only stderr)] Note: Messages from Steam/steamcmd won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
+`-p`|`--proton`|Start the game with Proton [Default on Linux if neither Proton or Wine are specified]
+`-s`|`--start`|Start the game [Default if neither start or update are specified]
+`-u`|`--update`|Update the game [Default if neither start or update are specified]
+`-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
+`-w`|`--wine`|Start the game with Wine [Default on other systems if neither Proton or Wine are specified]
 `-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]
 (Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
-(Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
-`-d`|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
-`-b`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
 (Not available)|`--singleplayer`|Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.)
+(Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
 
 ### Proton versions and AppIds
 
