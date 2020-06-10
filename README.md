@@ -42,7 +42,7 @@ Short option|Long option|Description
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
 (Not available)|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
-(Not available)|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
+`-b`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
 (Not available)|`--singleplayer`|Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.)
 
 ### Proton versions and AppIds
