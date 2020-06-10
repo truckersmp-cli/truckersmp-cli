@@ -42,6 +42,7 @@ Short option|Long option|Description
 `-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]
 (Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
+(Not available)|`--self-update`|Update files to the latest release and quit Note: Python package users should use pip instead
 (Not available)|`--singleplayer`|Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.)
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
 
