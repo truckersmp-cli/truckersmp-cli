@@ -53,6 +53,108 @@ Version|AppId
 5.0 (Default)|[1245040](https://steamdb.info/app/1245040/)
 4.11|[1113280](https://steamdb.info/app/1113280/)
 
+## Install
+
+Just clone this repository wherever you want.
+
+## Build
+
+You can build the executable on Linux, in fact the executable provided has built on a Linux
+machine. Just install mingw-w64 and then
+
+```
+$ make
+```
+
+### bash/zsh completion
+
+If [`genzshcomp`][python-genzshcomp] is installed, `make` generates shell completion files for bash (bash-completion) and zsh.
+
+They enable tab-completion of available command-line options.
+
+#### System-wide installation
+
+Shell|System-wide search paths
+---|---
+bash|`$(pkg-config --variable=completionsdir bash-completion)` (e.g. `/usr/share/bash-completion/completions/`), `/usr/local/share/bash-completion/completions/`
+zsh|`/usr/share/zsh/site-functions/`, `/usr/local/share/zsh/site-functions/`
+
+* The bash-completion file `truckersmp-cli.bash` needs to be renamed to `truckersmp-cli`
+* Debian-based systems are using the `/usr/share/zsh/vendor-completions/` directory for zsh completions
+
+#### Per-user installation
+
+##### bash
+
+Copy `truckersmp-cli.bash` to `$XDG_DATA_HOME/bash-completion/completions/truckersmp-cli`.
+
+```
+$ mkdir -p "${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions"
+$ cp truckersmp-cli.bash "${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions/truckersmp-cli"
+```
+
+##### zsh
+
+Copy `_truckersmp-cli` to a directory that is part of `$fpath` and run `compinit`.
+
+## Runtime dependencies
+
+### Required
+
+* `python3` 3.3 (released in September 2012) or later
+* `steam` either the native Linux version in use with Proton or the Windows Steam in use with Wine
+* x86_64 version of SDL2 library
+    * `libsdl2-2.0-0` on Debian-based systems
+    * `media-libs/libsdl2` on Gentoo Linux
+    * `sdl2` on Arch Linux
+    * `SDL2` on RPM-based systems
+
+### Optional
+
+* `wine` as a possible replacement to Proton
+* `git` to clone this repo and self update the script
+* [`vdf`][python-vdf] to automatically detect the steam account with saved credentials
+
+## Buildtime dependencies
+
+### Optional
+
+* [`genzshcomp`][python-genzshcomp] to generate bash/zsh completions
+
+## Examples
+
+### Install Euro Truck Simulator 2
+
+```
+$ ./truckersmp-cli -eu -n your_steam_account
+```
+
+### Update Euro Truck Simulator 2 and start TruckersMP using Proton
+
+```
+$ ./truckersmp-cli -eusp -n your_steam_account
+```
+
+### Only start TruckersMP without updating Euro Truck Simulator 2 using Wine
+
+Note: Make sure Wine Steam is running in the same `$WINEPREFIX`!
+
+```
+$ ./truckersmp-cli -esw
+```
+
+### Using a different prefix location
+
+Note:
+* While the prefix for Wine will point directly to the prefix location,
+Proton uses a subfolder `pfx` for the actual prefix and points to the parent folder.
+* Your prefix must be 64bits, the mod is not 32bits-compatible.
+
+```
+$ ./truckersmp-cli -esp -x "/path/to/prefix"
+$ ./truckersmp-cli -esw -x "/path/to/prefix/pfx"
+```
+
 ## Rendering backends
 
 ### OpenGL
@@ -113,40 +215,6 @@ ATS|`$XDG_DATA_HOME/truckersmp-cli/American Truck Simulator/prefix/pfx/drive_c/u
 
 See [TruckersMP Knowledge Base](https://truckersmp.com/knowledge-base).
 
-## Examples
-
-### Install Euro Truck Simulator 2
-
-```
-$ ./truckersmp-cli -eu -n your_steam_account
-```
-
-### Update Euro Truck Simulator 2 and start TruckersMP using Proton
-
-```
-$ ./truckersmp-cli -eusp -n your_steam_account
-```
-
-### Only start TruckersMP without updating Euro Truck Simulator 2 using Wine
-
-Note: Make sure Wine Steam is running in the same `$WINEPREFIX`!
-
-```
-$ ./truckersmp-cli -esw
-```
-
-### Using a different prefix location
-
-Note:
-* While the prefix for Wine will point directly to the prefix location,
-Proton uses a subfolder `pfx` for the actual prefix and points to the parent folder.
-* Your prefix must be 64bits, the mod is not 32bits-compatible.
-
-```
-$ ./truckersmp-cli -esp -x "/path/to/prefix"
-$ ./truckersmp-cli -esw -x "/path/to/prefix/pfx"
-```
-
 ## Warning
 
 * Every time `steamcmd` is used the Steam client thinks every Proton game has an update with 0 Bytes.
@@ -155,74 +223,6 @@ $ ./truckersmp-cli -esw -x "/path/to/prefix/pfx"
     connections and asks for the password and the guard code at the next startup.
     This script closes all Steam processes before acting with `steamcmd` so **starting an update with a shortcut out of
     the Steam client won't work** because Steam waits for the script and the script waits for Steam.
-
-## Runtime dependencies
-
-### Required
-
-* `python3` 3.3 (released in September 2012) or later
-* `steam` either the native Linux version in use with Proton or the Windows Steam in use with Wine
-* x86_64 version of SDL2 library
-    * `libsdl2-2.0-0` on Debian-based systems
-    * `media-libs/libsdl2` on Gentoo Linux
-    * `sdl2` on Arch Linux
-    * `SDL2` on RPM-based systems
-
-### Optional
-
-* `wine` as a possible replacement to Proton
-* `git` to clone this repo and self update the script
-* [`vdf`][python-vdf] to automatically detect the steam account with saved credentials
-
-## Buildtime dependencies
-
-### Optional
-
-* [`genzshcomp`][python-genzshcomp] to generate bash/zsh completions
-
-## Install
-
-Just clone this repository wherever you want.
-
-### bash/zsh completion
-
-If [`genzshcomp`][python-genzshcomp] is installed, `make` generates shell completion files for bash (bash-completion) and zsh.
-
-They enable tab-completion of available command-line options.
-
-#### System-wide installation
-
-Shell|System-wide search paths
----|---
-bash|`$(pkg-config --variable=completionsdir bash-completion)` (e.g. `/usr/share/bash-completion/completions/`), `/usr/local/share/bash-completion/completions/`
-zsh|`/usr/share/zsh/site-functions/`, `/usr/local/share/zsh/site-functions/`
-
-* The bash-completion file `truckersmp-cli.bash` needs to be renamed to `truckersmp-cli`
-* Debian-based systems are using the `/usr/share/zsh/vendor-completions/` directory for zsh completions
-
-#### Per-user installation
-
-##### bash
-
-Copy `truckersmp-cli.bash` to `$XDG_DATA_HOME/bash-completion/completions/truckersmp-cli`.
-
-```
-$ mkdir -p "${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions"
-$ cp truckersmp-cli.bash "${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions/truckersmp-cli"
-```
-
-##### zsh
-
-Copy `_truckersmp-cli` to a directory that is part of `$fpath` and run `compinit`.
-
-## Build
-
-You can build the executable on Linux, in fact the executable provided has built on a Linux
-machine. Just install mingw-w64 and then
-
-```
-$ make
-```
 
 ## Credits
 
