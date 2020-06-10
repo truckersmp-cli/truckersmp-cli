@@ -40,7 +40,7 @@ Short option|Long option|Description
 `-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]
 (Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
-(Not available)|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
+`-d`|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
 `-b`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
 (Not available)|`--singleplayer`|Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.)
@@ -71,7 +71,7 @@ Version|AppId
     * Once the DLL is activated, no need to specify `-c` option again.
 * Proton uses DXVK by default.
     * When using Proton, wined3d can be used by specifying `--use-wined3d`, but it's not recommended because this is slower than OpenGL.
-* Used only when `--enable-d3d11` is specified.
+* Used only when `-d` or `--enable-d3d11` is specified.
 
 ## Default directories
 
