@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: '3.x'
-      - name: Generate Proton AppId list from proton.json
+      - name: Generate Proton AppID list from proton.json
         run: |
              import json
              import sys
@@ -33,7 +33,7 @@ jobs:
                  proton = json.load(f)
                  try:
                      default_is_valid = False
-                     epilog = "Proton AppId list:\n"
+                     epilog = "Proton AppID list:\n"
                      for k, v in proton.items():
                          default_mark = ""
                          if k == proton["default"]:

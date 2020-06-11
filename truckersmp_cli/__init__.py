@@ -104,7 +104,7 @@ class File:
 
 
 class AppId:
-    """Steam AppIds."""
+    """Steam AppIDs."""
 
     game = {
         "ats":          270880,        # https://steamdb.info/app/270880/
@@ -678,20 +678,20 @@ def update_game():
     # see https://github.com/lhark/truckersmp-cli/issues/43
     steamcmd = os.path.join(Dir.steamcmddir, "steamcmd.sh")
     if not os.path.isfile(steamcmd):
-        logging.debug("Downloading steamcmd")
+        logging.debug("Downloading SteamCMD")
         os.makedirs(Dir.steamcmddir, exist_ok=True)
         try:
             with urllib.request.urlopen(URL.steamcmdurl) as f:
                 steamcmd_targz = f.read()
         except Exception as e:
-            sys.exit("Failed to download steamcmd: {}".format(e))
+            sys.exit("Failed to download SteamCMD: {}".format(e))
         with tarfile.open(fileobj=io.BytesIO(steamcmd_targz), mode="r:gz") as f:
             f.extractall(Dir.steamcmddir)
-    logging.info("Steamcmd: " + steamcmd)
+    logging.info("SteamCMD: " + steamcmd)
 
     # download/update Proton
     if args.proton:
-        logging.debug("Updating Proton (AppId:{})".format(args.proton_appid))
+        logging.debug("Updating Proton (AppID:{})".format(args.proton_appid))
 
         if not os.path.isdir(args.protondir):
             logging.debug("Creating directory {}".format(args.protondir))
@@ -720,7 +720,7 @@ def update_game():
             branch = beta_branch_name
 
     # use steamcmd to update the chosen game
-    logging.debug("Updating Game (AppId:{})".format(args.steamid))
+    logging.debug("Updating Game (AppID:{})".format(args.steamid))
     logging.info("""Command:
   {}
     +@sSteamCmdForcePlatformType windows
@@ -809,7 +809,7 @@ Need to download (-u) Proton?""".format(args.protondir))
             sys.exit("Need the steam account name (-n name) to update.")
 
     # info
-    logging.info("AppId/GameId: {} ({})".format(args.steamid, game))
+    logging.info("AppID/GameID: {} ({})".format(args.steamid, game))
     logging.info("Game directory: " + args.gamedir)
     logging.info("Prefix: " + args.prefixdir)
     if args.proton:
@@ -819,18 +819,20 @@ Need to download (-u) Proton?""".format(args.protondir))
 def create_arg_parser():
     """Create ArgumentParser for this program."""
     desc = """
-truckersmp-cli is an easy to use script to download TruckersMP and start
-the game afterwards.
-It can install and update the windows version of
-American Truck Simulator (-a, --ats) or Euro Truck Simulator 2 (-e, --ets2)
-with steamcmd (-u, --update) and handles starting (-s, --start) the mod
-through Proton aka. Steam Play (-p, --proton) or Wine (-w, --wine).
-It needs a working Steam installation for starting through Proton or to update
-the game files. It will stop all running Steam processes while updating to
-prevent Steam asking for password and guard code at the next startup.
-When using standard Wine you should start the windows version of Steam first.
+A simple launcher for TruckersMP to play ATS or ETS2 in multiplayer.
+
+truckersmp-cli allows to download TruckersMP and handles starting TruckersMP through
+Wine while supporting the Windows versions of American Truck Simulator and
+Euro Truck Simulator 2. There should be the Windows version of Steam already running
+in the same WINEPREFIX.
+
+On Linux it's possible to install and update the game's Windows versions automatically
+through SteamCMD and starting TruckersMP through Proton. While updating all running
+Steam processes will be stopped to prevent Steam from asking for password and
+guard code at Steam's next startup. A working native Steam installation is needed
+for starting through Proton.
 """
-    epilog = "Proton AppId list:\n"
+    epilog = "Proton AppID list:\n"
     for k, v in AppId.proton.items():
         default_mark = ""
         if k == AppId.proton["default"]:
@@ -863,14 +865,14 @@ When using standard Wine you should start the windows version of Steam first.
     ap.add_argument(
       "-i", "--proton-appid", metavar="APPID", type=int,
       default=AppId.proton[AppId.proton["default"]],
-      help="""choose a different AppId for Proton (Needs an update for changes)
+      help="""choose a different AppID for Proton (Needs an update for changes)
               [Default: {}]""".format(AppId.proton[AppId.proton["default"]]))
     ap.add_argument(
       "-l", "--logfile", metavar="LOG", type=str,
       default="",
       help="""write log into LOG, "-vv" option is recommended
               [Default: Empty string (only stderr)]
-              Note: Messages from Steam/steamcmd won't be written,
+              Note: Messages from Steam/SteamCMD won't be written,
               only from this script (Game logs are written into
               "My Documents/{ETS2,ATS}MP/logs/client_*.log")""")
     ap.add_argument(
@@ -957,8 +959,8 @@ def main():
     locale.setlocale(locale.LC_MESSAGES, "")
     locale.setlocale(locale.LC_TIME, "C")
 
-    # load Proton AppId info from "proton.json":
-    #     {"X.Y": AppId, ... , "default": "X.Y"}
+    # load Proton AppID info from "proton.json":
+    #     {"X.Y": AppID, ... , "default": "X.Y"}
     # example:
     #     {"5.0": 1245040, "4.11": 1113280, "default": "5.0"}
     try:
