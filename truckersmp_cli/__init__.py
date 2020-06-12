@@ -492,21 +492,46 @@ def start_with_wine():
     if args.activate_native_d3dcompiler_47:
         activate_native_d3dcompiler_47(args.prefixdir, wine)
 
-    print("""
-    ###################################################################
-    #                                                                 #
-    #  Please check wine steam is running or the launcher won't work  #
-    #                                                                 #
-    ###################################################################
-
-    Press enter if you are good to go: """, end="")
-    sys.stdin.readline()
-
     env = os.environ.copy()
     env["WINEDEBUG"] = "-all"
     env["WINEARCH"] = "win64"
     env["WINEPREFIX"] = args.prefixdir
     env["WINEDLLOVERRIDES"] = "d3d11=;dxgi=" if not args.enable_d3d11 else ""
+
+    # make sure that Steam is running
+    steam_is_running = False
+    argv = (wine, "winedbg", "--command", "info process")
+    try:
+        output = subproc.check_output(argv, env=env, stderr=subproc.DEVNULL)
+        for line in output.decode("utf-8").splitlines():
+            line = line[:-1]  # strip last "'" for rindex()
+            try:
+                exename = line[line.rindex("'") + 1:]
+            except ValueError:
+                continue
+            if exename.lower().endswith("steam.exe"):
+                steam_is_running = True
+                break
+    except subproc.CalledProcessError as e:
+        sys.exit("Failed to get Wine process list: " + e.output.decode("utf-8"))
+    if not steam_is_running:
+        print("Waiting for Steam to be running...", end="")
+        sys.stdout.flush()
+        loginusers_vdf = os.path.join(args.wine_steam_dir, "config/loginusers.vdf")
+        try:
+            old_timestamp = os.stat(loginusers_vdf).st_mtime
+        except OSError:
+            old_timestamp = 0
+        while True:
+            try:
+                timestamp = os.stat(loginusers_vdf).st_mtime
+                if timestamp > old_timestamp:
+                    print("\r{}".format(" " * 70))
+                    break
+            except OSError:
+                pass
+            time.sleep(1)
+
     argv = [wine, ]
     if args.singleplayer:
         exename = "eurotrucks2.exe" if args.ets2 else "amtrucks.exe"
@@ -764,6 +789,11 @@ def check_args_errors():
     if not args.gamedir:
         args.gamedir = Dir.default_gamedir[game]
 
+    # default Steam directory for Wine
+    if not args.wine_steam_dir:
+        args.wine_steam_dir = os.path.join(
+          args.prefixdir, "dosdevices/c:/Program Files (x86)/Steam")
+
     # checks for starting
     if args.start:
         # make sure proton and wine aren't chosen at the same time
@@ -943,6 +973,10 @@ for starting through Proton.
       "--use-wined3d",
       help="use OpenGL-based D3D11 instead of DXVK when using Proton",
       action="store_true")
+    ap.add_argument(
+      "--wine-steam-dir", metavar="DIR", type=str,
+      help="""choose a directory for Windows version of Steam
+              [Default: "C:\\Program Files (x86)\\Steam" in the prefix]""")
     ap.add_argument(
       "--version",
       help="""print version information and quit""",
