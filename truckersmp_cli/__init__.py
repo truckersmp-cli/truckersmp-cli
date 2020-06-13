@@ -367,26 +367,41 @@ def activate_native_d3dcompiler_47(prefix, wine):
       env=env)
 
 
-def start_with_proton():
-    """Start game with Proton."""
-    # make sure steam is started
-    # It's probably safe to assume steam is up and running completely started
-    # when the user is logged in. On user login the timestamp in
-    # [steam installation directory]/config/loginusers.vdf gets updated.
-    # We can detect the timestamp update with comparing timestamps.
+def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
+    """
+    Wait for Steam to be running.
+
+    If use_proton is True, this function also detects
+    the Steam installation directory for Proton and returns it.
+
+    On user login the timestamp in
+    [steam installation directory]/config/loginusers.vdf gets updated.
+    We can detect the timestamp update with comparing timestamps.
+
+    use_proton: True if Proton is used, False if Wine is used
+    loginvdf_paths: loginusers.vdf paths
+    wine: Wine command (path or name)
+         (can be None if use_proton is True)
+    env: A dictionary that contains environment variables
+         (can be None if use_proton is True)
+    """
+    steamdir = None
     loginusers_timestamps = []
-    for path in File.loginusers_paths:
+    for path in loginvdf_paths:
         try:
             st = os.stat(path)
             loginusers_timestamps.append(st.st_mtime)
         except OSError:
             loginusers_timestamps.append(0)
-    try:
-        subproc.check_call(
-          ["pgrep", "-u", getuser(), "-x", "steam"], stdout=subproc.DEVNULL)
-    except Exception:
-        logging.debug("Starting Steam…")
-        subproc.Popen(["nohup", "steam"], stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
+    if not check_steam_process(use_proton=use_proton, wine=wine, env=env):
+        logging.debug("Starting Steam...")
+        if use_proton:
+            subproc.Popen(
+              ("nohup", "steam"), stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
+        else:
+            subproc.Popen(
+              ("nohup", wine, os.path.join(args.wine_steam_dir, "steam.exe")),
+              env=env, stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
         waittime = 99
         while waittime > 0:
             print(ngettext(
@@ -395,7 +410,7 @@ def start_with_proton():
               waittime).format(waittime), end="")
             time.sleep(1)
             waittime -= 1
-            for i, path in enumerate(File.loginusers_paths):
+            for i, path in enumerate(loginvdf_paths):
                 try:
                     st = os.stat(path)
                     if st.st_mtime > loginusers_timestamps[i]:
@@ -403,7 +418,7 @@ def start_with_proton():
                         logging.debug(
                           "Steam should now be up and running and the user logged in.")
                         steamdir = os.path.dirname(
-                          os.path.dirname(File.loginusers_paths[i]))
+                          os.path.dirname(loginvdf_paths[i]))
                         break
                 except OSError:
                     pass
@@ -414,18 +429,65 @@ def start_with_proton():
             # waited 99 seconds without detecting timestamp change
             print("\r{}".format(" " * 70))
             logging.debug("Steam should be up now.")
-            # could not detect steam installation directory
-            # fallback to $XDG_DATA_HOME/Steam
-            steamdir = os.path.join(Dir.XDG_DATA_HOME, "Steam")
+            if use_proton:
+                # could not detect steam installation directory
+                # fallback to $XDG_DATA_HOME/Steam
+                steamdir = os.path.join(Dir.XDG_DATA_HOME, "Steam")
     else:
         # Steam is running
-        # detect most recently updated "loginusers.vdf" file
         logging.debug("Steam is running")
-        max_mtime = max(loginusers_timestamps)
-        for i, path in enumerate(File.loginusers_paths):
-            if loginusers_timestamps[i] == max_mtime:
-                steamdir = os.path.dirname(os.path.dirname(File.loginusers_paths[i]))
-                break
+        if use_proton:
+            # detect most recently updated "loginusers.vdf" file
+            max_mtime = max(loginusers_timestamps)
+            for i, path in enumerate(loginvdf_paths):
+                if loginusers_timestamps[i] == max_mtime:
+                    steamdir = os.path.dirname(os.path.dirname(loginvdf_paths[i]))
+                    break
+    return steamdir
+
+
+def check_steam_process(use_proton, wine=None, env=None):
+    """
+    Check whether Steam client is already running.
+
+    If Steam is running, this function returns True.
+    Otherwise this returns False.
+
+    use_proton: True if Proton is used, False if Wine is used
+    wine: Wine command (path or name)
+         (can be None if use_proton is True)
+    env: A dictionary that contains environment variables
+         (can be None if use_proton is True)
+    """
+    if use_proton:
+        try:
+            subproc.check_call(
+              ("pgrep", "-u", getuser(), "-x", "steam"), stdout=subproc.DEVNULL)
+            return True
+        except Exception:
+            return False
+    else:
+        steam_is_running = False
+        argv = (wine, "winedbg", "--command", "info process")
+        try:
+            output = subproc.check_output(argv, env=env, stderr=subproc.DEVNULL)
+            for line in output.decode("utf-8").splitlines():
+                line = line[:-1]  # strip last "'" for rindex()
+                try:
+                    exename = line[line.rindex("'") + 1:]
+                except ValueError:
+                    continue
+                if exename.lower().endswith("steam.exe"):
+                    steam_is_running = True
+                    break
+        except subproc.CalledProcessError as e:
+            sys.exit("Failed to get Wine process list: " + e.output.decode("utf-8"))
+        return steam_is_running
+
+
+def start_with_proton():
+    """Start game with Proton."""
+    steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
     logging.info("Steam installation directory: " + steamdir)
 
     if not os.path.isdir(args.prefixdir):
@@ -492,21 +554,19 @@ def start_with_wine():
     if args.activate_native_d3dcompiler_47:
         activate_native_d3dcompiler_47(args.prefixdir, wine)
 
-    print("""
-    ###################################################################
-    #                                                                 #
-    #  Please check wine steam is running or the launcher won't work  #
-    #                                                                 #
-    ###################################################################
-
-    Press enter if you are good to go: """, end="")
-    sys.stdin.readline()
-
     env = os.environ.copy()
     env["WINEDEBUG"] = "-all"
     env["WINEARCH"] = "win64"
     env["WINEPREFIX"] = args.prefixdir
     env["WINEDLLOVERRIDES"] = "d3d11=;dxgi=" if not args.enable_d3d11 else ""
+
+    wait_for_steam(
+      use_proton=False,
+      loginvdf_paths=(os.path.join(args.wine_steam_dir, "config/loginusers.vdf"), ),
+      wine=wine,
+      env=env,
+    )
+
     argv = [wine, ]
     if args.singleplayer:
         exename = "eurotrucks2.exe" if args.ets2 else "amtrucks.exe"
@@ -764,6 +824,11 @@ def check_args_errors():
     if not args.gamedir:
         args.gamedir = Dir.default_gamedir[game]
 
+    # default Steam directory for Wine
+    if not args.wine_steam_dir:
+        args.wine_steam_dir = os.path.join(
+          args.prefixdir, "dosdevices/c:/Program Files (x86)/Steam")
+
     # checks for starting
     if args.start:
         # make sure proton and wine aren't chosen at the same time
@@ -943,6 +1008,10 @@ for starting through Proton.
       "--use-wined3d",
       help="use OpenGL-based D3D11 instead of DXVK when using Proton",
       action="store_true")
+    ap.add_argument(
+      "--wine-steam-dir", metavar="DIR", type=str,
+      help="""choose a directory for Windows version of Steam
+              [Default: "C:\\Program Files (x86)\\Steam" in the prefix]""")
     ap.add_argument(
       "--version",
       help="""print version information and quit""",

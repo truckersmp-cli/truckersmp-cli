@@ -33,6 +33,7 @@ Short option|Long option|Description
 (Not available)|`--self-update`|Update files to the latest release and quit
 (Not available)|`--singleplayer`|Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.)
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
+(Not available)|`--wine-steam-dir`|Choose a directory for Windows version of Steam [Default: `C:\Program Files (x86)\Steam` in the prefix]
 (Not available)|`--version`|Print version information and quit
 
 ### Proton versions and AppIDs
