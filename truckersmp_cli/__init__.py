@@ -367,6 +367,45 @@ def activate_native_d3dcompiler_47(prefix, wine):
       env=env)
 
 
+def check_steam_process(use_proton, wine=None, env=None):
+    """
+    Check whether Steam client is already running.
+
+    If Steam is running, this function returns True.
+    Otherwise this returns False.
+
+    use_proton: True if Proton is used, False if Wine is used
+    wine: Wine command (path or name)
+         (can be None if use_proton is True)
+    env: A dictionary that contains environment variables
+         (can be None if use_proton is True)
+    """
+    if use_proton:
+        try:
+            subproc.check_call(
+              ("pgrep", "-u", getuser(), "-x", "steam"), stdout=subproc.DEVNULL)
+            return True
+        except Exception:
+            return False
+    else:
+        steam_is_running = False
+        argv = (wine, "winedbg", "--command", "info process")
+        try:
+            output = subproc.check_output(argv, env=env, stderr=subproc.DEVNULL)
+            for line in output.decode("utf-8").splitlines():
+                line = line[:-1]  # strip last "'" for rindex()
+                try:
+                    exename = line[line.rindex("'") + 1:]
+                except ValueError:
+                    continue
+                if exename.lower().endswith("steam.exe"):
+                    steam_is_running = True
+                    break
+        except subproc.CalledProcessError as e:
+            sys.exit("Failed to get Wine process list: " + e.output.decode("utf-8"))
+        return steam_is_running
+
+
 def start_with_proton():
     """Start game with Proton."""
     # make sure steam is started
@@ -381,10 +420,7 @@ def start_with_proton():
             loginusers_timestamps.append(st.st_mtime)
         except OSError:
             loginusers_timestamps.append(0)
-    try:
-        subproc.check_call(
-          ["pgrep", "-u", getuser(), "-x", "steam"], stdout=subproc.DEVNULL)
-    except Exception:
+    if not check_steam_process(use_proton=True):
         logging.debug("Starting Steam…")
         subproc.Popen(["nohup", "steam"], stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
         waittime = 99
@@ -499,22 +535,7 @@ def start_with_wine():
     env["WINEDLLOVERRIDES"] = "d3d11=;dxgi=" if not args.enable_d3d11 else ""
 
     # make sure that Steam is running
-    steam_is_running = False
-    argv = (wine, "winedbg", "--command", "info process")
-    try:
-        output = subproc.check_output(argv, env=env, stderr=subproc.DEVNULL)
-        for line in output.decode("utf-8").splitlines():
-            line = line[:-1]  # strip last "'" for rindex()
-            try:
-                exename = line[line.rindex("'") + 1:]
-            except ValueError:
-                continue
-            if exename.lower().endswith("steam.exe"):
-                steam_is_running = True
-                break
-    except subproc.CalledProcessError as e:
-        sys.exit("Failed to get Wine process list: " + e.output.decode("utf-8"))
-    if not steam_is_running:
+    if not check_steam_process(use_proton=False, wine=wine, env=env):
         print("Waiting for Steam to be running...", end="")
         sys.stdout.flush()
         loginusers_vdf = os.path.join(args.wine_steam_dir, "config/loginusers.vdf")
