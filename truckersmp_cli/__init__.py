@@ -367,6 +367,85 @@ def activate_native_d3dcompiler_47(prefix, wine):
       env=env)
 
 
+def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
+    """
+    Wait for Steam to be running.
+
+    If use_proton is True, this function also detects
+    the Steam installation directory for Proton and returns it.
+
+    On user login the timestamp in
+    [steam installation directory]/config/loginusers.vdf gets updated.
+    We can detect the timestamp update with comparing timestamps.
+
+    use_proton: True if Proton is used, False if Wine is used
+    loginvdf_paths: loginusers.vdf paths
+    wine: Wine command (path or name)
+         (can be None if use_proton is True)
+    env: A dictionary that contains environment variables
+         (can be None if use_proton is True)
+    """
+    steamdir = None
+    loginusers_timestamps = []
+    for path in loginvdf_paths:
+        try:
+            st = os.stat(path)
+            loginusers_timestamps.append(st.st_mtime)
+        except OSError:
+            loginusers_timestamps.append(0)
+    if not check_steam_process(use_proton=use_proton, wine=wine, env=env):
+        logging.debug("Starting Steam...")
+        if use_proton:
+            subproc.Popen(
+              ("nohup", "steam"), stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
+        else:
+            subproc.Popen(
+              ("nohup", wine, os.path.join(args.wine_steam_dir, "steam.exe")),
+              env=env, stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
+        waittime = 99
+        while waittime > 0:
+            print(ngettext(
+              "\rWaiting {} second for steam to start up. ",
+              "\rWaiting {} seconds for steam to start up. ",
+              waittime).format(waittime), end="")
+            time.sleep(1)
+            waittime -= 1
+            for i, path in enumerate(loginvdf_paths):
+                try:
+                    st = os.stat(path)
+                    if st.st_mtime > loginusers_timestamps[i]:
+                        print("\r{}".format(" " * 70))  # clear "Waiting..." line
+                        logging.debug(
+                          "Steam should now be up and running and the user logged in.")
+                        steamdir = os.path.dirname(
+                          os.path.dirname(loginvdf_paths[i]))
+                        break
+                except OSError:
+                    pass
+            else:
+                continue
+            break
+        else:
+            # waited 99 seconds without detecting timestamp change
+            print("\r{}".format(" " * 70))
+            logging.debug("Steam should be up now.")
+            if use_proton:
+                # could not detect steam installation directory
+                # fallback to $XDG_DATA_HOME/Steam
+                steamdir = os.path.join(Dir.XDG_DATA_HOME, "Steam")
+    else:
+        # Steam is running
+        logging.debug("Steam is running")
+        if use_proton:
+            # detect most recently updated "loginusers.vdf" file
+            max_mtime = max(loginusers_timestamps)
+            for i, path in enumerate(loginvdf_paths):
+                if loginusers_timestamps[i] == max_mtime:
+                    steamdir = os.path.dirname(os.path.dirname(loginvdf_paths[i]))
+                    break
+    return steamdir
+
+
 def check_steam_process(use_proton, wine=None, env=None):
     """
     Check whether Steam client is already running.
@@ -408,60 +487,7 @@ def check_steam_process(use_proton, wine=None, env=None):
 
 def start_with_proton():
     """Start game with Proton."""
-    # make sure steam is started
-    # It's probably safe to assume steam is up and running completely started
-    # when the user is logged in. On user login the timestamp in
-    # [steam installation directory]/config/loginusers.vdf gets updated.
-    # We can detect the timestamp update with comparing timestamps.
-    loginusers_timestamps = []
-    for path in File.loginusers_paths:
-        try:
-            st = os.stat(path)
-            loginusers_timestamps.append(st.st_mtime)
-        except OSError:
-            loginusers_timestamps.append(0)
-    if not check_steam_process(use_proton=True):
-        logging.debug("Starting Steam…")
-        subproc.Popen(["nohup", "steam"], stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
-        waittime = 99
-        while waittime > 0:
-            print(ngettext(
-              "\rWaiting {} second for steam to start up. ",
-              "\rWaiting {} seconds for steam to start up. ",
-              waittime).format(waittime), end="")
-            time.sleep(1)
-            waittime -= 1
-            for i, path in enumerate(File.loginusers_paths):
-                try:
-                    st = os.stat(path)
-                    if st.st_mtime > loginusers_timestamps[i]:
-                        print("\r{}".format(" " * 70))  # clear "Waiting..." line
-                        logging.debug(
-                          "Steam should now be up and running and the user logged in.")
-                        steamdir = os.path.dirname(
-                          os.path.dirname(File.loginusers_paths[i]))
-                        break
-                except OSError:
-                    pass
-            else:
-                continue
-            break
-        else:
-            # waited 99 seconds without detecting timestamp change
-            print("\r{}".format(" " * 70))
-            logging.debug("Steam should be up now.")
-            # could not detect steam installation directory
-            # fallback to $XDG_DATA_HOME/Steam
-            steamdir = os.path.join(Dir.XDG_DATA_HOME, "Steam")
-    else:
-        # Steam is running
-        # detect most recently updated "loginusers.vdf" file
-        logging.debug("Steam is running")
-        max_mtime = max(loginusers_timestamps)
-        for i, path in enumerate(File.loginusers_paths):
-            if loginusers_timestamps[i] == max_mtime:
-                steamdir = os.path.dirname(os.path.dirname(File.loginusers_paths[i]))
-                break
+    steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
     logging.info("Steam installation directory: " + steamdir)
 
     if not os.path.isdir(args.prefixdir):
@@ -534,24 +560,12 @@ def start_with_wine():
     env["WINEPREFIX"] = args.prefixdir
     env["WINEDLLOVERRIDES"] = "d3d11=;dxgi=" if not args.enable_d3d11 else ""
 
-    # make sure that Steam is running
-    if not check_steam_process(use_proton=False, wine=wine, env=env):
-        print("Waiting for Steam to be running...", end="")
-        sys.stdout.flush()
-        loginusers_vdf = os.path.join(args.wine_steam_dir, "config/loginusers.vdf")
-        try:
-            old_timestamp = os.stat(loginusers_vdf).st_mtime
-        except OSError:
-            old_timestamp = 0
-        while True:
-            try:
-                timestamp = os.stat(loginusers_vdf).st_mtime
-                if timestamp > old_timestamp:
-                    print("\r{}".format(" " * 70))
-                    break
-            except OSError:
-                pass
-            time.sleep(1)
+    wait_for_steam(
+      use_proton=False,
+      loginvdf_paths=(os.path.join(args.wine_steam_dir, "config/loginusers.vdf"), ),
+      wine=wine,
+      env=env,
+    )
 
     argv = [wine, ]
     if args.singleplayer:
