@@ -2,9 +2,9 @@
 
 A simple launcher for [TruckersMP][truckersmp] to play ATS or ETS2 in multiplayer.
 
-_truckersmp-cli_ allows to download TruckersMP and handles starting TruckersMP through [Wine][wine] while supporting the Windows versions of [American Truck Simulator][steam:ats] and [Euro Truck Simulator 2][steam:ets2]. There should be the [Windows version of Steam][steam:windows] already running in the same `WINEPREFIX`.
+_truckersmp-cli_ allows to download TruckersMP and handles starting TruckersMP through [Wine][wine] while supporting the Windows versions of [American Truck Simulator][steam:ats] and [Euro Truck Simulator 2][steam:ets2]. The [Windows version of Steam][steam:windows] should already be able to run in the same Wine prefix.
 
-On Linux it's possible to install and update the game's Windows versions automatically through [SteamCMD][steam:steamcmd] and starting TruckersMP through [Proton][github:proton].
+On Linux it's possible to install and update the game's Windows versions automatically through [SteamCMD][steam:steamcmd] and start TruckersMP through [Proton][github:proton].
 While updating all running Steam processes will be stopped to prevent Steam from asking for password and guard code at Steam's next startup. A working [native Steam][repology:steam] installation is needed for starting through Proton.
 
 ## Usage options
@@ -159,7 +159,10 @@ $ truckermsp-cli --ats --update --start --gamedir "/path/to/gamedir"
 ```
 $ truckersmp-cli --ets2 --start --wine
 ```
-* Make sure Steam's Windows version is already running in the same `$WINEPREFIX`!
+Make sure that
+* The Windows version of Steam is already running in the same Wine prefix **or**
+* The Windows version of Steam is installed in `C:\Program Files (x86)\Steam` in the same Wine prefix **or**
+* You're specifying the path to the Window version of Steam with `--wine-steam-dir`
 
 #### Using a different prefix location
 
