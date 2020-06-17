@@ -824,11 +824,6 @@ def check_args_errors():
     if not args.gamedir:
         args.gamedir = Dir.default_gamedir[game]
 
-    # default Steam directory for Wine
-    if not args.wine_steam_dir:
-        args.wine_steam_dir = os.path.join(
-          args.prefixdir, "dosdevices/c:/Program Files (x86)/Steam")
-
     # checks for starting
     if args.start:
         # make sure proton and wine aren't chosen at the same time
@@ -842,13 +837,18 @@ def check_args_errors():
                 logging.info("Platform is not Linux, use Wine")
                 args.wine = True
 
-        # make sure proton and wine are using the same default
-        if args.wine:
-            if (args.prefixdir == Dir.default_prefixdir["ats"]
-               or args.prefixdir == Dir.default_prefixdir["ets2"]):
-                logging.debug("""prefixdir is the default while using wine,
-make sure it uses the same folder as proton""")
-                args.prefixdir = os.path.join(args.prefixdir, "pfx")
+    # make sure proton and wine are using the same default
+    if args.wine:
+        if (args.prefixdir == Dir.default_prefixdir["ats"]
+           or args.prefixdir == Dir.default_prefixdir["ets2"]):
+            logging.debug("""Prefix directory is the default while using Wine,
+making sure it's the same directory as Proton""")
+            args.prefixdir = os.path.join(args.prefixdir, "pfx")
+
+    # default Steam directory for Wine
+    if not args.wine_steam_dir:
+        args.wine_steam_dir = os.path.join(
+          args.prefixdir, "dosdevices/c:/Program Files (x86)/Steam")
 
     # checks for starting while not updating
     if args.start and not args.update:
