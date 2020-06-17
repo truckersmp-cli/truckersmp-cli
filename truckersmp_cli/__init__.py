@@ -841,8 +841,8 @@ def check_args_errors():
     if args.wine:
         if (args.prefixdir == Dir.default_prefixdir["ats"]
            or args.prefixdir == Dir.default_prefixdir["ets2"]):
-            logging.debug("""prefixdir is the default while using wine,
-make sure it uses the same folder as proton""")
+            logging.debug("""Prefix directory is the default while using Wine,
+making sure it's the same directory as Proton""")
             args.prefixdir = os.path.join(args.prefixdir, "pfx")
 
     # default Steam directory for Wine
