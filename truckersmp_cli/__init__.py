@@ -400,7 +400,8 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
               ("nohup", "steam"), stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
         else:
             subproc.Popen(
-              ("nohup", wine, os.path.join(args.wine_steam_dir, "steam.exe")),
+              ("nohup",
+               wine, os.path.join(args.wine_steam_dir, "steam.exe"), "-no-cef-sandbox"),
               env=env, stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
         waittime = 99
         while waittime > 0:
@@ -558,7 +559,6 @@ def start_with_wine():
     env["WINEDEBUG"] = "-all"
     env["WINEARCH"] = "win64"
     env["WINEPREFIX"] = args.prefixdir
-    env["WINEDLLOVERRIDES"] = "d3d11=;dxgi=" if not args.enable_d3d11 else ""
 
     wait_for_steam(
       use_proton=False,
@@ -566,6 +566,7 @@ def start_with_wine():
       wine=wine,
       env=env,
     )
+    env["WINEDLLOVERRIDES"] = "d3d11=;dxgi=" if not args.enable_d3d11 else ""
 
     argv = [wine, ]
     if args.singleplayer:
