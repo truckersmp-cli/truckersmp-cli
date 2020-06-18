@@ -62,7 +62,7 @@ Additional information|This usually requires root permission and can interfere w
 
 ### Manual download
 
-You can get the latest pre-built release from [the release page][github:release-page] and decompress it into the desired folder. This version capable to update itself by running `--self-update` so make sure it's placed in a folder where your user has write permissions.
+You can get the latest pre-built release from [the release page][github:release-page] and decompress it into the desired folder. This version is capable to update itself by running `--self-update` so make sure it's placed in a folder where your user has write permissions.
 
 ## Build
 
