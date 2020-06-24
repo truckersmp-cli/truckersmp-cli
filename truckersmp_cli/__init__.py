@@ -660,7 +660,11 @@ def get_current_steam_user():
 
     This function depends on the package "vdf".
     """
-    for path in File.loginusers_paths:
+    loginvdf_paths = File.loginusers_paths.copy()
+    # try Wine Steam directory first when Wine is used
+    if args.wine:
+        loginvdf_paths.insert(0, os.path.join(args.wine_steam_dir, File.loginvdf_inner))
+    for path in loginvdf_paths:
         try:
             with open(path) as f:
                 login_vdf = vdf.parse(f)
