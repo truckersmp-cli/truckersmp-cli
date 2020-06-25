@@ -740,10 +740,6 @@ def update_game():
     steamcmd_prolog = ""
     steamcmd_cmd = []
     if args.proton:
-        if check_steam_process(use_proton=True):
-            logging.debug("Closing Steam")
-            subproc.call(("steam", "-shutdown"))
-
         # we don't use system SteamCMD because something goes wrong in some cases
         # see https://github.com/lhark/truckersmp-cli/issues/43
         steamcmd = os.path.join(Dir.steamcmddir, "steamcmd.sh")
@@ -804,6 +800,11 @@ def update_game():
     logging.info("SteamCMD: " + steamcmd)
 
     if args.proton:
+        # Steam needs to be closed only when using Proton
+        if check_steam_process(use_proton=True):
+            logging.debug("Closing Steam")
+            subproc.call(("steam", "-shutdown"))
+
         # download/update Proton
         os.makedirs(args.protondir, exist_ok=True)
         logging.debug("Updating Proton (AppID:{})".format(args.proton_appid))
