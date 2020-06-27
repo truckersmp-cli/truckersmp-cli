@@ -2,10 +2,12 @@
 
 A simple launcher for [TruckersMP][truckersmp] to play ATS or ETS2 in multiplayer.
 
-_truckersmp-cli_ allows to download TruckersMP and handles starting TruckersMP through [Wine][wine] while supporting the Windows versions of [American Truck Simulator][steam:ats] and [Euro Truck Simulator 2][steam:ets2]. The [Windows version of Steam][steam:windows] should already be able to run in the same Wine prefix.
+_truckersmp-cli_ allows to download TruckersMP and handles starting TruckersMP through [Wine][wine] while supporting the Windows versions of [American Truck Simulator][steam:ats] and [Euro Truck Simulator 2][steam:ets2]. The [Windows version of Steam][steam:windows] should already be able to run in the same Wine prefix. The Windows versions of games can be installed or updated via [SteamCMD][steam:steamcmd].
 
-On Linux it's possible to install and update the game's Windows versions automatically through [SteamCMD][steam:steamcmd] and start TruckersMP through [Proton][github:proton].
-While updating all running Steam processes will be stopped to prevent Steam from asking for password and guard code at Steam's next startup. A working [native Steam][repology:steam] installation is needed for starting through Proton.
+On Linux it's possible to start TruckersMP through [Proton][github:proton]. While updating all running (Linux version of) Steam processes will be stopped to prevent Steam from asking for password and guard code at Steam's next startup when Proton is used. A working [native Steam][repology:steam] installation is needed for starting through Proton.
+
+If Windows version of Steam is used with Wine, password and guard code are required once when updating games.
+
 
 ## Usage options
 
@@ -236,7 +238,7 @@ See [TruckersMP Knowledge Base][truckersmp:knowledge-base].
 
 ## Additional information
 
-* If Steam is running while SteamCMD is using the same session credentials the Steam client looses all connections and asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
+* If `-p` or `--proton` is specified and Linux version of Steam is running while SteamCMD is using the same session credentials the Steam client looses all connections and asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
 
 ## Credits
 
