@@ -749,6 +749,8 @@ def update_game():
         wine = os.environ["WINE"] if "WINE" in os.environ else "wine"
         env["WINEDEBUG"] = "-all"
         env["WINEARCH"] = "win64"
+        env_steam = env.copy()
+        env_steam["WINEPREFIX"] = args.prefixdir
         # use a prefix only for SteamCMD to avoid every-time authentication
         env["WINEPREFIX"] = Dir.steamcmdpfx
         # don't show "The Wine configuration is being updated" dialog
@@ -800,7 +802,6 @@ def update_game():
     logging.info("SteamCMD: " + steamcmd)
 
     if args.proton:
-        # Steam needs to be closed only when using Proton
         if check_steam_process(use_proton=True):
             logging.debug("Closing Steam")
             subproc.call(("steam", "-shutdown"))
@@ -820,6 +821,12 @@ def update_game():
            "+force_install_dir", args.protondir,
            "+app_update", str(args.proton_appid), "validate",
            "+quit"))
+    else:
+        if check_steam_process(use_proton=False, wine=wine, env=env_steam):
+            logging.debug("Closing Steam")
+            subproc.call(
+              (wine, os.path.join(args.wine_steam_dir, "steam.exe"), "-shutdown"),
+              env=env_steam)
 
     # determine game branch
     branch = "public"
@@ -946,8 +953,8 @@ in the same Wine prefix. The Windows versions of games can be installed or updat
 via SteamCMD.
 
 On Linux it's possible to start TruckersMP through Proton. While updating all
-running (Linux version of) Steam processes will be stopped to prevent Steam
-from asking for password and guard code at Steam's next startup when Proton is used.
+running Steam processes will be stopped to prevent Steam from asking for
+password and guard code at Steam's next startup when Proton is used.
 A working native Steam installation is needed for starting through Proton.
 
 If Windows version of Steam is used with Wine, password and guard code are
