@@ -729,6 +729,7 @@ def update_game():
     Update game and Proton via SteamCMD.
 
     We make sure Steam is closed before updating.
+    On Linux, we make sure both Windows and Linux version of Steam are closed.
     It's possible to update with the Steam client open but the client looses
     all connectivity and asks for password and Steam Guard code after restart.
 
@@ -736,9 +737,33 @@ def update_game():
     SteamCMD. When "--proton" is specified, this retrieves/uses
     Linux version of SteamCMD.
     """
-    env = os.environ.copy()
     steamcmd_prolog = ""
     steamcmd_cmd = []
+
+    env = os.environ.copy()
+    env["WINEDEBUG"] = "-all"
+    env["WINEARCH"] = "win64"
+    env_steam = env.copy()
+    if args.proton:
+        # Proton's "prefix" is for STEAM_COMPAT_DATA_PATH that contains
+        # the directory "pfx" for WINEPREFIX
+        env_steam["WINEPREFIX"] = os.path.join(args.prefixdir, "pfx")
+    else:
+        env_steam["WINEPREFIX"] = args.prefixdir
+    # use a prefix only for SteamCMD to avoid every-time authentication
+    env["WINEPREFIX"] = Dir.steamcmdpfx
+    # don't show "The Wine configuration is being updated" dialog
+    # or install Gecko/Mono
+    env["WINEDLLOVERRIDES"] = "winex11.drv="
+
+    wine = env["WINE"] if "WINE" in env else "wine"
+    os.makedirs(Dir.steamcmdpfx, exist_ok=True)
+    try:
+        subproc.check_call((wine, "--version"), stdout=subproc.DEVNULL, env=env)
+        logging.debug("Wine ({}) is available".format(wine))
+    except subproc.CalledProcessError:
+        logging.debug("Wine is not available")
+        wine = None
     if args.proton:
         # we don't use system SteamCMD because something goes wrong in some cases
         # see https://github.com/lhark/truckersmp-cli/issues/43
@@ -746,30 +771,21 @@ def update_game():
         steamcmd_url = URL.steamcmdlnx
         gamedir = args.gamedir
     else:
-        wine = os.environ["WINE"] if "WINE" in os.environ else "wine"
-        env["WINEDEBUG"] = "-all"
-        env["WINEARCH"] = "win64"
-        env_steam = env.copy()
-        env_steam["WINEPREFIX"] = args.prefixdir
-        # use a prefix only for SteamCMD to avoid every-time authentication
-        env["WINEPREFIX"] = Dir.steamcmdpfx
-        # don't show "The Wine configuration is being updated" dialog
-        # or install Gecko/Mono
-        env["WINEDLLOVERRIDES"] = "winex11.drv="
+        if not wine:
+            sys.exit("Wine ({}) is not available.".format(wine))
         steamcmd_prolog += """WINEDEBUG=-all
   WINEARCH=win64
   WINEPREFIX={}
   WINEDLLOVERRIDES=winex11.drv=
   {} """.format(Dir.steamcmdpfx, wine)
 
-        os.makedirs(Dir.steamcmdpfx, exist_ok=True)
         # steamcmd.exe uses Windows path, not UNIX path
         try:
             gamedir = subproc.check_output(
-              (wine, "winepath", "-w", args.gamedir)).decode("utf-8").rstrip()
+              (wine, "winepath", "-w", args.gamedir), env=env).decode("utf-8").rstrip()
         except Exception as e:
             sys.exit(
-                "Failed to convert game directory to Windows path: {}".format(e))
+              "Failed to convert game directory to Windows path: {}".format(e))
 
         steamcmd = os.path.join(Dir.steamcmddir, "steamcmd.exe")
         steamcmd_cmd.append(wine)
@@ -801,11 +817,18 @@ def update_game():
 
     logging.info("SteamCMD: " + steamcmd)
 
-    if args.proton:
-        if check_steam_process(use_proton=True):
-            logging.debug("Closing Steam")
-            subproc.call(("steam", "-shutdown"))
+    # Linux version of Steam
+    if platform.system() == "Linux" and check_steam_process(use_proton=True):
+        logging.debug("Closing Linux version of Steam")
+        subproc.call(("steam", "-shutdown"))
+    # Windows version of Steam
+    if wine and check_steam_process(use_proton=False, wine=wine, env=env_steam):
+        logging.debug("Closing Windows version of Steam in " + args.wine_steam_dir)
+        subproc.call(
+          (wine, os.path.join(args.wine_steam_dir, "steam.exe"), "-shutdown"),
+          env=env_steam)
 
+    if args.proton:
         # download/update Proton
         os.makedirs(args.protondir, exist_ok=True)
         logging.debug("Updating Proton (AppID:{})".format(args.proton_appid))
@@ -821,12 +844,6 @@ def update_game():
            "+force_install_dir", args.protondir,
            "+app_update", str(args.proton_appid), "validate",
            "+quit"))
-    else:
-        if check_steam_process(use_proton=False, wine=wine, env=env_steam):
-            logging.debug("Closing Steam")
-            subproc.call(
-              (wine, os.path.join(args.wine_steam_dir, "steam.exe"), "-shutdown"),
-              env=env_steam)
 
     # determine game branch
     branch = "public"
@@ -908,7 +925,9 @@ making sure it's the same directory as Proton""")
     # default Steam directory for Wine
     if not args.wine_steam_dir:
         args.wine_steam_dir = os.path.join(
-          args.prefixdir, "dosdevices/c:/Program Files (x86)/Steam")
+          args.prefixdir,
+          "" if args.wine else "pfx",
+          "dosdevices/c:/Program Files (x86)/Steam")
 
     # checks for starting while not updating
     if args.start and not args.update:
