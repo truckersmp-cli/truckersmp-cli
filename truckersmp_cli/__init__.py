@@ -473,8 +473,10 @@ def check_steam_process(use_proton, wine=None, env=None):
     else:
         steam_is_running = False
         argv = (wine, "winedbg", "--command", "info process")
+        env_wine = env.copy()
+        env_wine["WINEDLLOVERRIDES"] = "winex11.drv="
         try:
-            output = subproc.check_output(argv, env=env, stderr=subproc.DEVNULL)
+            output = subproc.check_output(argv, env=env_wine, stderr=subproc.DEVNULL)
             for line in output.decode("utf-8").splitlines():
                 line = line[:-1]  # strip last "'" for rindex()
                 try:
