@@ -840,12 +840,15 @@ def update_game():
     +force_install_dir {}
     +app_update {} validate
     +quit""".format(steamcmd, args.account, args.protondir, args.proton_appid))
-        subproc.call(
-          (steamcmd,
-           "+login", args.account,
-           "+force_install_dir", args.protondir,
-           "+app_update", str(args.proton_appid), "validate",
-           "+quit"))
+        try:
+            subproc.check_call(
+              (steamcmd,
+               "+login", args.account,
+               "+force_install_dir", args.protondir,
+               "+app_update", str(args.proton_appid), "validate",
+               "+quit"))
+        except subproc.CalledProcessError:
+            sys.exit("SteamCMD exited abnormally")
 
     # determine game branch
     branch = "public"
@@ -878,7 +881,10 @@ def update_game():
         "validate",
         "+quit",
     ]
-    subproc.call(steamcmd_cmd + steamcmd_args, env=env)
+    try:
+        subproc.check_call(steamcmd_cmd + steamcmd_args, env=env)
+    except subproc.CalledProcessError:
+        sys.exit("SteamCMD exited abnormally")
 
 
 def check_args_errors():
