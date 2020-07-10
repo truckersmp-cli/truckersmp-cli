@@ -973,19 +973,19 @@ def create_arg_parser():
     desc = """
 A simple launcher for TruckersMP to play ATS or ETS2 in multiplayer.
 
-truckersmp-cli allows to download TruckersMP and handles starting TruckersMP through
-Wine while supporting the Windows versions of American Truck Simulator and
-Euro Truck Simulator 2. The Windows version of Steam should already be able to run
-in the same Wine prefix. The Windows versions of games can be installed or updated
-via SteamCMD.
+truckersmp-cli allows to download TruckersMP and handles starting TruckersMP
+through Wine while supporting the Windows versions of
+American Truck Simulator and Euro Truck Simulator 2.
 
-On Linux it's possible to start TruckersMP through Proton. While updating all
-running Steam processes will be stopped to prevent Steam from asking for
-password and guard code at Steam's next startup when Proton is used.
-A working native Steam installation is needed for starting through Proton.
+The Windows version of Steam should already be able to run in the same
+Wine prefix. The Windows versions of ATS and ETS2 can be installed and updated
+via SteamCMD while all running Steam processes will be stopped
+to prevent Steam from loosing connection. Your Steam password
+and guard code are required by SteamCMD once for this to work.
 
-If Windows version of Steam is used with Wine, password and guard code are
-required once when updating games.
+On Linux it's possible to start TruckersMP through Proton.
+A working native Steam installation is needed for this.
+SteamCMD can use your saved credentials for convenience.
 """
     epilog = "Proton AppID list:\n"
     for k, v in AppId.proton.items():
