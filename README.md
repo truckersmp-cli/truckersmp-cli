@@ -238,7 +238,7 @@ See [TruckersMP Knowledge Base][truckersmp:knowledge-base].
 
 ## Additional information
 
-* If `-p` or `--proton` is specified and Linux version of Steam is running while SteamCMD is using the same session credentials the Steam client looses all connections and asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
+* If Steam is running while SteamCMD is being used the Steam client looses all connections and maybe asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
 
 ## Credits
 
