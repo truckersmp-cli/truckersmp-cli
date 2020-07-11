@@ -571,7 +571,10 @@ def start_with_wine():
       wine=wine,
       env=env,
     )
-    env["WINEDLLOVERRIDES"] = "d3d11=;dxgi=" if not args.enable_d3d11 else ""
+    if "WINEDLLOVERRIDES" not in env:
+        env["WINEDLLOVERRIDES"] = ""
+    if not args.enable_d3d11:
+        env["WINEDLLOVERRIDES"] += ";d3d11=;dxgi="
 
     argv = [wine, ]
     if args.singleplayer:
