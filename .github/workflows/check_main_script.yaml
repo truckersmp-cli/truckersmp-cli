@@ -1,4 +1,4 @@
-name: Main script
+name: Main scripts
 
 on:
   push:
@@ -9,6 +9,9 @@ on:
       - .github/workflows/check_main_script.yaml
       - truckersmp-cli
       - truckersmp_cli/__init__.py
+      - truckersmp_cli/downloads.py
+      - truckersmp_cli/utils.py
+      - truckersmp_cli/variables.py
   pull_request:
     branches:
       - master
@@ -17,10 +20,13 @@ on:
       - .github/workflows/check_main_script.yaml
       - truckersmp-cli
       - truckersmp_cli/__init__.py
+      - truckersmp_cli/downloads.py
+      - truckersmp_cli/utils.py
+      - truckersmp_cli/variables.py
 
 jobs:
   check_by_flake8:
-    name: Check main script by flake8
+    name: Check main scripts by flake8
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -33,3 +39,9 @@ jobs:
         run: flake8 --max-line-length=90 --show-source --statistics truckersmp-cli
       - name: Check main script (module) by flake8
         run: flake8 --max-line-length=90 --show-source --statistics truckersmp_cli/__init__.py
+      - name: Check downloads script (module) by flake8
+        run: flake8 --max-line-length=90 --show-source --statistics truckersmp_cli/downloads.py
+      - name: Check utils script (module) by flake8
+        run: flake8 --max-line-length=90 --show-source --statistics truckersmp_cli/utils.py
+      - name: Check variables script (module) by flake8
+        run: flake8 --max-line-length=90 --show-source --statistics truckersmp_cli/variables.py
