@@ -4,12 +4,6 @@ Utilities for truckersmp-cli main script.
 Licensed under MIT.
 """
 
-from truckersmp_cli import downloads
-from truckersmp_cli import variables
-
-from getpass import getuser
-from gettext import ngettext
-
 import ctypes
 import hashlib
 import json
@@ -22,6 +16,11 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+
+from getpass import getuser
+from gettext import ngettext
+from truckersmp_cli import downloads
+from truckersmp_cli import variables
 
 vdf_is_available = False
 try:

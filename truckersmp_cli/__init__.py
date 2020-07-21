@@ -4,10 +4,6 @@ Module for truckersmp-cli main script.
 Licensed under MIT.
 """
 
-from truckersmp_cli import utils
-from truckersmp_cli import downloads
-from truckersmp_cli import variables
-
 import argparse
 import json
 import locale
@@ -16,6 +12,10 @@ import os
 import signal
 import subprocess as subproc
 import sys
+
+from truckersmp_cli import downloads
+from truckersmp_cli import utils
+from truckersmp_cli import variables
 
 pkg_resources_is_available = False
 try:

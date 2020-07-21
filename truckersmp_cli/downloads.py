@@ -4,11 +4,6 @@ Download handler for truckersmp-cli main script.
 Licensed under MIT.
 """
 
-from truckersmp_cli import utils
-from truckersmp_cli import variables
-
-from zipfile import ZipFile
-
 import hashlib
 import html.parser
 import http.client
@@ -23,6 +18,10 @@ import tarfile
 import time
 import urllib.parse
 import urllib.request
+
+from truckersmp_cli import utils
+from truckersmp_cli import variables
+from zipfile import ZipFile
 
 
 class DowngradeHTMLParser(html.parser.HTMLParser):
