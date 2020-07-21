@@ -19,9 +19,10 @@ import time
 import urllib.parse
 import urllib.request
 
+from zipfile import ZipFile
+
 from truckersmp_cli import utils
 from truckersmp_cli import variables
-from zipfile import ZipFile
 
 
 class DowngradeHTMLParser(html.parser.HTMLParser):

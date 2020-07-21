@@ -37,11 +37,16 @@ jobs:
         run: pip install flake8 flake8-docstrings flake8-import-order
       - name: Check main script (bin) by flake8
         run: flake8 --max-line-length=90 --show-source --statistics truckersmp-cli
+        if: always()
       - name: Check main script (module) by flake8
         run: flake8 --max-line-length=90 --show-source --statistics truckersmp_cli/__init__.py
+        if: always()
       - name: Check downloads script (module) by flake8
         run: flake8 --max-line-length=90 --show-source --statistics truckersmp_cli/downloads.py
+        if: always()
       - name: Check utils script (module) by flake8
         run: flake8 --max-line-length=90 --show-source --statistics truckersmp_cli/utils.py
+        if: always()
       - name: Check variables script (module) by flake8
         run: flake8 --max-line-length=90 --show-source --statistics truckersmp_cli/variables.py
+        if: always()
