@@ -16,9 +16,9 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-
 from getpass import getuser
 from gettext import ngettext
+
 from truckersmp_cli import downloads
 from truckersmp_cli import variables
 

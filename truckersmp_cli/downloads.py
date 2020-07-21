@@ -18,7 +18,6 @@ import tarfile
 import time
 import urllib.parse
 import urllib.request
-
 from zipfile import ZipFile
 
 from truckersmp_cli import utils
