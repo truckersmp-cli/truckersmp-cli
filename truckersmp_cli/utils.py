@@ -21,7 +21,7 @@ from getpass import getuser
 from gettext import ngettext
 
 from .truckersmp import download_files
-from .variables import AppId, Dir, File, URL
+from .variables import Dir, File, URL
 
 vdf_is_available = False
 try:

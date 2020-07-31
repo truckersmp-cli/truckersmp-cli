@@ -142,7 +142,7 @@ def start_with_proton():
     # activate native d3dcompiler_47
     wine = os.path.join(args.protondir, "dist/bin/wine")
     if args.activate_native_d3dcompiler_47:
-        activate_native_d3dcompiler_47(os.path.join(args.prefixdir, "pfx"), wine, args.ets2)
+      activate_native_d3dcompiler_47(os.path.join(args.prefixdir, "pfx"), wine, args.ets2)
 
     env = os.environ.copy()
     env["SteamGameId"] = args.steamid
