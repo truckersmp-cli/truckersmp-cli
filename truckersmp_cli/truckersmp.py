@@ -10,8 +10,6 @@ import http.client
 import json
 import logging
 import os
-import platform
-import subprocess as subproc
 import sys
 import time
 import urllib.parse

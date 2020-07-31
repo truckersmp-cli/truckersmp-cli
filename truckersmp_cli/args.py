@@ -11,14 +11,7 @@ import platform
 import sys
 
 from .utils import get_current_steam_user
-from .variables import AppId, Dir, File
-
-vdf_is_available = False
-try:
-    import vdf
-    vdf_is_available = True
-except ImportError:
-    pass
+from .variables import AppId, Dir
 
 
 def check_args_errors(args):
@@ -88,8 +81,8 @@ Need to download (-u) Proton?""".format(args.protondir))
 
     # checks for updating
     if args.update and not args.account:
-        if vdf_is_available:
-            args.account = get_current_steam_user(args.proton, args.wine_steam_dir)
+        args.account = get_current_steam_user(args.proton, args.wine_steam_dir)
+
         if not args.account:
             logging.info("Unable to find logged in steam user automatically.")
             sys.exit("Need the steam account name (-n name) to update.")

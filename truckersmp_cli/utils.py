@@ -7,7 +7,6 @@ Licensed under MIT.
 import ctypes
 import hashlib
 import io
-import json
 import logging
 import os
 import platform
@@ -20,7 +19,6 @@ import urllib.parse
 import urllib.request
 from getpass import getuser
 from gettext import ngettext
-from zipfile import ZipFile
 
 from .truckersmp import download_files
 from .variables import AppId, Dir, File, URL
@@ -148,11 +146,13 @@ def get_current_steam_user(wine=False, wine_steam_dir=""):
 
     This function depends on the package "vdf".
     """
+    if not vdf_is_available:
+        return None
+
     loginvdf_paths = File.loginusers_paths.copy()
     # try Wine Steam directory first when Wine is used
     if wine:
-        loginvdf_paths.insert(0, os.path.join(wine_steam_dir,
-                              File.loginvdf_inner))
+        loginvdf_paths.insert(0, os.path.join(wine_steam_dir, File.loginvdf_inner))
     for path in loginvdf_paths:
         try:
             with open(path) as f:

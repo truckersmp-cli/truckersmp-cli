@@ -16,7 +16,8 @@ import sys
 from .args import check_args_errors, create_arg_parser
 from .steamcmd import update_game
 from .truckersmp import update_mod
-from .utils import activate_native_d3dcompiler_47, check_libsdl2, perform_self_update, wait_for_steam
+from .utils import activate_native_d3dcompiler_47, check_libsdl2, perform_self_update
+from .utils import wait_for_steam
 from .variables import AppId, Dir, File
 
 pkg_resources_is_available = False
@@ -141,8 +142,7 @@ def start_with_proton():
     # activate native d3dcompiler_47
     wine = os.path.join(args.protondir, "dist/bin/wine")
     if args.activate_native_d3dcompiler_47:
-        activate_native_d3dcompiler_47(os.path.join(args.prefixdir, "pfx"),
-                                             wine, args.ets2)
+        activate_native_d3dcompiler_47(os.path.join(args.prefixdir, "pfx"), wine, args.ets2)
 
     env = os.environ.copy()
     env["SteamGameId"] = args.steamid

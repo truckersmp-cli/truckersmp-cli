@@ -19,6 +19,7 @@ from .truckersmp import get_beta_branch_name
 from .utils import check_steam_process
 from .variables import Dir, URL
 
+
 def update_game(args):
     """
     Update game and Proton via SteamCMD.
