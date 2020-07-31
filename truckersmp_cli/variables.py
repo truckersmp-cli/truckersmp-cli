@@ -7,23 +7,14 @@ Licensed under MIT.
 import os
 
 
-class URL:
-    """URLs."""
+class AppId:
+    """Steam AppIDs."""
 
-    project = "https://github.com/lhark/truckersmp-cli"
-    dlurl = "download.ets2mp.com"
-    dlurlalt = "failover.truckersmp.com"
-    listurl = "https://update.ets2mp.com/files.json"
-    steamcmdlnx = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
-    steamcmdwin = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
-    raw_github = "raw.githubusercontent.com"
-    d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
-    truckersmp_api = "https://api.truckersmp.com/v2/version"
-    truckersmp_stats = "https://stats.truckersmp.com"
-    truckersmp_downgrade_help = "https://truckersmp.com/kb/26"
-    issueurl = project + "/issues"
-    release = project + "/raw/master/RELEASE"
-    rel_tarxz_tmpl = project + "/releases/download/{0}/truckersmp-cli-{0}.tar.xz"
+    game = {
+        "ats":          270880,        # https://steamdb.info/app/270880/
+        "ets2":         227300,        # https://steamdb.info/app/227300/
+    }
+    proton = {}
 
 
 class Dir:
@@ -71,11 +62,20 @@ class File:
     sdl2_soname = "libSDL2-2.0.so.0"
 
 
-class AppId:
-    """Steam AppIDs."""
+class URL:
+    """URLs."""
 
-    game = {
-        "ats":          270880,        # https://steamdb.info/app/270880/
-        "ets2":         227300,        # https://steamdb.info/app/227300/
-    }
-    proton = {}
+    project = "https://github.com/lhark/truckersmp-cli"
+    dlurl = "download.ets2mp.com"
+    dlurlalt = "failover.truckersmp.com"
+    listurl = "https://update.ets2mp.com/files.json"
+    steamcmdlnx = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
+    steamcmdwin = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
+    raw_github = "raw.githubusercontent.com"
+    d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
+    truckersmp_api = "https://api.truckersmp.com/v2/version"
+    truckersmp_stats = "https://stats.truckersmp.com"
+    truckersmp_downgrade_help = "https://truckersmp.com/kb/26"
+    issueurl = project + "/issues"
+    release = project + "/raw/master/RELEASE"
+    rel_tarxz_tmpl = project + "/releases/download/{0}/truckersmp-cli-{0}.tar.xz"
