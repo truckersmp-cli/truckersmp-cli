@@ -4,7 +4,6 @@ Module for truckersmp-cli main script.
 Licensed under MIT.
 """
 
-# import argparse
 import json
 import locale
 import logging
@@ -16,8 +15,10 @@ import sys
 from .args import check_args_errors, create_arg_parser
 from .steamcmd import update_game
 from .truckersmp import update_mod
-from .utils import activate_native_d3dcompiler_47, check_libsdl2, perform_self_update
-from .utils import wait_for_steam
+from .utils import (
+    activate_native_d3dcompiler_47, check_libsdl2,
+    perform_self_update, wait_for_steam,
+)
 from .variables import AppId, Dir, File
 
 pkg_resources_is_available = False
