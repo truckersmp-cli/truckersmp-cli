@@ -6,7 +6,6 @@ Licensed under MIT.
 
 import hashlib
 import html.parser
-import http.client
 import json
 import logging
 import os
@@ -15,6 +14,7 @@ import time
 import urllib.parse
 import urllib.request
 
+from .utils import download_files
 from .variables import URL
 
 
@@ -49,98 +49,6 @@ class DowngradeHTMLParser(html.parser.HTMLParser):
     def data(self):
         """Return downgrade information."""
         return self._data
-
-
-def download_files(host, files_to_download, progress_count=None):
-    """Download files."""
-    file_count = progress_count[0] if progress_count else 1
-    num_of_files = progress_count[1] if progress_count else len(files_to_download)
-    conn = http.client.HTTPSConnection(host)
-    try:
-        while len(files_to_download) > 0:
-            path, dest, md5 = files_to_download[0]
-            md5hash = hashlib.md5()
-            bufsize = md5hash.block_size * 256
-            name = os.path.basename(path)
-            destdir = os.path.dirname(dest)
-            name_getting = "[{}/{}] Get: {}".format(file_count, num_of_files, name)
-            logging.debug(
-              "Downloading file https://{}{} to {}".format(host, path, destdir))
-
-            # make file hierarchy
-            os.makedirs(destdir, exist_ok=True)
-
-            # download file
-            conn.request("GET", path, headers={"Connection": "keep-alive"})
-            res = conn.getresponse()
-
-            if (res.status == 301
-                    or res.status == 302
-                    or res.status == 303
-                    or res.status == 307
-                    or res.status == 308):
-                # HTTP redirection
-                u = urllib.parse.urlparse(res.getheader("Location"))
-                if not download_files(
-                  u.netloc, [(u.path, dest, md5), ], (file_count, num_of_files)):
-                    return False
-                # downloaded successfully from redirected URL
-                del files_to_download[0]
-                file_count += 1
-                conn = http.client.HTTPSConnection(host)
-                continue
-            elif res.status != 200:
-                logging.error(
-                  "Server {} responded with status code {}.".format(host, res.status))
-                return False
-
-            lastmod = res.getheader("Last-Modified")
-            content_len = res.getheader("Content-Length")
-
-            with open(dest, "wb") as f:
-                downloaded = 0
-                while True:
-                    buf = res.read(bufsize)
-                    if not buf:
-                        break
-                    downloaded += len(buf)
-                    f.write(buf)
-                    md5hash.update(buf)
-                    if content_len:
-                        progress = "{:,} / {:,}".format(downloaded, int(content_len))
-                    else:
-                        progress = "{:,}".format(downloaded)
-                    print("\r{:40}{:>40}".format(name_getting, progress), end="")
-
-            if md5hash.hexdigest() != md5:
-                print("\r{:40}{:>40}".format(name, "MD5 MISMATCH"))
-                logging.error("MD5 mismatch for {}".format(dest))
-                return False
-
-            # wget-like timestamping for downloaded files
-            if lastmod:
-                timestamp = time.mktime(
-                  time.strptime(lastmod, "%a, %d %b %Y %H:%M:%S GMT")) - time.timezone
-                try:
-                    os.utime(dest, (timestamp, timestamp))
-                except Exception:
-                    pass
-
-            # downloaded successfully
-            print("\r{:40}{:>40}".format(name, "OK"))
-
-            # skip already downloaded files
-            # when trying to download from URL.dlurlalt
-            del files_to_download[0]
-
-            file_count += 1
-    except Exception as e:
-        logging.error("Failed to download https://{}{}: {}".format(host, path, e))
-        return False
-    finally:
-        conn.close()
-
-    return True
 
 
 def get_beta_branch_name(game_name="ets2"):
