@@ -6,7 +6,7 @@ truckersmp-cli main script.
 This script downloads/updates games and starts games with Wine/Proton.
 """
 
-from truckersmp_cli import main
+from truckersmp_cli.main import main
 
 if __name__ == "__main__":
     main()
