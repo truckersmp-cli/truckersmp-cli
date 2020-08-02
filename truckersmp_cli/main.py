@@ -31,7 +31,6 @@ except ImportError:
 
 def main():
     """truckersmp-cli main function."""
-
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     locale.setlocale(locale.LC_MESSAGES, "")
     locale.setlocale(locale.LC_TIME, "C")

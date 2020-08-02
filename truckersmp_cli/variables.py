@@ -19,6 +19,7 @@ class AppId:
 
 class Args:
     """Arguments from command line."""
+
     pass
 
 
