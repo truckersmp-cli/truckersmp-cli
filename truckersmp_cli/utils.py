@@ -21,7 +21,7 @@ import urllib.request
 from getpass import getuser
 from gettext import ngettext
 
-from .variables import Dir, File, URL
+from .variables import Args, Dir, File, URL
 
 vdf_is_available = False
 try:
@@ -31,7 +31,7 @@ except ImportError:
     pass
 
 
-def activate_native_d3dcompiler_47(prefix, wine, ets2):
+def activate_native_d3dcompiler_47(prefix, wine):
     """Download/activate native 64-bit version of d3dcompiler_47."""
     # check whether DLL is already downloaded
     md5hash = hashlib.md5()
@@ -68,7 +68,7 @@ def activate_native_d3dcompiler_47(prefix, wine, ets2):
     env = os.environ.copy()
     env["WINEDEBUG"] = "-all"
     env["WINEPREFIX"] = prefix
-    exename = "eurotrucks2.exe" if ets2 else "amtrucks.exe"
+    exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
     logging.debug("Adding DLL override setting for {}".format(exename))
     subproc.call(
       [wine, "reg", "add",
@@ -229,7 +229,7 @@ def download_files(host, files_to_download, progress_count=None):
     return True
 
 
-def get_current_steam_user(wine=False, wine_steam_dir=""):
+def get_current_steam_user():
     """
     Get the current AccountName with saved login credentials.
 
@@ -243,8 +243,8 @@ def get_current_steam_user(wine=False, wine_steam_dir=""):
 
     loginvdf_paths = File.loginusers_paths.copy()
     # try Wine Steam directory first when Wine is used
-    if wine:
-        loginvdf_paths.insert(0, os.path.join(wine_steam_dir, File.loginvdf_inner))
+    if Args.wine:
+        loginvdf_paths.insert(0, os.path.join(Args.wine_steam_dir, File.loginvdf_inner))
     for path in loginvdf_paths:
         try:
             with open(path) as f:
@@ -325,7 +325,7 @@ def perform_self_update():
     logging.info("Self update complete")
 
 
-def wait_for_steam(use_proton, loginvdf_paths, wine=None, wine_steam_dir="", env=None):
+def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
     """
     Wait for Steam to be running.
 
@@ -359,7 +359,7 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, wine_steam_dir="", env
         else:
             subproc.Popen(
               ("nohup",
-               wine, os.path.join(wine_steam_dir, "steam.exe"), "-no-cef-sandbox"),
+               wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-no-cef-sandbox"),
               env=env, stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
         waittime = 99
         while waittime > 0:

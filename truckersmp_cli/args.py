@@ -11,88 +11,88 @@ import platform
 import sys
 
 from .utils import get_current_steam_user
-from .variables import AppId, Dir
+from .variables import AppId, Args, Dir
 
 
-def check_args_errors(args):
+def check_args_errors():
     """Check command-line arguments."""
     # checks for updating and/or starting
-    if not args.update and not args.start:
+    if not Args.update and not Args.start:
         logging.info("--update/--start not specified, doing both.")
-        args.start = True
-        args.update = True
+        Args.start = True
+        Args.update = True
 
     # make sure only one game is chosen
-    if args.ats and args.ets2:
+    if Args.ats and Args.ets2:
         sys.exit("It's only possible to use one game at a time.")
-    elif not args.ats and not args.ets2:
+    elif not Args.ats and not Args.ets2:
         logging.info("--ats/--ets2 not specified, choosing ETS2.")
-        args.ets2 = True
+        Args.ets2 = True
 
-    game = "ats" if args.ats else "ets2"
-    args.steamid = str(AppId.game[game])
-    if not args.prefixdir:
-        args.prefixdir = Dir.default_prefixdir[game]
-    if not args.gamedir:
-        args.gamedir = Dir.default_gamedir[game]
+    game = "ats" if Args.ats else "ets2"
+    Args.steamid = str(AppId.game[game])
+    if not Args.prefixdir:
+        Args.prefixdir = Dir.default_prefixdir[game]
+    if not Args.gamedir:
+        Args.gamedir = Dir.default_gamedir[game]
 
     # checks for starting
-    if args.start:
+    if Args.start:
         # make sure proton and wine aren't chosen at the same time
-        if args.proton and args.wine:
+        if Args.proton and Args.wine:
             sys.exit("Start with Proton (-p) or Wine (-w)?")
-        elif not args.proton and not args.wine:
+        elif not Args.proton and not Args.wine:
             if platform.system() == "Linux":
                 logging.info("Platform is Linux, use Proton")
-                args.proton = True
+                Args.proton = True
             else:
                 logging.info("Platform is not Linux, use Wine")
-                args.wine = True
+                Args.wine = True
 
     # make sure proton and wine are using the same default
-    if args.wine:
-        if (args.prefixdir == Dir.default_prefixdir["ats"]
-           or args.prefixdir == Dir.default_prefixdir["ets2"]):
+    if Args.wine:
+        if (Args.prefixdir == Dir.default_prefixdir["ats"]
+           or Args.prefixdir == Dir.default_prefixdir["ets2"]):
             logging.debug("""Prefix directory is the default while using Wine,
 making sure it's the same directory as Proton""")
-            args.prefixdir = os.path.join(args.prefixdir, "pfx")
+            Args.prefixdir = os.path.join(Args.prefixdir, "pfx")
 
     # default Steam directory for Wine
-    if not args.wine_steam_dir:
-        args.wine_steam_dir = os.path.join(
-          args.prefixdir,
-          "" if args.wine else "pfx",
+    if not Args.wine_steam_dir:
+        Args.wine_steam_dir = os.path.join(
+          Args.prefixdir,
+          "" if Args.wine else "pfx",
           "dosdevices/c:/Program Files (x86)/Steam")
 
     # checks for starting while not updating
-    if args.start and not args.update:
+    if Args.start and not Args.update:
         # check for game
         if (not os.path.isfile(
-              os.path.join(args.gamedir, "bin/win_x64/eurotrucks2.exe"))
+              os.path.join(Args.gamedir, "bin/win_x64/eurotrucks2.exe"))
             and not os.path.isfile(
-              os.path.join(args.gamedir, "bin/win_x64/amtrucks.exe"))):
+              os.path.join(Args.gamedir, "bin/win_x64/amtrucks.exe"))):
             sys.exit("""Game not found in {}
-Need to download (-u) the game?""".format(args.gamedir))
+Need to download (-u) the game?""".format(Args.gamedir))
 
         # check for proton
-        if not os.path.isfile(os.path.join(args.protondir, "proton")) and args.proton:
+        if not os.path.isfile(os.path.join(Args.protondir, "proton")) and Args.proton:
             sys.exit("""Proton and no update wanted but Proton not found in {}
-Need to download (-u) Proton?""".format(args.protondir))
+Need to download (-u) Proton?""".format(Args.protondir))
 
     # checks for updating
-    if args.update and not args.account:
-        args.account = get_current_steam_user(args.proton, args.wine_steam_dir)
+    if Args.update and not Args.account:
+        Args.account = get_current_steam_user()
 
-        if not args.account:
+        if not Args.account:
             logging.info("Unable to find logged in steam user automatically.")
             sys.exit("Need the steam account name (-n name) to update.")
 
     # info
-    logging.info("AppID/GameID: {} ({})".format(args.steamid, game))
-    logging.info("Game directory: " + args.gamedir)
-    logging.info("Prefix: " + args.prefixdir)
-    if args.proton:
-        logging.info("Proton directory: " + args.protondir)
+    logging.info("AppID/GameID: {} ({})".format(Args.steamid, game))
+    logging.info("Game directory: " + Args.gamedir)
+    logging.info("Prefix: " + Args.prefixdir)
+    if Args.proton:
+        logging.info("Proton directory: " + Args.protondir)
 
 
 def create_arg_parser():

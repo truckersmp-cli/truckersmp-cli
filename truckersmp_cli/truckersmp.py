@@ -14,7 +14,7 @@ import urllib.parse
 import urllib.request
 
 from .utils import download_files
-from .variables import URL
+from .variables import Args, URL
 
 
 class DowngradeHTMLParser(html.parser.HTMLParser):
@@ -94,11 +94,11 @@ def get_supported_game_versions():
         return None
 
 
-def update_mod(moddir):
+def update_mod():
     """Download missing or outdated "multiplayer mod" files."""
-    if not os.path.isdir(moddir):
-        logging.debug("Creating directory {}".format(moddir))
-        os.makedirs(moddir, exist_ok=True)
+    if not os.path.isdir(Args.moddir):
+        logging.debug("Creating directory {}".format(Args.moddir))
+        os.makedirs(Args.moddir, exist_ok=True)
 
     # get the fileinfo from the server
     try:
@@ -123,7 +123,7 @@ Please report an issue: {}""".format(e, URL.issueurl))
     dlfiles = []
     for md5, jsonfilepath in modfiles:
         md5hash = hashlib.md5()
-        modfilepath = os.path.join(moddir, jsonfilepath[1:])
+        modfilepath = os.path.join(Args.moddir, jsonfilepath[1:])
         if not os.path.isfile(modfilepath):
             dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
         else:

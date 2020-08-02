@@ -19,7 +19,7 @@ from .utils import (
     activate_native_d3dcompiler_47, check_libsdl2,
     perform_self_update, wait_for_steam,
 )
-from .variables import AppId, Dir, File
+from .variables import AppId, Args, Dir, File
 
 pkg_resources_is_available = False
 try:
@@ -31,7 +31,6 @@ except ImportError:
 
 def main():
     """truckersmp-cli main function."""
-    global args
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     locale.setlocale(locale.LC_MESSAGES, "")
@@ -49,10 +48,10 @@ def main():
 
     # parse options
     arg_parser = create_arg_parser()
-    args = arg_parser.parse_args()
+    arg_parser.parse_args(namespace=Args)
 
     # print version
-    if args.version:
+    if Args.version:
         version = ""
         try:
             # try to load "RELEASE" file for release assets or cloned git directory
@@ -82,48 +81,48 @@ def main():
     stderr_handler = logging.StreamHandler()
     stderr_handler.setFormatter(formatter)
     logger = logging.getLogger()
-    if args.verbose:
-        logger.setLevel(logging.INFO if args.verbose == 1 else logging.DEBUG)
+    if Args.verbose:
+        logger.setLevel(logging.INFO if Args.verbose == 1 else logging.DEBUG)
     logger.addHandler(stderr_handler)
-    if args.logfile != "":
-        file_handler = logging.FileHandler(args.logfile, mode="w")
+    if Args.logfile != "":
+        file_handler = logging.FileHandler(Args.logfile, mode="w")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
     # self update
-    if args.self_update:
+    if Args.self_update:
         perform_self_update()
         sys.exit()
 
     # fallback to old local folder
-    if not args.moddir:
+    if not Args.moddir:
         if os.path.isdir(os.path.join(Dir.scriptdir, "truckersmp")):
             logging.debug("No moddir set and fallback found")
-            args.moddir = os.path.join(Dir.scriptdir, "truckersmp")
+            Args.moddir = os.path.join(Dir.scriptdir, "truckersmp")
         else:
             logging.debug("No moddir set, setting to default")
-            args.moddir = Dir.default_moddir
-    logging.info("Mod directory: " + args.moddir)
+            Args.moddir = Dir.default_moddir
+    logging.info("Mod directory: " + Args.moddir)
 
     # check for errors
-    check_args_errors(args)
+    check_args_errors()
 
     # download/update ATS/ETS2 and Proton
-    if args.update:
+    if Args.update:
         logging.debug("Updating game files")
-        update_game(args)
+        update_game()
 
     # update truckersmp when starting multiplayer
-    if not args.singleplayer:
+    if not Args.singleplayer:
         logging.debug("Updating mod files")
-        update_mod(args.moddir)
+        update_mod()
 
     # start truckersmp with proton or wine
-    if args.start:
+    if Args.start:
         if not check_libsdl2():
             sys.exit("SDL2 was not found on your system.")
         start_functions = (("Proton", start_with_proton), ("Wine", start_with_wine))
-        i = 0 if args.proton else 1
+        i = 0 if Args.proton else 1
         compat_tool, start_game = start_functions[i]
         logging.debug("Starting game with {}".format(compat_tool))
         start_game()
@@ -136,27 +135,24 @@ def start_with_proton():
     steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
     logging.info("Steam installation directory: " + steamdir)
 
-    if not os.path.isdir(args.prefixdir):
-        logging.debug("Creating directory {}".format(args.prefixdir))
-    os.makedirs(args.prefixdir, exist_ok=True)
+    if not os.path.isdir(Args.prefixdir):
+        logging.debug("Creating directory {}".format(Args.prefixdir))
+    os.makedirs(Args.prefixdir, exist_ok=True)
 
     # activate native d3dcompiler_47
-    wine = os.path.join(args.protondir, "dist/bin/wine")
-    if args.activate_native_d3dcompiler_47:
-        activate_native_d3dcompiler_47(
-            os.path.join(args.prefixdir, "pfx"),
-            wine,
-            args.ets2)
+    wine = os.path.join(Args.protondir, "dist/bin/wine")
+    if Args.activate_native_d3dcompiler_47:
+        activate_native_d3dcompiler_47(os.path.join(Args.prefixdir, "pfx"), wine)
 
     env = os.environ.copy()
-    env["SteamGameId"] = args.steamid
-    env["SteamAppId"] = args.steamid
-    env["STEAM_COMPAT_DATA_PATH"] = args.prefixdir
+    env["SteamGameId"] = Args.steamid
+    env["SteamAppId"] = Args.steamid
+    env["STEAM_COMPAT_DATA_PATH"] = Args.prefixdir
     env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steamdir
-    env["PROTON_USE_WINED3D"] = "1" if args.use_wined3d else "0"
-    env["PROTON_NO_D3D11"] = "1" if not args.enable_d3d11 else "0"
+    env["PROTON_USE_WINED3D"] = "1" if Args.use_wined3d else "0"
+    env["PROTON_NO_D3D11"] = "1" if not Args.enable_d3d11 else "0"
     # enable Steam Overlay unless "--disable-proton-overlay" is specified
-    if args.disable_proton_overlay:
+    if Args.disable_proton_overlay:
         ld_preload = ""
     else:
         overlayrenderer = os.path.join(steamdir, File.overlayrenderer_inner)
@@ -165,15 +161,15 @@ def start_with_proton():
         else:
             env["LD_PRELOAD"] = overlayrenderer
         ld_preload = "LD_PRELOAD={}\n  ".format(env["LD_PRELOAD"])
-    proton = os.path.join(args.protondir, "proton")
+    proton = os.path.join(Args.protondir, "proton")
     # check whether singleplayer or multiplayer
     argv = [sys.executable, proton, "run"]
-    if args.singleplayer:
-        exename = "eurotrucks2.exe" if args.ets2 else "amtrucks.exe"
-        gamepath = os.path.join(args.gamedir, "bin/win_x64", exename)
+    if Args.singleplayer:
+        exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
+        gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
         argv += gamepath, "-nointro", "-64bit"
     else:
-        argv += File.inject_exe, args.gamedir, args.moddir
+        argv += File.inject_exe, Args.gamedir, Args.moddir
     logging.info("""Startup command:
   SteamGameId={}
   SteamAppId={}
@@ -200,33 +196,32 @@ def start_with_proton():
 def start_with_wine():
     """Start game with Wine."""
     wine = os.environ["WINE"] if "WINE" in os.environ else "wine"
-    if args.activate_native_d3dcompiler_47:
-        activate_native_d3dcompiler_47(args.prefixdir, wine, args.ets2)
+    if Args.activate_native_d3dcompiler_47:
+        activate_native_d3dcompiler_47(Args.prefixdir, wine)
 
     env = os.environ.copy()
     env["WINEDEBUG"] = "-all"
     env["WINEARCH"] = "win64"
-    env["WINEPREFIX"] = args.prefixdir
+    env["WINEPREFIX"] = Args.prefixdir
 
     wait_for_steam(
       use_proton=False,
-      loginvdf_paths=(os.path.join(args.wine_steam_dir, "config/loginusers.vdf"), ),
+      loginvdf_paths=(os.path.join(Args.wine_steam_dir, "config/loginusers.vdf"), ),
       wine=wine,
-      wine_steam_dir=args.wine_steam_dir,
       env=env,
     )
     if "WINEDLLOVERRIDES" not in env:
         env["WINEDLLOVERRIDES"] = ""
-    if not args.enable_d3d11:
+    if not Args.enable_d3d11:
         env["WINEDLLOVERRIDES"] += ";d3d11=;dxgi="
 
     argv = [wine, ]
-    if args.singleplayer:
-        exename = "eurotrucks2.exe" if args.ets2 else "amtrucks.exe"
-        gamepath = os.path.join(args.gamedir, "bin/win_x64", exename)
+    if Args.singleplayer:
+        exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
+        gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
         argv += gamepath, "-nointro", "-64bit"
     else:
-        argv += File.inject_exe, args.gamedir, args.moddir
+        argv += File.inject_exe, Args.gamedir, Args.moddir
     logging.info("""Startup command:
   WINEDEBUG=-all
   WINEARCH=win64

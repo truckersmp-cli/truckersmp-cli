@@ -17,6 +17,12 @@ class AppId:
     proton = {}
 
 
+class Args:
+    """Arguments from command line."""
+
+    pass
+
+
 class Dir:
     """Directories."""
 
