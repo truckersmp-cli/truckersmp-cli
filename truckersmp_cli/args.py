@@ -148,7 +148,7 @@ SteamCMD can use your saved credentials for convenience.
       "-i", "--proton-appid", metavar="APPID", type=int,
       default=AppId.proton[AppId.proton["default"]],
       help="""choose a different AppID for Proton (Needs an update for changes)
-              [Default:{}] """.format(AppId.proton[AppId.proton["default"]]))
+              [Default: {}]""".format(AppId.proton[AppId.proton["default"]]))
     ap.add_argument(
       "-l", "--logfile", metavar="LOG", type=str,
       default="",
