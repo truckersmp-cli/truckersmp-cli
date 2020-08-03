@@ -238,9 +238,6 @@ def get_current_steam_user():
 
     This function depends on the package "vdf".
     """
-    if not vdf_is_available:
-        return None
-
     loginvdf_paths = File.loginusers_paths.copy()
     # try Wine Steam directory first when Wine is used
     if Args.wine:
