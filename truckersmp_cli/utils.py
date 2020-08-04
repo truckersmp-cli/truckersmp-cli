@@ -55,8 +55,8 @@ def activate_native_d3dcompiler_47(prefix, wine):
         logging.debug("Downloading d3dcompiler_47.dll")
         os.makedirs(Dir.dllsdir, exist_ok=True)
         if not download_files(
-          URL.raw_github,
-          [(URL.d3dcompilerpath, File.d3dcompiler_47, File.d3dcompiler_47_md5), ]):
+                URL.raw_github,
+                [(URL.d3dcompilerpath, File.d3dcompiler_47, File.d3dcompiler_47_md5), ]):
             sys.exit("Failed to download d3dcompiler_47.dll")
 
     # copy into system32
@@ -71,10 +71,10 @@ def activate_native_d3dcompiler_47(prefix, wine):
     exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
     logging.debug("Adding DLL override setting for {}".format(exename))
     subproc.call(
-      [wine, "reg", "add",
-       "HKCU\\Software\\Wine\\AppDefaults\\{}\\DllOverrides".format(exename),
-       "/v", "d3dcompiler_47", "/t", "REG_SZ", "/d", "native"],
-      env=env)
+        [wine, "reg", "add",
+         "HKCU\\Software\\Wine\\AppDefaults\\{}\\DllOverrides".format(exename),
+         "/v", "d3dcompiler_47", "/t", "REG_SZ", "/d", "native"],
+        env=env)
 
 
 def check_libsdl2():
@@ -112,7 +112,7 @@ def check_steam_process(use_proton, wine=None, env=None):
     if use_proton:
         try:
             subproc.check_call(
-              ("pgrep", "-u", getuser(), "-x", "steam"), stdout=subproc.DEVNULL)
+                ("pgrep", "-u", getuser(), "-x", "steam"), stdout=subproc.DEVNULL)
             return True
         except Exception:
             return False
@@ -151,7 +151,7 @@ def download_files(host, files_to_download, progress_count=None):
             destdir = os.path.dirname(dest)
             name_getting = "[{}/{}] Get: {}".format(file_count, num_of_files, name)
             logging.debug(
-              "Downloading file https://{}{} to {}".format(host, path, destdir))
+                "Downloading file https://{}{} to {}".format(host, path, destdir))
 
             # make file hierarchy
             os.makedirs(destdir, exist_ok=True)
@@ -168,7 +168,7 @@ def download_files(host, files_to_download, progress_count=None):
                 # HTTP redirection
                 u = urllib.parse.urlparse(res.getheader("Location"))
                 if not download_files(
-                  u.netloc, [(u.path, dest, md5), ], (file_count, num_of_files)):
+                        u.netloc, [(u.path, dest, md5), ], (file_count, num_of_files)):
                     return False
                 # downloaded successfully from redirected URL
                 del files_to_download[0]
@@ -177,7 +177,7 @@ def download_files(host, files_to_download, progress_count=None):
                 continue
             elif res.status != 200:
                 logging.error(
-                  "Server {} responded with status code {}.".format(host, res.status))
+                    "Server {} responded with status code {}.".format(host, res.status))
                 return False
 
             lastmod = res.getheader("Last-Modified")
@@ -206,7 +206,7 @@ def download_files(host, files_to_download, progress_count=None):
             # wget-like timestamping for downloaded files
             if lastmod:
                 timestamp = time.mktime(
-                  time.strptime(lastmod, "%a, %d %b %Y %H:%M:%S GMT")) - time.timezone
+                    time.strptime(lastmod, "%a, %d %b %Y %H:%M:%S GMT")) - time.timezone
                 try:
                     os.utime(dest, (timestamp, timestamp))
                 except Exception:
@@ -352,18 +352,18 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
         logging.debug("Starting Steam...")
         if use_proton:
             subproc.Popen(
-              ("nohup", "steam"), stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
+                ("nohup", "steam"), stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
         else:
             subproc.Popen(
-              ("nohup",
-               wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-no-cef-sandbox"),
-              env=env, stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
+                ("nohup",
+                 wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-no-cef-sandbox"),
+                env=env, stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
         waittime = 99
         while waittime > 0:
             print(ngettext(
-              "\rWaiting {} second for steam to start up. ",
-              "\rWaiting {} seconds for steam to start up. ",
-              waittime).format(waittime), end="")
+                "\rWaiting {} second for steam to start up. ",
+                "\rWaiting {} seconds for steam to start up. ",
+                waittime).format(waittime), end="")
             time.sleep(1)
             waittime -= 1
             for i, path in enumerate(loginvdf_paths):
@@ -372,9 +372,8 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
                     if st.st_mtime > loginusers_timestamps[i]:
                         print("\r{}".format(" " * 70))  # clear "Waiting..." line
                         logging.debug(
-                          "Steam should now be up and running and the user logged in.")
-                        steamdir = os.path.dirname(
-                          os.path.dirname(loginvdf_paths[i]))
+                            "Steam should now be up and running and the user logged in.")
+                        steamdir = os.path.dirname(os.path.dirname(loginvdf_paths[i]))
                         break
                 except OSError:
                     pass

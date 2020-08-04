@@ -62,7 +62,7 @@ def main():
             try:
                 # try to get git commit hash, and append it if succeeded
                 version += subproc.check_output(
-                  ("git", "log", "-1", "--format= (%h)")).decode("utf-8").rstrip()
+                    ("git", "log", "-1", "--format= (%h)")).decode("utf-8").rstrip()
             except Exception:
                 pass
         else:
@@ -204,10 +204,10 @@ def start_with_wine():
     env["WINEPREFIX"] = Args.prefixdir
 
     wait_for_steam(
-      use_proton=False,
-      loginvdf_paths=(os.path.join(Args.wine_steam_dir, "config/loginusers.vdf"), ),
-      wine=wine,
-      env=env,
+        use_proton=False,
+        loginvdf_paths=(os.path.join(Args.wine_steam_dir, "config/loginusers.vdf"), ),
+        wine=wine,
+        env=env,
     )
     if "WINEDLLOVERRIDES" not in env:
         env["WINEDLLOVERRIDES"] = ""

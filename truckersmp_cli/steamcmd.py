@@ -78,10 +78,10 @@ def update_game():
         # steamcmd.exe uses Windows path, not UNIX path
         try:
             gamedir = subproc.check_output(
-              (wine, "winepath", "-w", Args.gamedir), env=env).decode("utf-8").rstrip()
+                (wine, "winepath", "-w", Args.gamedir), env=env).decode("utf-8").rstrip()
         except Exception as e:
             sys.exit(
-              "Failed to convert game directory to Windows path: {}".format(e))
+                "Failed to convert game directory to Windows path: {}".format(e))
 
         steamcmd = os.path.join(Dir.steamcmddir, "steamcmd.exe")
         steamcmd_cmd.append(wine)
@@ -101,7 +101,7 @@ def update_game():
         try:
             if Args.proton:
                 with tarfile.open(
-                  fileobj=io.BytesIO(steamcmd_archive), mode="r:gz") as f:
+                        fileobj=io.BytesIO(steamcmd_archive), mode="r:gz") as f:
                     f.extractall(Dir.steamcmddir)
             else:
                 with ZipFile(io.BytesIO(steamcmd_archive)) as f:
@@ -121,8 +121,8 @@ def update_game():
     if wine and check_steam_process(use_proton=False, wine=wine, env=env_steam):
         logging.debug("Closing Windows version of Steam in " + Args.wine_steam_dir)
         subproc.call(
-          (wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-shutdown"),
-          env=env_steam)
+            (wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-shutdown"),
+            env=env_steam)
 
     if Args.proton:
         # download/update Proton
@@ -136,11 +136,11 @@ def update_game():
     +quit""".format(steamcmd, Args.account, Args.protondir, Args.proton_appid))
         try:
             subproc.check_call(
-              (steamcmd,
-               "+login", Args.account,
-               "+force_install_dir", Args.protondir,
-               "+app_update", str(Args.proton_appid), "validate",
-               "+quit"))
+                (steamcmd,
+                 "+login", Args.account,
+                 "+force_install_dir", Args.protondir,
+                 "+app_update", str(Args.proton_appid), "validate",
+                 "+quit"))
         except subproc.CalledProcessError:
             sys.exit("SteamCMD exited abnormally")
 
@@ -165,7 +165,7 @@ def update_game():
     +force_install_dir {}
     +app_update {} -beta {} validate
     +quit""".format(
-      steamcmd_prolog, steamcmd, Args.account, gamedir, Args.steamid, branch))
+        steamcmd_prolog, steamcmd, Args.account, gamedir, Args.steamid, branch))
     steamcmd_args = [
         "+@sSteamCmdForcePlatformType", "windows",
         "+login", Args.account,
