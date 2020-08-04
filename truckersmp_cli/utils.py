@@ -177,7 +177,7 @@ def download_files(host, files_to_download, progress_count=None):
                 file_count += 1
                 conn = http.client.HTTPSConnection(host)
                 continue
-            elif res.status != 200:
+            if res.status != 200:
                 logging.error(
                     "Server %s responded with status code %s.", host, res.status)
                 return False
