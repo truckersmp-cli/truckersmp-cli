@@ -1,0 +1,8 @@
+[TYPECHECK]
+# Args.* are set dynamically in main.py:
+#
+#     arg_parser = create_arg_parser()
+#     arg_parser.parse_args(namespace=Args)
+#
+# We need this to avoid triggering E1101.
+generated-members=Args.*
