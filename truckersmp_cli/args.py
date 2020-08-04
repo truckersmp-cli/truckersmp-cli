@@ -89,10 +89,10 @@ Need to download (-u) Proton?""".format(Args.protondir))
 
     # info
     logging.info("AppID/GameID: %s (%s)", Args.steamid, game)
-    logging.info("Game directory: " + Args.gamedir)
-    logging.info("Prefix: " + Args.prefixdir)
+    logging.info("Game directory: %s", Args.gamedir)
+    logging.info("Prefix: %s", Args.prefixdir)
     if Args.proton:
-        logging.info("Proton directory: " + Args.protondir)
+        logging.info("Proton directory: %s", Args.protondir)
 
 
 def create_arg_parser():

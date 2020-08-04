@@ -101,7 +101,7 @@ def main():
         else:
             logging.debug("No moddir set, setting to default")
             Args.moddir = Dir.default_moddir
-    logging.info("Mod directory: " + Args.moddir)
+    logging.info("Mod directory: %s", Args.moddir)
 
     # check for errors
     check_args_errors()
@@ -132,7 +132,7 @@ def main():
 def start_with_proton():
     """Start game with Proton."""
     steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
-    logging.info("Steam installation directory: " + steamdir)
+    logging.info("Steam installation directory: %s", steamdir)
 
     if not os.path.isdir(Args.prefixdir):
         logging.debug("Creating directory %s", Args.prefixdir)
@@ -188,9 +188,9 @@ def start_with_proton():
         sys.executable, proton, argv[-3], argv[-2], argv[-1])
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
-        logging.info("Proton output:\n" + output.decode("utf-8"))
+        logging.info("Proton output:\n%s", output.decode("utf-8"))
     except subproc.CalledProcessError as ex:
-        logging.error("Proton output:\n" + ex.output.decode("utf-8"))
+        logging.error("Proton output:\n%s", ex.output.decode("utf-8"))
 
 
 def start_with_wine():
@@ -232,6 +232,6 @@ def start_with_wine():
         env["WINEPREFIX"], env["WINEDLLOVERRIDES"], wine, argv[-3], argv[-2], argv[-1])
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
-        logging.info("Wine output:\n" + output.decode("utf-8"))
+        logging.info("Wine output:\n%s", output.decode("utf-8"))
     except subproc.CalledProcessError as ex:
-        logging.error("Wine output:\n" + ex.output.decode("utf-8"))
+        logging.error("Wine output:\n%s", ex.output.decode("utf-8"))

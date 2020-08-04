@@ -111,7 +111,7 @@ def update_game():
         except Exception as ex:
             sys.exit("Failed to extract SteamCMD: {}".format(ex))
 
-    logging.info("SteamCMD: " + steamcmd)
+    logging.info("SteamCMD: %s", steamcmd)
 
     # Linux version of Steam
     if platform.system() == "Linux" and check_steam_process(use_proton=True):
@@ -119,7 +119,7 @@ def update_game():
         subproc.call(("steam", "-shutdown"))
     # Windows version of Steam
     if wine and check_steam_process(use_proton=False, wine=wine, env=env_steam):
-        logging.debug("Closing Windows version of Steam in " + Args.wine_steam_dir)
+        logging.debug("Closing Windows version of Steam in %s", Args.wine_steam_dir)
         subproc.call(
             (wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-shutdown"),
             env=env_steam)
@@ -155,7 +155,7 @@ def update_game():
         beta_branch_name = get_beta_branch_name(game)
         if beta_branch_name:
             branch = beta_branch_name
-    logging.info("Game branch: " + branch)
+    logging.info("Game branch: %s", branch)
 
     # use SteamCMD to update the chosen game
     os.makedirs(Args.gamedir, exist_ok=True)
