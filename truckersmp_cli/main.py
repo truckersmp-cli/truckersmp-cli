@@ -123,7 +123,7 @@ def main():
         start_functions = (("Proton", start_with_proton), ("Wine", start_with_wine))
         i = 0 if Args.proton else 1
         compat_tool, start_game = start_functions[i]
-        logging.debug("Starting game with {}".format(compat_tool))
+        logging.debug("Starting game with %s", compat_tool)
         start_game()
 
     sys.exit()
@@ -135,7 +135,7 @@ def start_with_proton():
     logging.info("Steam installation directory: " + steamdir)
 
     if not os.path.isdir(Args.prefixdir):
-        logging.debug("Creating directory {}".format(Args.prefixdir))
+        logging.debug("Creating directory %s", Args.prefixdir)
     os.makedirs(Args.prefixdir, exist_ok=True)
 
     # activate native d3dcompiler_47
@@ -169,22 +169,23 @@ def start_with_proton():
         argv += gamepath, "-nointro", "-64bit"
     else:
         argv += File.inject_exe, Args.gamedir, Args.moddir
-    logging.info("""Startup command:
-  SteamGameId={}
-  SteamAppId={}
-  STEAM_COMPAT_DATA_PATH={}
-  STEAM_COMPAT_CLIENT_INSTALL_PATH={}
-  PROTON_USE_WINED3D={}
-  PROTON_NO_D3D11={}
-  {}{} {}
+    logging.info(
+        """Startup command:
+  SteamGameId=%s
+  SteamAppId=%s
+  STEAM_COMPAT_DATA_PATH=%s
+  STEAM_COMPAT_CLIENT_INSTALL_PATH=%s
+  PROTON_USE_WINED3D=%s
+  PROTON_NO_D3D11=%s
+  %s%s %s
   run
-  {} {} {}""".format(
-      env["SteamGameId"], env["SteamAppId"],
-      env["STEAM_COMPAT_DATA_PATH"], env["STEAM_COMPAT_CLIENT_INSTALL_PATH"],
-      env["PROTON_USE_WINED3D"],
-      env["PROTON_NO_D3D11"],
-      ld_preload,
-      sys.executable, proton, argv[-3], argv[-2], argv[-1]))
+  %s %s %s""",
+        env["SteamGameId"], env["SteamAppId"],
+        env["STEAM_COMPAT_DATA_PATH"], env["STEAM_COMPAT_CLIENT_INSTALL_PATH"],
+        env["PROTON_USE_WINED3D"],
+        env["PROTON_NO_D3D11"],
+        ld_preload,
+        sys.executable, proton, argv[-3], argv[-2], argv[-1])
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
         logging.info("Proton output:\n" + output.decode("utf-8"))
@@ -221,13 +222,14 @@ def start_with_wine():
         argv += gamepath, "-nointro", "-64bit"
     else:
         argv += File.inject_exe, Args.gamedir, Args.moddir
-    logging.info("""Startup command:
+    logging.info(
+        """Startup command:
   WINEDEBUG=-all
   WINEARCH=win64
-  WINEPREFIX={}
-  WINEDLLOVERRIDES="{}"
-  {} {} {} {}""".format(
-      env["WINEPREFIX"], env["WINEDLLOVERRIDES"], wine, argv[-3], argv[-2], argv[-1]))
+  WINEPREFIX=%s
+  WINEDLLOVERRIDES="%s"
+  %s %s %s %s""",
+        env["WINEPREFIX"], env["WINEDLLOVERRIDES"], wine, argv[-3], argv[-2], argv[-1])
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
         logging.info("Wine output:\n" + output.decode("utf-8"))

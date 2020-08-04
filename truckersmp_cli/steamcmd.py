@@ -56,7 +56,7 @@ def update_game():
     os.makedirs(Dir.steamcmdpfx, exist_ok=True)
     try:
         subproc.check_call((wine, "--version"), stdout=subproc.DEVNULL, env=env)
-        logging.debug("Wine ({}) is available".format(wine))
+        logging.debug("Wine (%s) is available", wine)
     except subproc.CalledProcessError:
         logging.debug("Wine is not available")
         wine = None
@@ -127,13 +127,15 @@ def update_game():
     if Args.proton:
         # download/update Proton
         os.makedirs(Args.protondir, exist_ok=True)
-        logging.debug("Updating Proton (AppID:{})".format(Args.proton_appid))
-        logging.info("""Command:
-  {}
-    +login {}
-    +force_install_dir {}
-    +app_update {} validate
-    +quit""".format(steamcmd, Args.account, Args.protondir, Args.proton_appid))
+        logging.debug("Updating Proton (AppID:%s)", Args.proton_appid)
+        logging.info(
+            """Command:
+  %s
+    +login %s
+    +force_install_dir %s
+    +app_update %s validate
+    +quit""",
+            steamcmd, Args.account, Args.protondir, Args.proton_appid)
         try:
             subproc.check_call(
                 (steamcmd,
@@ -157,15 +159,16 @@ def update_game():
 
     # use SteamCMD to update the chosen game
     os.makedirs(Args.gamedir, exist_ok=True)
-    logging.debug("Updating Game (AppID:{})".format(Args.steamid))
-    logging.info("""Command:
-  {}{}
+    logging.debug("Updating Game (AppID:%s)", Args.steamid)
+    logging.info(
+        """Command:
+  %s%s
     +@sSteamCmdForcePlatformType windows
-    +login {}
-    +force_install_dir {}
-    +app_update {} -beta {} validate
-    +quit""".format(
-        steamcmd_prolog, steamcmd, Args.account, gamedir, Args.steamid, branch))
+    +login %s
+    +force_install_dir %s
+    +app_update %s -beta %s validate
+    +quit""",
+        steamcmd_prolog, steamcmd, Args.account, gamedir, Args.steamid, branch)
     steamcmd_args = [
         "+@sSteamCmdForcePlatformType", "windows",
         "+login", Args.account,

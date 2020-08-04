@@ -61,7 +61,7 @@ def activate_native_d3dcompiler_47(prefix, wine):
 
     # copy into system32
     destdir = os.path.join(prefix, "drive_c/windows/system32")
-    logging.debug("Copying d3dcompiler_47.dll into {}".format(destdir))
+    logging.debug("Copying d3dcompiler_47.dll into %s", destdir)
     shutil.copy(File.d3dcompiler_47, destdir)
 
     # add DLL override setting
@@ -69,7 +69,7 @@ def activate_native_d3dcompiler_47(prefix, wine):
     env["WINEDEBUG"] = "-all"
     env["WINEPREFIX"] = prefix
     exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
-    logging.debug("Adding DLL override setting for {}".format(exename))
+    logging.debug("Adding DLL override setting for %s", exename)
     subproc.call(
         [wine, "reg", "add",
          "HKCU\\Software\\Wine\\AppDefaults\\{}\\DllOverrides".format(exename),
@@ -151,7 +151,7 @@ def download_files(host, files_to_download, progress_count=None):
             destdir = os.path.dirname(dest)
             name_getting = "[{}/{}] Get: {}".format(file_count, num_of_files, name)
             logging.debug(
-                "Downloading file https://{}{} to {}".format(host, path, destdir))
+                "Downloading file https://%s%s to %s", host, path, destdir)
 
             # make file hierarchy
             os.makedirs(destdir, exist_ok=True)
@@ -179,7 +179,7 @@ def download_files(host, files_to_download, progress_count=None):
                 continue
             elif res.status != 200:
                 logging.error(
-                    "Server {} responded with status code {}.".format(host, res.status))
+                    "Server %s responded with status code %s.", host, res.status)
                 return False
 
             lastmod = res.getheader("Last-Modified")
@@ -202,7 +202,7 @@ def download_files(host, files_to_download, progress_count=None):
 
             if md5hash.hexdigest() != md5:
                 print("\r{:40}{:>40}".format(name, "MD5 MISMATCH"))
-                logging.error("MD5 mismatch for {}".format(dest))
+                logging.error("MD5 mismatch for %s", dest)
                 return False
 
             # wget-like timestamping for downloaded files
@@ -223,7 +223,7 @@ def download_files(host, files_to_download, progress_count=None):
 
             file_count += 1
     except Exception as ex:
-        logging.error("Failed to download https://{}{}: {}".format(host, path, ex))
+        logging.error("Failed to download https://%s%s: %s", host, path, ex)
         return False
     finally:
         conn.close()
@@ -290,7 +290,7 @@ def perform_self_update():
 
     # retrieve the release asset
     archive_url = URL.rel_tarxz_tmpl.format(release)
-    logging.info("Retrieving release asset {}".format(archive_url))
+    logging.info("Retrieving release asset %s", archive_url)
     try:
         with urllib.request.urlopen(archive_url) as f_in:
             asset_archive = f_in.read()
@@ -298,7 +298,7 @@ def perform_self_update():
         sys.exit("Failed to retrieve release asset file: {}".format(ex))
 
     # unpack the archive
-    logging.info("Unpacking archive {}".format(archive_url))
+    logging.info("Unpacking archive %s", archive_url)
     topdir = os.path.dirname(Dir.scriptdir)
     try:
         with tarfile.open(fileobj=io.BytesIO(asset_archive), mode="r:xz") as f_in:
@@ -311,12 +311,12 @@ def perform_self_update():
     for root, _dirs, files in os.walk(archive_dir, topdown=False):
         inner_root = root[len(archive_dir):]
         destdir = topdir + inner_root
-        logging.debug("Creating directory {}".format(destdir))
+        logging.debug("Creating directory %s", destdir)
         os.makedirs(destdir, exist_ok=True)
         for fname in files:
             srcpath = os.path.join(root, fname)
             dstpath = os.path.join(destdir, fname)
-            logging.info("Copying {} as {}".format(srcpath, dstpath))
+            logging.info("Copying %s as %s", srcpath, dstpath)
             os.replace(srcpath, dstpath)
         os.rmdir(root)
 

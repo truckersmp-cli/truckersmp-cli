@@ -88,7 +88,7 @@ Need to download (-u) Proton?""".format(Args.protondir))
             sys.exit("Need the steam account name (-n name) to update.")
 
     # info
-    logging.info("AppID/GameID: {} ({})".format(Args.steamid, game))
+    logging.info("AppID/GameID: %s (%s)", Args.steamid, game)
     logging.info("Game directory: " + Args.gamedir)
     logging.info("Prefix: " + Args.prefixdir)
     if Args.proton:

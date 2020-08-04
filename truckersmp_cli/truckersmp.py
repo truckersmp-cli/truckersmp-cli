@@ -97,7 +97,7 @@ def get_supported_game_versions():
 def update_mod():
     """Download missing or outdated "multiplayer mod" files."""
     if not os.path.isdir(Args.moddir):
-        logging.debug("Creating directory {}".format(Args.moddir))
+        logging.debug("Creating directory %s", Args.moddir)
         os.makedirs(Args.moddir, exist_ok=True)
 
     # get the fileinfo from the server
