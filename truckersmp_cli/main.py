@@ -21,10 +21,10 @@ from .utils import (
 )
 from .variables import AppId, Args, Dir, File
 
-pkg_resources_is_available = False
+PKG_RESOURCES_IS_AVAILABLE = False
 try:
     import pkg_resources
-    pkg_resources_is_available = True
+    PKG_RESOURCES_IS_AVAILABLE = True
 except ImportError:
     pass
 
@@ -40,10 +40,10 @@ def main():
     # example:
     #     {"5.0": 1245040, "4.11": 1113280, "default": "5.0"}
     try:
-        with open(File.proton_json) as f:
-            AppId.proton = json.load(f)
-    except Exception as e:
-        sys.exit("Failed to load proton.json: {}".format(e))
+        with open(File.proton_json) as f_in:
+            AppId.proton = json.load(f_in)
+    except Exception as ex:
+        sys.exit("Failed to load proton.json: {}".format(ex))
 
     # parse options
     arg_parser = create_arg_parser()
@@ -54,8 +54,8 @@ def main():
         version = ""
         try:
             # try to load "RELEASE" file for release assets or cloned git directory
-            with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f:
-                version += f.readline().rstrip()
+            with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
+                version += f_in.readline().rstrip()
         except Exception:
             pass
         if version:
@@ -68,7 +68,7 @@ def main():
         else:
             # try to get version from Python package
             try:
-                if pkg_resources_is_available:
+                if PKG_RESOURCES_IS_AVAILABLE:
                     version += pkg_resources.get_distribution(__package__).version
             except pkg_resources.DistributionNotFound:
                 pass
@@ -188,8 +188,8 @@ def start_with_proton():
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
         logging.info("Proton output:\n" + output.decode("utf-8"))
-    except subproc.CalledProcessError as e:
-        logging.error("Proton output:\n" + e.output.decode("utf-8"))
+    except subproc.CalledProcessError as ex:
+        logging.error("Proton output:\n" + ex.output.decode("utf-8"))
 
 
 def start_with_wine():
@@ -231,5 +231,5 @@ def start_with_wine():
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
         logging.info("Wine output:\n" + output.decode("utf-8"))
-    except subproc.CalledProcessError as e:
-        logging.error("Wine output:\n" + e.output.decode("utf-8"))
+    except subproc.CalledProcessError as ex:
+        logging.error("Wine output:\n" + ex.output.decode("utf-8"))

@@ -79,9 +79,9 @@ def update_game():
         try:
             gamedir = subproc.check_output(
                 (wine, "winepath", "-w", Args.gamedir), env=env).decode("utf-8").rstrip()
-        except Exception as e:
+        except Exception as ex:
             sys.exit(
-                "Failed to convert game directory to Windows path: {}".format(e))
+                "Failed to convert game directory to Windows path: {}".format(ex))
 
         steamcmd = os.path.join(Dir.steamcmddir, "steamcmd.exe")
         steamcmd_cmd.append(wine)
@@ -93,23 +93,23 @@ def update_game():
     if not os.path.isfile(steamcmd):
         logging.debug("Retrieving SteamCMD")
         try:
-            with urllib.request.urlopen(steamcmd_url) as f:
-                steamcmd_archive = f.read()
-        except Exception as e:
-            sys.exit("Failed to retrieve SteamCMD: {}".format(e))
+            with urllib.request.urlopen(steamcmd_url) as f_in:
+                steamcmd_archive = f_in.read()
+        except Exception as ex:
+            sys.exit("Failed to retrieve SteamCMD: {}".format(ex))
         logging.debug("Extracting SteamCMD")
         try:
             if Args.proton:
                 with tarfile.open(
-                        fileobj=io.BytesIO(steamcmd_archive), mode="r:gz") as f:
-                    f.extractall(Dir.steamcmddir)
+                        fileobj=io.BytesIO(steamcmd_archive), mode="r:gz") as f_in:
+                    f_in.extractall(Dir.steamcmddir)
             else:
-                with ZipFile(io.BytesIO(steamcmd_archive)) as f:
-                    with f.open("steamcmd.exe") as f_exe:
+                with ZipFile(io.BytesIO(steamcmd_archive)) as f_in:
+                    with f_in.open("steamcmd.exe") as f_exe:
                         with open(steamcmd, "wb") as f_out:
                             f_out.write(f_exe.read())
-        except Exception as e:
-            sys.exit("Failed to extract SteamCMD: {}".format(e))
+        except Exception as ex:
+            sys.exit("Failed to extract SteamCMD: {}".format(ex))
 
     logging.info("SteamCMD: " + steamcmd)
 

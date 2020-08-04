@@ -23,10 +23,10 @@ from gettext import ngettext
 
 from .variables import Args, Dir, File, URL
 
-vdf_is_available = False
+VDF_IS_AVAILABLE = False
 try:
     import vdf
-    vdf_is_available = True
+    VDF_IS_AVAILABLE = True
 except ImportError:
     pass
 
@@ -37,9 +37,9 @@ def activate_native_d3dcompiler_47(prefix, wine):
     md5hash = hashlib.md5()
     need_download = True
     try:
-        with open(File.d3dcompiler_47, "rb") as f:
+        with open(File.d3dcompiler_47, "rb") as f_in:
             while True:
-                buf = f.read(md5hash.block_size * 4096)
+                buf = f_in.read(md5hash.block_size * 4096)
                 if not buf:
                     break
                 md5hash.update(buf)
@@ -132,8 +132,8 @@ def check_steam_process(use_proton, wine=None, env=None):
                 if exename.lower().endswith("steam.exe"):
                     steam_is_running = True
                     break
-        except subproc.CalledProcessError as e:
-            sys.exit("Failed to get Wine process list: " + e.output.decode("utf-8"))
+        except subproc.CalledProcessError as ex:
+            sys.exit("Failed to get Wine process list: " + ex.output.decode("utf-8"))
         return steam_is_running
 
 
@@ -166,9 +166,11 @@ def download_files(host, files_to_download, progress_count=None):
                     or res.status == 307
                     or res.status == 308):
                 # HTTP redirection
-                u = urllib.parse.urlparse(res.getheader("Location"))
+                newloc = urllib.parse.urlparse(res.getheader("Location"))
                 if not download_files(
-                        u.netloc, [(u.path, dest, md5), ], (file_count, num_of_files)):
+                        newloc.netloc,
+                        [(newloc.path, dest, md5), ],
+                        (file_count, num_of_files)):
                     return False
                 # downloaded successfully from redirected URL
                 del files_to_download[0]
@@ -183,14 +185,14 @@ def download_files(host, files_to_download, progress_count=None):
             lastmod = res.getheader("Last-Modified")
             content_len = res.getheader("Content-Length")
 
-            with open(dest, "wb") as f:
+            with open(dest, "wb") as f_out:
                 downloaded = 0
                 while True:
                     buf = res.read(bufsize)
                     if not buf:
                         break
                     downloaded += len(buf)
-                    f.write(buf)
+                    f_out.write(buf)
                     md5hash.update(buf)
                     if content_len:
                         progress = "{:,} / {:,}".format(downloaded, int(content_len))
@@ -220,8 +222,8 @@ def download_files(host, files_to_download, progress_count=None):
             del files_to_download[0]
 
             file_count += 1
-    except Exception as e:
-        logging.error("Failed to download https://{}{}: {}".format(host, path, e))
+    except Exception as ex:
+        logging.error("Failed to download https://{}{}: {}".format(host, path, ex))
         return False
     finally:
         conn.close()
@@ -244,8 +246,8 @@ def get_current_steam_user():
         loginvdf_paths.insert(0, os.path.join(Args.wine_steam_dir, File.loginvdf_inner))
     for path in loginvdf_paths:
         try:
-            with open(path) as f:
-                login_vdf = vdf.parse(f)
+            with open(path) as f_in:
+                login_vdf = vdf.parse(f_in)
 
             for info in login_vdf["users"].values():
                 remember = "RememberPassword" in info and info["RememberPassword"] == "1"
@@ -268,18 +270,18 @@ def perform_self_update():
     """
     # we don't update when Python package is used
     try:
-        with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f:
-            current_release = f.readline().rstrip()
+        with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
+            current_release = f_in.readline().rstrip()
     except Exception:
         sys.exit("'RELEASE' file doesn't exist. Self update aborted.")
 
     # get latest release
     logging.info("Retrieving RELEASE from master")
     try:
-        with urllib.request.urlopen(URL.release) as f:
-            release = f.readline().rstrip().decode("ascii")
-    except Exception as e:
-        sys.exit("Failed to retrieve RELEASE file: {}".format(e))
+        with urllib.request.urlopen(URL.release) as f_in:
+            release = f_in.readline().rstrip().decode("ascii")
+    except Exception as ex:
+        sys.exit("Failed to retrieve RELEASE file: {}".format(ex))
 
     # do nothing if the installed version is latest
     if release == current_release:
@@ -290,19 +292,19 @@ def perform_self_update():
     archive_url = URL.rel_tarxz_tmpl.format(release)
     logging.info("Retrieving release asset {}".format(archive_url))
     try:
-        with urllib.request.urlopen(archive_url) as f:
-            asset_archive = f.read()
-    except Exception as e:
-        sys.exit("Failed to retrieve release asset file: {}".format(e))
+        with urllib.request.urlopen(archive_url) as f_in:
+            asset_archive = f_in.read()
+    except Exception as ex:
+        sys.exit("Failed to retrieve release asset file: {}".format(ex))
 
     # unpack the archive
     logging.info("Unpacking archive {}".format(archive_url))
     topdir = os.path.dirname(Dir.scriptdir)
     try:
-        with tarfile.open(fileobj=io.BytesIO(asset_archive), mode="r:xz") as f:
-            f.extractall(topdir)
-    except Exception as e:
-        sys.exit("Failed to unpack release asset file: {}".format(e))
+        with tarfile.open(fileobj=io.BytesIO(asset_archive), mode="r:xz") as f_in:
+            f_in.extractall(topdir)
+    except Exception as ex:
+        sys.exit("Failed to unpack release asset file: {}".format(ex))
 
     # update files
     archive_dir = os.path.join(topdir, "truckersmp-cli-" + release)
@@ -311,9 +313,9 @@ def perform_self_update():
         destdir = topdir + inner_root
         logging.debug("Creating directory {}".format(destdir))
         os.makedirs(destdir, exist_ok=True)
-        for f in files:
-            srcpath = os.path.join(root, f)
-            dstpath = os.path.join(destdir, f)
+        for fname in files:
+            srcpath = os.path.join(root, fname)
+            dstpath = os.path.join(destdir, fname)
             logging.info("Copying {} as {}".format(srcpath, dstpath))
             os.replace(srcpath, dstpath)
         os.rmdir(root)
@@ -344,8 +346,8 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
     loginusers_timestamps = []
     for path in loginvdf_paths:
         try:
-            st = os.stat(path)
-            loginusers_timestamps.append(st.st_mtime)
+            stat = os.stat(path)
+            loginusers_timestamps.append(stat.st_mtime)
         except OSError:
             loginusers_timestamps.append(0)
     if not check_steam_process(use_proton=use_proton, wine=wine, env=env):
@@ -368,8 +370,8 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
             waittime -= 1
             for i, path in enumerate(loginvdf_paths):
                 try:
-                    st = os.stat(path)
-                    if st.st_mtime > loginusers_timestamps[i]:
+                    stat = os.stat(path)
+                    if stat.st_mtime > loginusers_timestamps[i]:
                         print("\r{}".format(" " * 70))  # clear "Waiting..." line
                         logging.debug(
                             "Steam should now be up and running and the user logged in.")
