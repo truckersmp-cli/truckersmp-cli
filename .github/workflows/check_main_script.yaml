@@ -1,4 +1,4 @@
-name: Main script
+name: Main scripts
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
     paths:
       - .github/workflows/check_main_script.yaml
       - truckersmp-cli
-      - truckersmp_cli/__init__.py
+      - truckersmp_cli/*.py
   pull_request:
     branches:
       - master
@@ -16,11 +16,11 @@ on:
     paths:
       - .github/workflows/check_main_script.yaml
       - truckersmp-cli
-      - truckersmp_cli/__init__.py
+      - truckersmp_cli/*.py
 
 jobs:
   check_by_flake8:
-    name: Check main script by flake8
+    name: Check main scripts by flake8
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -29,7 +29,5 @@ jobs:
           python-version: '3.x'
       - name: Install flake8, flake8-docstrings, and flake8-import-order
         run: pip install flake8 flake8-docstrings flake8-import-order
-      - name: Check main script (bin) by flake8
-        run: flake8 --max-line-length=90 --show-source --statistics truckersmp-cli
-      - name: Check main script (module) by flake8
-        run: flake8 --max-line-length=90 --show-source --statistics truckersmp_cli/__init__.py
+      - name: Check Python scripts by flake8
+        run: flake8 --max-line-length=90 --show-source --statistics truckersmp-cli truckersmp_cli/*.py
