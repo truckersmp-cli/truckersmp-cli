@@ -79,7 +79,7 @@ def update_game():
         try:
             gamedir = subproc.check_output(
                 (wine, "winepath", "-w", Args.gamedir), env=env).decode("utf-8").rstrip()
-        except Exception as ex:
+        except (OSError, subproc.CalledProcessError) as ex:
             sys.exit(
                 "Failed to convert game directory to Windows path: {}".format(ex))
 
@@ -95,7 +95,7 @@ def update_game():
         try:
             with urllib.request.urlopen(steamcmd_url) as f_in:
                 steamcmd_archive = f_in.read()
-        except Exception as ex:
+        except OSError as ex:
             sys.exit("Failed to retrieve SteamCMD: {}".format(ex))
         logging.debug("Extracting SteamCMD")
         try:
@@ -108,7 +108,7 @@ def update_game():
                     with f_in.open("steamcmd.exe") as f_exe:
                         with open(steamcmd, "wb") as f_out:
                             f_out.write(f_exe.read())
-        except Exception as ex:
+        except (OSError, tarfile.TarError) as ex:
             sys.exit("Failed to extract SteamCMD: {}".format(ex))
 
     logging.info("SteamCMD: %s", steamcmd)

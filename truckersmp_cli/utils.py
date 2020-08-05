@@ -46,7 +46,7 @@ def activate_native_d3dcompiler_47(prefix, wine):
         if md5hash.hexdigest() == File.d3dcompiler_47_md5:
             logging.debug("d3dcompiler_47.dll is present, MD5 is OK.")
             need_download = False
-    except Exception:
+    except OSError:
         pass
 
     # download 64-bit d3dcompiler_47.dll from ImagingSIMS' repo
@@ -114,7 +114,7 @@ def check_steam_process(use_proton, wine=None, env=None):
             subproc.check_call(
                 ("pgrep", "-u", getuser(), "-x", "steam"), stdout=subproc.DEVNULL)
             return True
-        except Exception:
+        except (OSError, subproc.CalledProcessError):
             return False
     else:
         steam_is_running = False
@@ -132,7 +132,7 @@ def check_steam_process(use_proton, wine=None, env=None):
                 if exename.lower().endswith("steam.exe"):
                     steam_is_running = True
                     break
-        except subproc.CalledProcessError as ex:
+        except (OSError, subproc.CalledProcessError) as ex:
             sys.exit("Failed to get Wine process list: " + ex.output.decode("utf-8"))
         return steam_is_running
 
@@ -211,7 +211,7 @@ def download_files(host, files_to_download, progress_count=None):
                     time.strptime(lastmod, "%a, %d %b %Y %H:%M:%S GMT")) - time.timezone
                 try:
                     os.utime(dest, (timestamp, timestamp))
-                except Exception:
+                except OSError:
                     pass
 
             # downloaded successfully
@@ -222,7 +222,7 @@ def download_files(host, files_to_download, progress_count=None):
             del files_to_download[0]
 
             file_count += 1
-    except Exception as ex:
+    except (OSError, http.client.HTTPException) as ex:
         logging.error("Failed to download https://%s%s: %s", host, path, ex)
         return False
     finally:
@@ -255,7 +255,7 @@ def get_current_steam_user():
                 recent_lc = "mostrecent" in info and info["mostrecent"] == "1"
                 if remember and (recent_lc or recent_uc) and "AccountName" in info:
                     return info["AccountName"]
-        except Exception:
+        except (KeyError, OSError, TypeError, ValueError):
             pass
     return None
 
@@ -272,7 +272,7 @@ def perform_self_update():
     try:
         with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
             current_release = f_in.readline().rstrip()
-    except Exception:
+    except OSError:
         sys.exit("'RELEASE' file doesn't exist. Self update aborted.")
 
     # get latest release
@@ -280,7 +280,7 @@ def perform_self_update():
     try:
         with urllib.request.urlopen(URL.release) as f_in:
             release = f_in.readline().rstrip().decode("ascii")
-    except Exception as ex:
+    except OSError as ex:
         sys.exit("Failed to retrieve RELEASE file: {}".format(ex))
 
     # do nothing if the installed version is latest
@@ -294,7 +294,7 @@ def perform_self_update():
     try:
         with urllib.request.urlopen(archive_url) as f_in:
             asset_archive = f_in.read()
-    except Exception as ex:
+    except OSError as ex:
         sys.exit("Failed to retrieve release asset file: {}".format(ex))
 
     # unpack the archive
@@ -303,7 +303,7 @@ def perform_self_update():
     try:
         with tarfile.open(fileobj=io.BytesIO(asset_archive), mode="r:xz") as f_in:
             f_in.extractall(topdir)
-    except Exception as ex:
+    except (OSError, tarfile.TarError) as ex:
         sys.exit("Failed to unpack release asset file: {}".format(ex))
 
     # update files

@@ -68,7 +68,7 @@ def get_beta_branch_name(game_name="ets2"):
             version = get_supported_game_versions()[game_name].split(".")
             return "temporary_{}_{}".format(version[0], version[1])
         return None
-    except Exception:
+    except (OSError, TypeError):
         return None
 
 
@@ -90,7 +90,7 @@ def get_supported_game_versions():
             "ets2": data["supported_game_version"].replace("s", ""),
             "ats": data["supported_ats_game_version"].replace("s", "")
         }
-    except Exception:
+    except (OSError, ValueError):
         return None
 
 
@@ -104,7 +104,7 @@ def update_mod():
     try:
         with urllib.request.urlopen(URL.listurl) as f_in:
             files_json = f_in.read()
-    except Exception as ex:
+    except OSError as ex:
         sys.exit("Failed to download files.json: {}".format(ex))
 
     # extract md5sums and filenames
@@ -113,8 +113,8 @@ def update_mod():
         for item in json.JSONDecoder().decode(str(files_json, "ascii"))["Files"]:
             modfiles.append((item["Md5"], item["FilePath"]))
         if len(modfiles) == 0:
-            raise Exception("File list is empty")
-    except Exception as ex:
+            raise ValueError("File list is empty")
+    except ValueError as ex:
         sys.exit("""Failed to parse files.json: {}
 Please report an issue: {}""".format(ex, URL.issueurl))
 
@@ -136,7 +136,7 @@ Please report an issue: {}""".format(ex, URL.issueurl))
                         md5hash.update(buf)
                 if md5hash.hexdigest() != md5:
                     dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
-            except Exception as ex:
+            except OSError as ex:
                 sys.exit("Failed to read {}: {}".format(modfilepath, ex))
     if len(dlfiles) > 0:
         message_dlfiles = "Files to download:\n"

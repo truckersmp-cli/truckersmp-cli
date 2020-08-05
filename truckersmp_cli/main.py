@@ -42,7 +42,7 @@ def main():
     try:
         with open(File.proton_json) as f_in:
             AppId.proton = json.load(f_in)
-    except Exception as ex:
+    except (OSError, ValueError) as ex:
         sys.exit("Failed to load proton.json: {}".format(ex))
 
     # parse options
@@ -56,14 +56,14 @@ def main():
             # try to load "RELEASE" file for release assets or cloned git directory
             with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
                 version += f_in.readline().rstrip()
-        except Exception:
+        except OSError:
             pass
         if version:
             try:
                 # try to get git commit hash, and append it if succeeded
                 version += subproc.check_output(
                     ("git", "log", "-1", "--format= (%h)")).decode("utf-8").rstrip()
-            except Exception:
+            except (OSError, subproc.CalledProcessError):
                 pass
         else:
             # try to get version from Python package
