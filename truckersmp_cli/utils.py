@@ -139,6 +139,8 @@ def check_steam_process(use_proton, wine=None, env=None):
 
 def download_files(host, files_to_download, progress_count=None):
     """Download files."""
+    # pylint: disable=too-many-branches
+
     file_count = progress_count[0] if progress_count else 1
     num_of_files = progress_count[1] if progress_count else len(files_to_download)
     conn = http.client.HTTPSConnection(host)
@@ -342,6 +344,8 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
     env: A dictionary that contains environment variables
          (can be None if use_proton is True)
     """
+    # pylint: disable=too-many-branches
+
     steamdir = None
     loginusers_timestamps = []
     for path in loginvdf_paths:

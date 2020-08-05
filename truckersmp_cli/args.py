@@ -16,6 +16,8 @@ from .variables import AppId, Args, Dir
 
 def check_args_errors():
     """Check command-line arguments."""
+    # pylint: disable=too-many-branches
+
     # checks for updating and/or starting
     if not Args.update and not Args.start:
         logging.info("--update/--start not specified, doing both.")

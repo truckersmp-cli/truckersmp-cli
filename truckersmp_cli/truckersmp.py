@@ -100,6 +100,8 @@ def get_supported_game_versions():
 
 def update_mod():
     """Download missing or outdated "multiplayer mod" files."""
+    # pylint: disable=too-many-branches
+
     if not os.path.isdir(Args.moddir):
         logging.debug("Creating directory %s", Args.moddir)
         os.makedirs(Args.moddir, exist_ok=True)
@@ -130,18 +132,18 @@ Please report an issue: {}""".format(ex, URL.issueurl))
         modfilepath = os.path.join(Args.moddir, jsonfilepath[1:])
         if not os.path.isfile(modfilepath):
             dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
-        else:
-            try:
-                with open(modfilepath, "rb") as f_in:
-                    while True:
-                        buf = f_in.read(md5hash.block_size * 4096)
-                        if not buf:
-                            break
-                        md5hash.update(buf)
-                if md5hash.hexdigest() != md5:
-                    dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
-            except OSError as ex:
-                sys.exit("Failed to read {}: {}".format(modfilepath, ex))
+            continue
+        try:
+            with open(modfilepath, "rb") as f_in:
+                while True:
+                    buf = f_in.read(md5hash.block_size * 4096)
+                    if not buf:
+                        break
+                    md5hash.update(buf)
+            if md5hash.hexdigest() != md5:
+                dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
+        except OSError as ex:
+            sys.exit("Failed to read {}: {}".format(modfilepath, ex))
     if len(dlfiles) > 0:
         message_dlfiles = "Files to download:\n"
         for path, _, _ in dlfiles:

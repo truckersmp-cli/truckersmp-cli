@@ -31,6 +31,8 @@ except ImportError:
 
 def main():
     """truckersmp-cli main function."""
+    # pylint: disable=too-many-branches
+
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     locale.setlocale(locale.LC_MESSAGES, "")
     locale.setlocale(locale.LC_TIME, "C")
