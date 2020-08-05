@@ -23,6 +23,10 @@ class DowngradeHTMLParser(html.parser.HTMLParser):
     _data = {"ets2": False, "ats": False}
     _is_downgrade_node = False
 
+    def error(self, message):
+        """Error handler."""
+        raise NotImplementedError("Error handler is not implemented")
+
     def handle_starttag(self, tag, attrs):
         """HTML start tag handler."""
         for attr in attrs:
