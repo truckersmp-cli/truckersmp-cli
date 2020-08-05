@@ -1,3 +1,5 @@
+# pylint: disable=too-few-public-methods
+
 """
 Variables for truckersmp-cli main script.
 
