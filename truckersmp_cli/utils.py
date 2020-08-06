@@ -34,16 +34,9 @@ except ImportError:
 def activate_native_d3dcompiler_47(prefix, wine):
     """Download/activate native 64-bit version of d3dcompiler_47."""
     # check whether DLL is already downloaded
-    md5hash = hashlib.md5()
     need_download = True
     try:
-        with open(File.d3dcompiler_47, "rb") as f_in:
-            while True:
-                buf = f_in.read(md5hash.block_size * 4096)
-                if not buf:
-                    break
-                md5hash.update(buf)
-        if md5hash.hexdigest() == File.d3dcompiler_47_md5:
+        if check_hash(File.d3dcompiler_47, File.d3dcompiler_47_md5, hashlib.md5()):
             logging.debug("d3dcompiler_47.dll is present, MD5 is OK.")
             need_download = False
     except OSError:
@@ -75,6 +68,26 @@ def activate_native_d3dcompiler_47(prefix, wine):
          "HKCU\\Software\\Wine\\AppDefaults\\{}\\DllOverrides".format(exename),
          "/v", "d3dcompiler_47", "/t", "REG_SZ", "/d", "native"],
         env=env)
+
+
+def check_hash(path, digest, hashobj):
+    """
+    Compare given digest and calculated one.
+
+    This returns True if the two digests match.
+    Otherwise this returns False.
+
+    path: Path to the input file
+    digest: Expected hex digest string
+    hashobj: hashlib object (e.g. hashlib.md5())
+    """
+    with open(path, "rb") as f_in:
+        while True:
+            buf = f_in.read(hashobj.block_size * 4096)
+            if not buf:
+                break
+            hashobj.update(buf)
+    return hashobj.hexdigest() == digest
 
 
 def check_libsdl2():

@@ -13,7 +13,7 @@ import sys
 import urllib.parse
 import urllib.request
 
-from .utils import download_files
+from .utils import check_hash, download_files
 from .variables import Args, URL
 
 
@@ -128,19 +128,12 @@ Please report an issue: {}""".format(ex, URL.issueurl))
     # and remember missing/wrong files
     dlfiles = []
     for md5, jsonfilepath in modfiles:
-        md5hash = hashlib.md5()
         modfilepath = os.path.join(Args.moddir, jsonfilepath[1:])
         if not os.path.isfile(modfilepath):
             dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
             continue
         try:
-            with open(modfilepath, "rb") as f_in:
-                while True:
-                    buf = f_in.read(md5hash.block_size * 4096)
-                    if not buf:
-                        break
-                    md5hash.update(buf)
-            if md5hash.hexdigest() != md5:
+            if not check_hash(modfilepath, md5, hashlib.md5()):
                 dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
         except OSError as ex:
             sys.exit("Failed to read {}: {}".format(modfilepath, ex))
