@@ -139,7 +139,7 @@ def check_steam_process(use_proton, wine=None, env=None):
 
 def download_files(host, files_to_download, progress_count=None):
     """Download files."""
-    # pylint: disable=too-many-branches,too-many-locals
+    # pylint: disable=too-many-branches,too-many-locals,too-many-statements
 
     file_count = progress_count[0] if progress_count else 1
     num_of_files = progress_count[1] if progress_count else len(files_to_download)

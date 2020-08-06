@@ -54,7 +54,7 @@ def update_game():
     SteamCMD. When "--proton" is specified, this retrieves/uses
     Linux version of SteamCMD.
     """
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-statements
 
     steamcmd_prolog = ""
     steamcmd_cmd = []
