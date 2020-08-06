@@ -20,6 +20,27 @@ from .utils import check_steam_process
 from .variables import Args, Dir, URL
 
 
+def determine_game_branch():
+    """
+    Determine Steam game branch name.
+
+    When "--beta" option is specified, this returns the specified branch.
+    Otherwise, this try to determine the branch using get_beta_branch_name():
+    If downgrade is needed, this returns the returned branch name.
+    If not needed, this returns the name "public" for using the latest version.
+    """
+    branch = "public"
+    if Args.beta:
+        branch = Args.beta
+    else:
+        game = "ats" if Args.ats else "ets2"
+        beta_branch_name = get_beta_branch_name(game)
+        if beta_branch_name:
+            branch = beta_branch_name
+
+    return branch
+
+
 def update_game():
     """
     Update game and Proton via SteamCMD.
@@ -149,14 +170,7 @@ def update_game():
             sys.exit("SteamCMD exited abnormally")
 
     # determine game branch
-    branch = "public"
-    if Args.beta:
-        branch = Args.beta
-    else:
-        game = "ats" if Args.ats else "ets2"
-        beta_branch_name = get_beta_branch_name(game)
-        if beta_branch_name:
-            branch = beta_branch_name
+    branch = determine_game_branch()
     logging.info("Game branch: %s", branch)
 
     # use SteamCMD to update the chosen game

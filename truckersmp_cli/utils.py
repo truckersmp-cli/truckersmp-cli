@@ -139,7 +139,7 @@ def check_steam_process(use_proton, wine=None, env=None):
 
 def download_files(host, files_to_download, progress_count=None):
     """Download files."""
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-locals
 
     file_count = progress_count[0] if progress_count else 1
     num_of_files = progress_count[1] if progress_count else len(files_to_download)
@@ -270,13 +270,6 @@ def perform_self_update():
     If local version is not up-to-date, this function retrieves the latest
     GitHub release asset (.tar.xz) and replaces existing files with extracted files.
     """
-    # we don't update when Python package is used
-    try:
-        with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
-            current_release = f_in.readline().rstrip()
-    except OSError:
-        sys.exit("'RELEASE' file doesn't exist. Self update aborted.")
-
     # get latest release
     logging.info("Retrieving RELEASE from master")
     try:
@@ -285,10 +278,15 @@ def perform_self_update():
     except OSError as ex:
         sys.exit("Failed to retrieve RELEASE file: {}".format(ex))
 
-    # do nothing if the installed version is latest
-    if release == current_release:
-        logging.info("Already up-to-date.")
-        return
+    # we don't update when Python package is used
+    try:
+        with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
+            # do nothing if the installed version is latest
+            if release == f_in.readline().rstrip():
+                logging.info("Already up-to-date.")
+                return
+    except OSError:
+        sys.exit("'RELEASE' file doesn't exist. Self update aborted.")
 
     # retrieve the release asset
     archive_url = URL.rel_tarxz_tmpl.format(release)
