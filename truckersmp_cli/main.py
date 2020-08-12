@@ -29,10 +29,43 @@ except ImportError:
     pass
 
 
+def get_version_string():
+    """
+    Get the version of this program and return it in string format.
+
+    This first tries to load "RELEASE" file
+    for GitHub release assets or cloned git repo directory.
+    If succeeded, it additionally tries to get git commit hash and append it.
+    Otherwise, it tries to get version from Python package
+    only when "pkg_resources" module is available.
+    If the version is still unknown, this returns "unknown".
+    """
+    version = ""
+    try:
+        # try to load "RELEASE" file for release assets or cloned git directory
+        with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
+            version += f_in.readline().rstrip()
+    except OSError:
+        pass
+    if version:
+        try:
+            # try to get git commit hash, and append it if succeeded
+            version += subproc.check_output(
+                ("git", "log", "-1", "--format= (%h)")).decode("utf-8").rstrip()
+        except (OSError, subproc.CalledProcessError):
+            pass
+    else:
+        # try to get version from Python package
+        try:
+            if PKG_RESOURCES_IS_AVAILABLE:
+                version += pkg_resources.get_distribution(__package__).version
+        except pkg_resources.DistributionNotFound:
+            pass
+    return version if version else "unknown"
+
+
 def main():
     """truckersmp-cli main function."""
-    # pylint: disable=too-many-branches,too-many-statements
-
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     locale.setlocale(locale.LC_MESSAGES, "")
     locale.setlocale(locale.LC_TIME, "C")
@@ -53,42 +86,11 @@ def main():
 
     # print version
     if Args.version:
-        version = ""
-        try:
-            # try to load "RELEASE" file for release assets or cloned git directory
-            with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
-                version += f_in.readline().rstrip()
-        except OSError:
-            pass
-        if version:
-            try:
-                # try to get git commit hash, and append it if succeeded
-                version += subproc.check_output(
-                    ("git", "log", "-1", "--format= (%h)")).decode("utf-8").rstrip()
-            except (OSError, subproc.CalledProcessError):
-                pass
-        else:
-            # try to get version from Python package
-            try:
-                if PKG_RESOURCES_IS_AVAILABLE:
-                    version += pkg_resources.get_distribution(__package__).version
-            except pkg_resources.DistributionNotFound:
-                pass
-        print(version if version else "unknown")
+        print(get_version_string())
         sys.exit()
 
-    # initialize logging
-    formatter = logging.Formatter("** {levelname} **  {message}", style="{")
-    stderr_handler = logging.StreamHandler()
-    stderr_handler.setFormatter(formatter)
-    logger = logging.getLogger()
-    if Args.verbose:
-        logger.setLevel(logging.INFO if Args.verbose == 1 else logging.DEBUG)
-    logger.addHandler(stderr_handler)
-    if Args.logfile != "":
-        file_handler = logging.FileHandler(Args.logfile, mode="w")
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+    # set up logging
+    setup_logging()
 
     # self update
     if Args.self_update:
@@ -129,6 +131,25 @@ def main():
         start_game()
 
     sys.exit()
+
+
+def setup_logging():
+    """
+    Set up Python logging facility.
+
+    This function must be called after parse_args().
+    """
+    formatter = logging.Formatter("** {levelname} **  {message}", style="{")
+    stderr_handler = logging.StreamHandler()
+    stderr_handler.setFormatter(formatter)
+    logger = logging.getLogger()
+    if Args.verbose:
+        logger.setLevel(logging.INFO if Args.verbose == 1 else logging.DEBUG)
+    logger.addHandler(stderr_handler)
+    if Args.logfile != "":
+        file_handler = logging.FileHandler(Args.logfile, mode="w")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
 
 def start_with_proton():
