@@ -21,12 +21,47 @@ from .utils import (
 )
 from .variables import AppId, Args, Dir, File
 
-pkg_resources_is_available = False
+PKG_RESOURCES_IS_AVAILABLE = False
 try:
     import pkg_resources
-    pkg_resources_is_available = True
+    PKG_RESOURCES_IS_AVAILABLE = True
 except ImportError:
     pass
+
+
+def get_version_string():
+    """
+    Get the version of this program and return it in string format.
+
+    This first tries to load "RELEASE" file
+    for GitHub release assets or cloned git repo directory.
+    If succeeded, it additionally tries to get git commit hash and append it.
+    Otherwise, it tries to get version from Python package
+    only when "pkg_resources" module is available.
+    If the version is still unknown, this returns "unknown".
+    """
+    version = ""
+    try:
+        # try to load "RELEASE" file for release assets or cloned git directory
+        with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
+            version += f_in.readline().rstrip()
+    except OSError:
+        pass
+    if version:
+        try:
+            # try to get git commit hash, and append it if succeeded
+            version += subproc.check_output(
+                ("git", "log", "-1", "--format= (%h)")).decode("utf-8").rstrip()
+        except (OSError, subproc.CalledProcessError):
+            pass
+    else:
+        # try to get version from Python package
+        try:
+            if PKG_RESOURCES_IS_AVAILABLE:
+                version += pkg_resources.get_distribution(__package__).version
+        except pkg_resources.DistributionNotFound:
+            pass
+    return version if version else "unknown"
 
 
 def main():
@@ -40,10 +75,10 @@ def main():
     # example:
     #     {"5.0": 1245040, "4.11": 1113280, "default": "5.0"}
     try:
-        with open(File.proton_json) as f:
-            AppId.proton = json.load(f)
-    except Exception as e:
-        sys.exit("Failed to load proton.json: {}".format(e))
+        with open(File.proton_json) as f_in:
+            AppId.proton = json.load(f_in)
+    except (OSError, ValueError) as ex:
+        sys.exit("Failed to load proton.json: {}".format(ex))
 
     # parse options
     arg_parser = create_arg_parser()
@@ -51,42 +86,11 @@ def main():
 
     # print version
     if Args.version:
-        version = ""
-        try:
-            # try to load "RELEASE" file for release assets or cloned git directory
-            with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f:
-                version += f.readline().rstrip()
-        except Exception:
-            pass
-        if version:
-            try:
-                # try to get git commit hash, and append it if succeeded
-                version += subproc.check_output(
-                  ("git", "log", "-1", "--format= (%h)")).decode("utf-8").rstrip()
-            except Exception:
-                pass
-        else:
-            # try to get version from Python package
-            try:
-                if pkg_resources_is_available:
-                    version += pkg_resources.get_distribution(__package__).version
-            except pkg_resources.DistributionNotFound:
-                pass
-        print(version if version else "unknown")
+        print(get_version_string())
         sys.exit()
 
-    # initialize logging
-    formatter = logging.Formatter("** {levelname} **  {message}", style="{")
-    stderr_handler = logging.StreamHandler()
-    stderr_handler.setFormatter(formatter)
-    logger = logging.getLogger()
-    if Args.verbose:
-        logger.setLevel(logging.INFO if Args.verbose == 1 else logging.DEBUG)
-    logger.addHandler(stderr_handler)
-    if Args.logfile != "":
-        file_handler = logging.FileHandler(Args.logfile, mode="w")
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+    # set up logging
+    setup_logging()
 
     # self update
     if Args.self_update:
@@ -101,7 +105,7 @@ def main():
         else:
             logging.debug("No moddir set, setting to default")
             Args.moddir = Dir.default_moddir
-    logging.info("Mod directory: " + Args.moddir)
+    logging.info("Mod directory: %s", Args.moddir)
 
     # check for errors
     check_args_errors()
@@ -123,19 +127,38 @@ def main():
         start_functions = (("Proton", start_with_proton), ("Wine", start_with_wine))
         i = 0 if Args.proton else 1
         compat_tool, start_game = start_functions[i]
-        logging.debug("Starting game with {}".format(compat_tool))
+        logging.debug("Starting game with %s", compat_tool)
         start_game()
 
     sys.exit()
 
 
+def setup_logging():
+    """
+    Set up Python logging facility.
+
+    This function must be called after parse_args().
+    """
+    formatter = logging.Formatter("** {levelname} **  {message}", style="{")
+    stderr_handler = logging.StreamHandler()
+    stderr_handler.setFormatter(formatter)
+    logger = logging.getLogger()
+    if Args.verbose:
+        logger.setLevel(logging.INFO if Args.verbose == 1 else logging.DEBUG)
+    logger.addHandler(stderr_handler)
+    if Args.logfile != "":
+        file_handler = logging.FileHandler(Args.logfile, mode="w")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+
 def start_with_proton():
     """Start game with Proton."""
     steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
-    logging.info("Steam installation directory: " + steamdir)
+    logging.info("Steam installation directory: %s", steamdir)
 
     if not os.path.isdir(Args.prefixdir):
-        logging.debug("Creating directory {}".format(Args.prefixdir))
+        logging.debug("Creating directory %s", Args.prefixdir)
     os.makedirs(Args.prefixdir, exist_ok=True)
 
     # activate native d3dcompiler_47
@@ -169,27 +192,28 @@ def start_with_proton():
         argv += gamepath, "-nointro", "-64bit"
     else:
         argv += File.inject_exe, Args.gamedir, Args.moddir
-    logging.info("""Startup command:
-  SteamGameId={}
-  SteamAppId={}
-  STEAM_COMPAT_DATA_PATH={}
-  STEAM_COMPAT_CLIENT_INSTALL_PATH={}
-  PROTON_USE_WINED3D={}
-  PROTON_NO_D3D11={}
-  {}{} {}
+    logging.info(
+        """Startup command:
+  SteamGameId=%s
+  SteamAppId=%s
+  STEAM_COMPAT_DATA_PATH=%s
+  STEAM_COMPAT_CLIENT_INSTALL_PATH=%s
+  PROTON_USE_WINED3D=%s
+  PROTON_NO_D3D11=%s
+  %s%s %s
   run
-  {} {} {}""".format(
-      env["SteamGameId"], env["SteamAppId"],
-      env["STEAM_COMPAT_DATA_PATH"], env["STEAM_COMPAT_CLIENT_INSTALL_PATH"],
-      env["PROTON_USE_WINED3D"],
-      env["PROTON_NO_D3D11"],
-      ld_preload,
-      sys.executable, proton, argv[-3], argv[-2], argv[-1]))
+  %s %s %s""",
+        env["SteamGameId"], env["SteamAppId"],
+        env["STEAM_COMPAT_DATA_PATH"], env["STEAM_COMPAT_CLIENT_INSTALL_PATH"],
+        env["PROTON_USE_WINED3D"],
+        env["PROTON_NO_D3D11"],
+        ld_preload,
+        sys.executable, proton, argv[-3], argv[-2], argv[-1])
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
-        logging.info("Proton output:\n" + output.decode("utf-8"))
-    except subproc.CalledProcessError as e:
-        logging.error("Proton output:\n" + e.output.decode("utf-8"))
+        logging.info("Proton output:\n%s", output.decode("utf-8"))
+    except subproc.CalledProcessError as ex:
+        logging.error("Proton output:\n%s", ex.output.decode("utf-8"))
 
 
 def start_with_wine():
@@ -204,10 +228,10 @@ def start_with_wine():
     env["WINEPREFIX"] = Args.prefixdir
 
     wait_for_steam(
-      use_proton=False,
-      loginvdf_paths=(os.path.join(Args.wine_steam_dir, "config/loginusers.vdf"), ),
-      wine=wine,
-      env=env,
+        use_proton=False,
+        loginvdf_paths=(os.path.join(Args.wine_steam_dir, "config/loginusers.vdf"), ),
+        wine=wine,
+        env=env,
     )
     if "WINEDLLOVERRIDES" not in env:
         env["WINEDLLOVERRIDES"] = ""
@@ -221,15 +245,16 @@ def start_with_wine():
         argv += gamepath, "-nointro", "-64bit"
     else:
         argv += File.inject_exe, Args.gamedir, Args.moddir
-    logging.info("""Startup command:
+    logging.info(
+        """Startup command:
   WINEDEBUG=-all
   WINEARCH=win64
-  WINEPREFIX={}
-  WINEDLLOVERRIDES="{}"
-  {} {} {} {}""".format(
-      env["WINEPREFIX"], env["WINEDLLOVERRIDES"], wine, argv[-3], argv[-2], argv[-1]))
+  WINEPREFIX=%s
+  WINEDLLOVERRIDES="%s"
+  %s %s %s %s""",
+        env["WINEPREFIX"], env["WINEDLLOVERRIDES"], wine, argv[-3], argv[-2], argv[-1])
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
-        logging.info("Wine output:\n" + output.decode("utf-8"))
-    except subproc.CalledProcessError as e:
-        logging.error("Wine output:\n" + e.output.decode("utf-8"))
+        logging.info("Wine output:\n%s", output.decode("utf-8"))
+    except subproc.CalledProcessError as ex:
+        logging.error("Wine output:\n%s", ex.output.decode("utf-8"))

@@ -1,3 +1,5 @@
+# pylint: disable=too-few-public-methods
+
 """
 Variables for truckersmp-cli main script.
 
@@ -20,8 +22,6 @@ class AppId:
 class Args:
     """Arguments from command line."""
 
-    pass
-
 
 class Dir:
     """Directories."""
@@ -29,15 +29,15 @@ class Dir:
     XDG_DATA_HOME = os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
     default_gamedir = {
         "ats": os.path.join(
-          XDG_DATA_HOME, "truckersmp-cli/American Truck Simulator/data"),
+            XDG_DATA_HOME, "truckersmp-cli/American Truck Simulator/data"),
         "ets2": os.path.join(
-          XDG_DATA_HOME, "truckersmp-cli/Euro Truck Simulator 2/data"),
+            XDG_DATA_HOME, "truckersmp-cli/Euro Truck Simulator 2/data"),
     }
     default_prefixdir = {
         "ats": os.path.join(
-          XDG_DATA_HOME, "truckersmp-cli/American Truck Simulator/prefix"),
+            XDG_DATA_HOME, "truckersmp-cli/American Truck Simulator/prefix"),
         "ets2": os.path.join(
-          XDG_DATA_HOME, "truckersmp-cli/Euro Truck Simulator 2/prefix"),
+            XDG_DATA_HOME, "truckersmp-cli/Euro Truck Simulator 2/prefix"),
     }
     default_moddir = os.path.join(XDG_DATA_HOME, "truckersmp-cli/TruckersMP")
     default_protondir = os.path.join(XDG_DATA_HOME, "truckersmp-cli/Proton")

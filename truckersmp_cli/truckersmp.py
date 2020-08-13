@@ -13,7 +13,7 @@ import sys
 import urllib.parse
 import urllib.request
 
-from .utils import download_files
+from .utils import check_hash, download_files
 from .variables import Args, URL
 
 
@@ -22,6 +22,10 @@ class DowngradeHTMLParser(html.parser.HTMLParser):
 
     _data = {"ets2": False, "ats": False}
     _is_downgrade_node = False
+
+    def error(self, message):
+        """Error handler."""
+        raise NotImplementedError("Error handler is not implemented")
 
     def handle_starttag(self, tag, attrs):
         """HTML start tag handler."""
@@ -61,14 +65,14 @@ def get_beta_branch_name(game_name="ets2"):
     """
     try:
         parser = DowngradeHTMLParser()
-        with urllib.request.urlopen(URL.truckersmp_stats) as f:
-            parser.feed(f.read().decode("utf-8"))
+        with urllib.request.urlopen(URL.truckersmp_stats) as f_in:
+            parser.feed(f_in.read().decode("utf-8"))
 
         if parser.data[game_name]:
             version = get_supported_game_versions()[game_name].split(".")
             return "temporary_{}_{}".format(version[0], version[1])
         return None
-    except Exception:
+    except (OSError, TypeError):
         return None
 
 
@@ -83,29 +87,31 @@ def get_supported_game_versions():
     }
     """
     try:
-        with urllib.request.urlopen(URL.truckersmp_api) as f:
-            data = json.load(f)
+        with urllib.request.urlopen(URL.truckersmp_api) as f_in:
+            data = json.load(f_in)
 
         return {
             "ets2": data["supported_game_version"].replace("s", ""),
             "ats": data["supported_ats_game_version"].replace("s", "")
         }
-    except Exception:
+    except (OSError, ValueError):
         return None
 
 
 def update_mod():
     """Download missing or outdated "multiplayer mod" files."""
+    # pylint: disable=too-many-branches
+
     if not os.path.isdir(Args.moddir):
-        logging.debug("Creating directory {}".format(Args.moddir))
+        logging.debug("Creating directory %s", Args.moddir)
         os.makedirs(Args.moddir, exist_ok=True)
 
     # get the fileinfo from the server
     try:
-        with urllib.request.urlopen(URL.listurl) as f:
-            files_json = f.read()
-    except Exception as e:
-        sys.exit("Failed to download files.json: {}".format(e))
+        with urllib.request.urlopen(URL.listurl) as f_in:
+            files_json = f_in.read()
+    except OSError as ex:
+        sys.exit("Failed to download files.json: {}".format(ex))
 
     # extract md5sums and filenames
     modfiles = []
@@ -113,31 +119,24 @@ def update_mod():
         for item in json.JSONDecoder().decode(str(files_json, "ascii"))["Files"]:
             modfiles.append((item["Md5"], item["FilePath"]))
         if len(modfiles) == 0:
-            raise Exception("File list is empty")
-    except Exception as e:
+            raise ValueError("File list is empty")
+    except ValueError as ex:
         sys.exit("""Failed to parse files.json: {}
-Please report an issue: {}""".format(e, URL.issueurl))
+Please report an issue: {}""".format(ex, URL.issueurl))
 
     # compare existing local files with md5sums
     # and remember missing/wrong files
     dlfiles = []
     for md5, jsonfilepath in modfiles:
-        md5hash = hashlib.md5()
         modfilepath = os.path.join(Args.moddir, jsonfilepath[1:])
         if not os.path.isfile(modfilepath):
             dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
-        else:
-            try:
-                with open(modfilepath, "rb") as f:
-                    while True:
-                        buf = f.read(md5hash.block_size * 4096)
-                        if not buf:
-                            break
-                        md5hash.update(buf)
-                if md5hash.hexdigest() != md5:
-                    dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
-            except Exception as e:
-                sys.exit("Failed to read {}: {}".format(modfilepath, e))
+            continue
+        try:
+            if not check_hash(modfilepath, md5, hashlib.md5()):
+                dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
+        except OSError as ex:
+            sys.exit("Failed to read {}: {}".format(modfilepath, ex))
     if len(dlfiles) > 0:
         message_dlfiles = "Files to download:\n"
         for path, _, _ in dlfiles:
