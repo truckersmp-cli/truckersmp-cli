@@ -54,15 +54,23 @@ class DowngradeHTMLParser(html.parser.HTMLParser):
         return self._data
 
 
-def get_beta_branch_name(game_name="ets2"):
+def determine_game_branch():
     """
-    Get the current required beta branch name to comply with TruckersMP.
+    Determine Steam game branch name.
 
-    If downgrade is needed, this returns a branch name that can be used
-    to install TruckersMP-compatible versions of games (e.g. "temporary_1_36")
-    on success or None on error.
-    If downgrade is not needed, this returns None.
+    When "--beta" option is specified, this returns the specified branch.
+    Otherwise, this tries to determine the branch using TruckersMP Web API:
+    If downgrade is needed, this tries to get the TruckersMP-compatible
+    branch name (e.g. "temporary_1_37") and returns it if succeeded.
+    If the latest game version is compatible with TruckersMP
+    or this fails to get TruckersMP-compatible version,
+    this returns the name "public" for using the latest version.
     """
+    if Args.beta:
+        return Args.beta
+
+    branch = "public"
+    game_name = "ats" if Args.ats else "ets2"
     try:
         parser = DowngradeHTMLParser()
         with urllib.request.urlopen(URL.truckersmp_stats) as f_in:
@@ -70,10 +78,11 @@ def get_beta_branch_name(game_name="ets2"):
 
         if parser.data[game_name]:
             version = get_supported_game_versions()[game_name].split(".")
-            return "temporary_{}_{}".format(version[0], version[1])
-        return None
+            branch = "temporary_{}_{}".format(version[0], version[1])
     except (OSError, TypeError):
-        return None
+        pass
+
+    return branch
 
 
 def get_supported_game_versions():
