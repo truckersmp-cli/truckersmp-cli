@@ -89,22 +89,30 @@ def get_supported_game_versions():
     """
     Get TruckersMP-supported game versions via TruckersMP Web API.
 
-    Returns a dict of 'game: version' pairs:
-    {
-        "ets2": "1.36.2.55",
-        "ats": "1.36.1.40"
-    }
+    If this successfully gets the supported versions,
+    this returns a dict of 'game: version' pairs
+    (e.g. { "ets2": "1.36.2.55", "ats": "1.36.1.40" } ).
+    Otherwise, this returns None.
     """
+    result = None
     try:
         with urllib.request.urlopen(URL.truckersmp_api) as f_in:
             data = json.load(f_in)
 
-        return {
-            "ets2": data["supported_game_version"].replace("s", ""),
-            "ats": data["supported_ats_game_version"].replace("s", "")
-        }
-    except (OSError, ValueError):
-        return None
+        key_ets2_compat = "supported_game_version"
+        key_ats_compat = "supported_ats_game_version"
+        if key_ets2_compat in data and key_ats_compat in data:
+            result = dict(
+                ets2=data[key_ets2_compat].replace("s", ""),
+                ats=data[key_ats_compat].replace("s", ""),
+            )
+        else:
+            logging.warning("\
+TruckersMP Web API returned the JSON that doesn't contain supported game versions.")
+    except (OSError, ValueError) as ex:
+        logging.warning("Failed to get information via TruckersMP Web API: %s", ex)
+
+    return result
 
 
 def update_mod():
