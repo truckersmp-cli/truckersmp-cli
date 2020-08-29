@@ -96,8 +96,14 @@ Need to download (-u) Proton?""".format(Args.protondir))
             sys.exit("Desktop size ({}) must be 'WIDTHxHEIGHT' format".format(
                 Args.wine_desktop))
         try:
-            if int(split_size[0]) <= 0 or int(split_size[1]) <= 0:
-                sys.exit("Desktop size is too small ({})".format(Args.wine_desktop))
+            # if given desktop size is too small,
+            # set to 1024x768 (the lowest resolution in ETS2/ATS)
+            if int(split_size[0]) < 1024 or int(split_size[1]) < 768:
+                logging.info(
+                    "Desktop size (%s) is too small, setting size to 1024x768.",
+                    Args.wine_desktop,
+                )
+                Args.wine_desktop = "1024x768"
         except ValueError:
             sys.exit("Invalid desktop width or height ({})".format(Args.wine_desktop))
 
