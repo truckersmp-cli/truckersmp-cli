@@ -341,7 +341,8 @@ def set_wine_desktop_registry(prefix, wine, enable):
     """
     Set Wine desktop registry.
 
-    If the 3rd argument (enable) is True, this function enables Wine desktop globally.
+    If the 3rd argument (enable) is True, this function enables Wine desktop
+    for the given Wine prefix.
     Otherwise, this function disables Wine desktop.
 
     prefix: Path to Wine prefix to configure
