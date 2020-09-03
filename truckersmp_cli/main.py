@@ -17,7 +17,7 @@ from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import (
     activate_native_d3dcompiler_47, check_libsdl2,
-    perform_self_update, wait_for_steam,
+    perform_self_update, set_wine_desktop_registry, wait_for_steam,
 )
 from .variables import AppId, Args, Dir, File
 
@@ -163,8 +163,13 @@ def start_with_proton():
 
     # activate native d3dcompiler_47
     wine = os.path.join(Args.protondir, "dist/bin/wine")
+    prefix = os.path.join(Args.prefixdir, "pfx")
     if Args.activate_native_d3dcompiler_47:
-        activate_native_d3dcompiler_47(os.path.join(Args.prefixdir, "pfx"), wine)
+        activate_native_d3dcompiler_47(prefix, wine)
+
+    # enable Wine desktop if requested
+    if Args.wine_desktop:
+        set_wine_desktop_registry(prefix, wine, True)
 
     env = os.environ.copy()
     env["SteamGameId"] = Args.steamid
@@ -215,6 +220,10 @@ def start_with_proton():
     except subproc.CalledProcessError as ex:
         logging.error("Proton output:\n%s", ex.output.decode("utf-8"))
 
+    # disable Wine desktop if enabled
+    if Args.wine_desktop:
+        set_wine_desktop_registry(prefix, wine, False)
+
 
 def start_with_wine():
     """Start game with Wine."""
@@ -239,6 +248,10 @@ def start_with_wine():
         env["WINEDLLOVERRIDES"] += ";d3d11=;dxgi="
 
     argv = [wine, ]
+    desktop_args = ""
+    if Args.wine_desktop:
+        argv += "explorer", "/desktop=TruckersMP,{}".format(Args.wine_desktop)
+        desktop_args += argv[1] + " " + argv[2] + " "
     if Args.singleplayer:
         exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
         gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
@@ -251,8 +264,9 @@ def start_with_wine():
   WINEARCH=win64
   WINEPREFIX=%s
   WINEDLLOVERRIDES="%s"
-  %s %s %s %s""",
-        env["WINEPREFIX"], env["WINEDLLOVERRIDES"], wine, argv[-3], argv[-2], argv[-1])
+  %s %s%s %s %s""",
+        env["WINEPREFIX"], env["WINEDLLOVERRIDES"],
+        wine, desktop_args, argv[-3], argv[-2], argv[-1])
     try:
         output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
         logging.info("Wine output:\n%s", output.decode("utf-8"))

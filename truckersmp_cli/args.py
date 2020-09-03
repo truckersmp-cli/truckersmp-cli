@@ -16,7 +16,7 @@ from .variables import AppId, Args, Dir
 
 def check_args_errors():
     """Check command-line arguments."""
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-statements
 
     # checks for updating and/or starting
     if not Args.update and not Args.start:
@@ -88,6 +88,24 @@ Need to download (-u) Proton?""".format(Args.protondir))
         if not Args.account:
             logging.info("Unable to find logged in steam user automatically.")
             sys.exit("Need the steam account name (-n name) to update.")
+
+    # check for Wine desktop size
+    if Args.wine_desktop:
+        split_size = Args.wine_desktop.split("x")
+        if len(split_size) != 2:
+            sys.exit("Desktop size ({}) must be 'WIDTHxHEIGHT' format".format(
+                Args.wine_desktop))
+        try:
+            # if given desktop size is too small,
+            # set to 1024x768 (the lowest resolution in ETS2/ATS)
+            if int(split_size[0]) < 1024 or int(split_size[1]) < 768:
+                logging.info(
+                    "Desktop size (%s) is too small, setting size to 1024x768.",
+                    Args.wine_desktop,
+                )
+                Args.wine_desktop = "1024x768"
+        except ValueError:
+            sys.exit("Invalid desktop width or height ({})".format(Args.wine_desktop))
 
     # info
     logging.info("AppID/GameID: %s (%s)", Args.steamid, game)
@@ -227,6 +245,12 @@ SteamCMD can use your saved credentials for convenience.
         "--use-wined3d",
         help="use OpenGL-based D3D11 instead of DXVK when using Proton",
         action="store_true")
+    parser.add_argument(
+        "--wine-desktop", metavar="SIZE", type=str,
+        help="""use Wine desktop, work around missing TruckerMP overlay
+                after tabbing out using DXVK, mouse clicking won't work
+                in other GUI apps while the game is running, SIZE must be
+                'WIDTHxHEIGHT' format (e.g. 1920x1080)""")
     parser.add_argument(
         "--wine-steam-dir", metavar="DIR", type=str,
         help="""choose a directory for Windows version of Steam

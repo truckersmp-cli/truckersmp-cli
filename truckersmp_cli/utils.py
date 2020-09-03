@@ -337,6 +337,41 @@ def perform_self_update():
     logging.info("Self update complete")
 
 
+def set_wine_desktop_registry(prefix, wine, enable):
+    """
+    Set Wine desktop registry.
+
+    If the 3rd argument (enable) is True, this function enables Wine desktop
+    for the given Wine prefix.
+    Otherwise, this function disables Wine desktop.
+
+    prefix: Path to Wine prefix to configure
+    wine: Path to Wine executable
+    enable: Whether to enable Wine desktop
+    """
+    env = os.environ.copy()
+    env["WINEDEBUG"] = "-all"
+    env["WINEPREFIX"] = prefix
+    regkey_explorer = "HKCU\\Software\\Wine\\Explorer"
+    regkey_desktops = "HKCU\\Software\\Wine\\Explorer\\Desktops"
+    if enable:
+        logging.info("Enabling Wine desktop (%s)", Args.wine_desktop)
+        subproc.call(
+            (wine, "reg", "add", regkey_explorer,
+             "/v", "Desktop", "/t", "REG_SZ", "/d", "Default", "/f"),
+            env=env)
+        subproc.call(
+            (wine, "reg", "add", regkey_desktops,
+             "/v", "Default", "/t", "REG_SZ", "/d", Args.wine_desktop, "/f"),
+            env=env)
+    else:
+        logging.info("Disabling Wine desktop")
+        subproc.call(
+            (wine, "reg", "delete", regkey_explorer, "/v", "Desktop", "/f"), env=env)
+        subproc.call(
+            (wine, "reg", "delete", regkey_desktops, "/v", "Default", "/f"), env=env)
+
+
 def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
     """
     Wait for Steam to be running.
