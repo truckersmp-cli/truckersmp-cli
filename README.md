@@ -9,6 +9,41 @@ The Windows versions of ATS and ETS2 can be installed and updated via [SteamCMD]
 
 On Linux it's possible to start TruckersMP through [Proton][github:proton]. A working [native Steam][repology:steam] installation is needed for this. SteamCMD can use your saved credentials for convenience.
 
+## Install
+
+### From repository (recommended)
+
+#### System repository (recommended)
+
+If available install from your [repository][repology:truckersmp-cli]. Updates will ship through your normal system update process.
+
+#### Python Package Index
+
+Operation|System-wide|Per-user (recommended)
+---|---|---
+Installation|`pip install truckersmp-cli`|`pip install --user truckersmp-cli`
+Optional dependencies|`pip install truckersmp-cli[optional]`|`pip install --user truckersmp-cli[optional]`
+Update|`pip install truckersmp-cli --upgrade`|`pip install --user truckersmp-cli --upgrade`
+Additional information|This usually requires root permission and can interfere with other python packages installed through your normal repository so be careful.|Make sure the binary path (e.g. `$HOME/.local/bin`) is in your `$PATH`.
+
+### Manual download
+
+You can get the latest pre-built release from [the release page][github:release-page] and decompress it into the desired folder. This version is capable to update itself by running `--self-update` so make sure it's placed in a folder where your user has write permissions.
+
+### Runtime dependencies
+
+#### Required
+
+* [`python`][repology:python] in version 3.3 (released in September 2012) or later
+* [`sdl2`][repology:sdl2] in x86_64
+* `steam` either the [native Linux version][repology:steam] in use with Proton or the [Windows Steam][steam:windows] in use with Wine
+
+#### Optional
+
+* `pkg_resources` (part of [`setuptools`][repology:python-setuptools]) to get the version information from the Python package
+* [`vdf`][python:vdf] to automatically detect the steam account with saved credentials
+* [`wine`][repology:wine] as a possible replacement to Proton
+
 ## Usage options
 
 Short option|Long option|Description
@@ -46,32 +81,24 @@ Version|AppID
 5.0 (Default)|[1245040](https://steamdb.info/app/1245040/)
 4.11|[1113280](https://steamdb.info/app/1113280/)
 
-## Install
-
-### From repository (recommended)
-
-#### System repository (recommended)
-
-If available install from your [repository][repology:truckersmp-cli]. Updates will ship through your normal system update process.
-
-#### Python Package Index
-
-Operation|System-wide|Per-user (recommended)
----|---|---
-Installation|`pip install truckersmp-cli`|`pip install --user truckersmp-cli`
-Optional dependencies|`pip install truckersmp-cli[optional]`|`pip install --user truckersmp-cli[optional]`
-Update|`pip install truckersmp-cli --upgrade`|`pip install --user truckersmp-cli --upgrade`
-Additional information|This usually requires root permission and can interfere with other python packages installed through your normal repository so be careful.|Make sure the binary path (e.g. `$HOME/.local/bin`) is in your `$PATH`.
-
-### Manual download
-
-You can get the latest pre-built release from [the release page][github:release-page] and decompress it into the desired folder. This version is capable to update itself by running `--self-update` so make sure it's placed in a folder where your user has write permissions.
-
 ## Build
 
 1. Clone or download this repository
 1. Run `make` in the main folder to build the injector executable. Bash/zsh completion files will also be generated if [genzshcomp][python:genzshcomp] is available.
 1. Optional run [`setup.py`][setuptools:command-reference] to manually start the installation process.
+
+### Buildtime dependencies
+
+#### Required
+
+* [`gcc-mingw-w64`][repology:gcc-mingw-w64] to build the injector executable
+* [`make`][repology:make]
+
+#### Optional
+
+* [`genzshcomp`][python:genzshcomp] to generate bash/zsh completions
+* [`git`][repology:git] to clone this repo and help developing
+* [`setuptools`][repology:python-setuptools] to run `setup.py`
 
 ### bash/zsh completion
 
@@ -101,33 +128,6 @@ $ cp truckersmp-cli.bash "${XDG_DATA_HOME:-~/.local/share}/bash-completion/compl
 ##### zsh
 
 Copy `_truckersmp-cli` to a directory that is part of `$fpath` and run `compinit`.
-
-## Runtime dependencies
-
-### Required
-
-* [`python`][repology:python] in version 3.3 (released in September 2012) or later
-* [`sdl2`][repology:sdl2] in x86_64
-* `steam` either the [native Linux version][repology:steam] in use with Proton or the [Windows Steam][steam:windows] in use with Wine
-
-### Optional
-
-* `pkg_resources` (part of [`setuptools`][repology:python-setuptools]) to get the version information from the Python package
-* [`vdf`][python:vdf] to automatically detect the steam account with saved credentials
-* [`wine`][repology:wine] as a possible replacement to Proton
-
-## Buildtime dependencies
-
-### Required
-
-* [`gcc-mingw-w64`][repology:gcc-mingw-w64] to build the injector executable
-* [`make`][repology:make]
-
-### Optional
-
-* [`genzshcomp`][python:genzshcomp] to generate bash/zsh completions
-* [`git`][repology:git] to clone this repo and help developing
-* [`setuptools`][repology:python-setuptools] to run `setup.py`
 
 ## Usage examples
 
