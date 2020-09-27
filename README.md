@@ -182,6 +182,8 @@ $ truckersmp-cli --ets2 --start --wine --prefixdir "/path/to/prefix/pfx"
 
 * Stable and faster than wined3d. But slower than DXVK.
 * Useful if you're not using Vulkan-capable GPU.
+* Game crashes due to a bug in Multiplayer DLL when trying to choose color ("Player tag", "Players on the world map")
+    * See [issue #91][github:issue91] for more details
 
 ### Direct3D 11 (DXVK or wined3d)
 
@@ -195,6 +197,8 @@ $ truckersmp-cli --ets2 --start --wine --prefixdir "/path/to/prefix/pfx"
 * Proton uses DXVK by default.
     * When using Proton, wined3d can be used by specifying `--use-wined3d`, but it's not recommended because this is slower than OpenGL.
 * Used only when `-d` or `--enable-d3d11` is specified.
+* When DXVK is used in fullscreen mode, TruckersMP overlay disappears after switching window (e.g. pressing Alt + Tab)
+    * See [issue #90][github:issue90] for more details
 
 ## Default directories
 
@@ -250,6 +254,8 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 
 [article:dll-injection]: http://securityxploded.com/dll-injection-and-hooking.php
 [github:inject]: https://github.com/mewrev/inject
+[github:issue90]: https://github.com/lhark/truckersmp-cli/issues/90
+[github:issue91]: https://github.com/lhark/truckersmp-cli/issues/91
 [github:kakurasan]: https://github.com/kakurasan
 [github:Lucki]: https://github.com/Lucki
 [github:proton]: https://github.com/ValveSoftware/Proton
