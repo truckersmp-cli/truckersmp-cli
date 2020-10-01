@@ -21,9 +21,9 @@ If available install from your [repository][repology:truckersmp-cli]. Updates wi
 
 Operation|System-wide|Per-user (recommended)
 ---|---|---
-Installation|`pip install truckersmp-cli`|`pip install --user truckersmp-cli`
-Optional dependencies|`pip install truckersmp-cli[optional]`|`pip install --user truckersmp-cli[optional]`
-Update|`pip install truckersmp-cli --upgrade`|`pip install --user truckersmp-cli --upgrade`
+Installation|`python3 -m pip install truckersmp-cli`|`python3 -m pip install --user truckersmp-cli`
+Optional dependencies|`python3 -m pip install truckersmp-cli[optional]`|`python3 -m pip install --user truckersmp-cli[optional]`
+Update|`python3 -m pip install truckersmp-cli --upgrade`|`python3 -m pip install --user truckersmp-cli --upgrade`
 Additional information|This usually requires root permission and can interfere with other python packages installed through your normal repository so be careful.|Make sure the binary path (e.g. `$HOME/.local/bin`) is in your `$PATH`.
 
 ### Manual download
