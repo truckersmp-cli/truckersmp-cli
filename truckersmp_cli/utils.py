@@ -61,6 +61,8 @@ def activate_native_d3dcompiler_47(prefix, wine):
     env = os.environ.copy()
     env["WINEDEBUG"] = "-all"
     env["WINEPREFIX"] = prefix
+    if Args.proton:
+        env["WINEESYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_ESYNC") else "1"
     exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
     logging.debug("Adding DLL override setting for %s", exename)
     subproc.call(
@@ -275,6 +277,23 @@ def get_current_steam_user():
     return None
 
 
+def is_envar_enabled(envars, name):
+    """
+    Check whether the specified environment variable is enabled.
+
+    This returns True if the specified environment variable is
+    already defined and set to nonempty and nonzero value.
+    Otherwise this returns False.
+
+    envars: A dict of environment variables
+    name: The name of environment variable to check
+    """
+    if name not in envars:
+        return False
+    value = envars[name]
+    return len(value) > 0 and value != "0"
+
+
 def perform_self_update():
     """
     Update files to latest release. Do nothing for Python package.
@@ -352,6 +371,8 @@ def set_wine_desktop_registry(prefix, wine, enable):
     env = os.environ.copy()
     env["WINEDEBUG"] = "-all"
     env["WINEPREFIX"] = prefix
+    if Args.proton:
+        env["WINEESYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_ESYNC") else "1"
     regkey_explorer = "HKCU\\Software\\Wine\\Explorer"
     regkey_desktops = "HKCU\\Software\\Wine\\Explorer\\Desktops"
     if enable:
