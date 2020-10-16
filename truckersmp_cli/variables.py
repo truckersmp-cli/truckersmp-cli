@@ -44,6 +44,7 @@ class Dir:
     steamcmddir = os.path.join(XDG_DATA_HOME, "truckersmp-cli/steamcmd")
     steamcmdpfx = os.path.join(steamcmddir, "pfx")
     dllsdir = os.path.join(XDG_DATA_HOME, "truckersmp-cli/dlls")
+    ipcbrdir = os.path.join(XDG_DATA_HOME, "truckersmp-cli/wine-discord-ipc-bridge")
     scriptdir = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -65,6 +66,8 @@ class File:
     overlayrenderer_inner = "ubuntu12_64/gameoverlayrenderer.so"
     d3dcompiler_47 = os.path.join(Dir.dllsdir, "d3dcompiler_47.dll")
     d3dcompiler_47_md5 = "b2cc65e1930e75f563078c6a20221b37"
+    ipcbridge = os.path.join(Dir.ipcbrdir, "winediscordipcbridge.exe")
+    ipcbridge_md5 = "c01999eaed7bc2d1533f22e9e1361a56"
     sdl2_soname = "libSDL2-2.0.so.0"
 
 
@@ -79,6 +82,8 @@ class URL:
     steamcmdwin = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
     raw_github = "raw.githubusercontent.com"
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/master/Redist/x64/d3dcompiler_47.dll"
+    ipcbrpath = "/0e4ef622/wine-discord-ipc-bridge" + \
+        "/4ce68383a536b4e44b71a6764dba5ba3e2ea0aa1/winediscordipcbridge.exe"
     truckersmp_api = "https://api.truckersmp.com/v2/version"
     truckersmp_stats = "https://stats.truckersmp.com"
     truckersmp_downgrade_help = "https://truckersmp.com/kb/26"

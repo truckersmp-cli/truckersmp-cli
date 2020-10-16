@@ -17,7 +17,8 @@ from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import (
     activate_native_d3dcompiler_47, check_libsdl2,
-    perform_self_update, set_wine_desktop_registry, wait_for_steam,
+    perform_self_update, set_wine_desktop_registry,
+    start_wine_discord_ipc_bridge, wait_for_steam,
 )
 from .variables import AppId, Args, Dir, File
 
@@ -154,6 +155,7 @@ def setup_logging():
 
 def start_with_proton():
     """Start game with Proton."""
+    # pylint: disable=too-many-branches,too-many-statements
     steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
     logging.info("Steam installation directory: %s", steamdir)
 
@@ -172,8 +174,6 @@ def start_with_proton():
         set_wine_desktop_registry(prefix, wine, True)
 
     env = os.environ.copy()
-    env["SteamGameId"] = Args.steamid
-    env["SteamAppId"] = Args.steamid
     env["STEAM_COMPAT_DATA_PATH"] = Args.prefixdir
     env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steamdir
     env["PROTON_USE_WINED3D"] = "1" if Args.use_wined3d else "0"
@@ -189,14 +189,24 @@ def start_with_proton():
             env["LD_PRELOAD"] = overlayrenderer
         ld_preload = "LD_PRELOAD={}\n  ".format(env["LD_PRELOAD"])
     proton = os.path.join(Args.protondir, "proton")
-    # check whether singleplayer or multiplayer
     argv = [sys.executable, proton, "run"]
+
+    # start wine-discord-ipc-bridge for multiplayer
+    # unless "--without-wine-discord-ipc-bridge" is specified
+    ipcbr_proc = None
+    if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:
+        ipcbr_proc = start_wine_discord_ipc_bridge(argv, env)
+
+    # check whether singleplayer or multiplayer
     if Args.singleplayer:
         exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
         gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
         argv += gamepath, "-nointro", "-64bit"
     else:
         argv += File.inject_exe, Args.gamedir, Args.moddir
+
+    env["SteamGameId"] = Args.steamid
+    env["SteamAppId"] = Args.steamid
     logging.info(
         """Startup command:
   SteamGameId=%s
@@ -220,6 +230,12 @@ def start_with_proton():
     except subproc.CalledProcessError as ex:
         logging.error("Proton output:\n%s", ex.output.decode("utf-8"))
 
+    if ipcbr_proc:
+        # make sure wine-discord-ipc-bridge is exited
+        if ipcbr_proc.poll() is None:
+            ipcbr_proc.kill()
+        ipcbr_proc.wait()
+
     # disable Wine desktop if enabled
     if Args.wine_desktop:
         set_wine_desktop_registry(prefix, wine, False)
@@ -242,12 +258,18 @@ def start_with_wine():
         wine=wine,
         env=env,
     )
+
+    argv = [wine, ]
+
+    ipcbr_proc = None
+    if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:
+        ipcbr_proc = start_wine_discord_ipc_bridge(argv, env)
+
     if "WINEDLLOVERRIDES" not in env:
         env["WINEDLLOVERRIDES"] = ""
     if not Args.enable_d3d11:
         env["WINEDLLOVERRIDES"] += ";d3d11=;dxgi="
 
-    argv = [wine, ]
     desktop_args = ""
     if Args.wine_desktop:
         argv += "explorer", "/desktop=TruckersMP,{}".format(Args.wine_desktop)
@@ -272,3 +294,8 @@ def start_with_wine():
         logging.info("Wine output:\n%s", output.decode("utf-8"))
     except subproc.CalledProcessError as ex:
         logging.error("Wine output:\n%s", ex.output.decode("utf-8"))
+
+    if ipcbr_proc:
+        if ipcbr_proc.poll() is None:
+            ipcbr_proc.kill()
+        ipcbr_proc.wait()
