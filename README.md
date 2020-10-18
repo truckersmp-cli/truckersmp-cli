@@ -72,6 +72,7 @@ Short option|Long option|Description
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
 (Not available)|`--wine-desktop SIZE`|Use Wine desktop, work around missing TruckerMP overlay after tabbing out using DXVK, mouse clicking won't work in other GUI apps while the game is running, SIZE must be 'WIDTHxHEIGHT' format (e.g. 1920x1080)
 (Not available)|`--wine-steam-dir`|Choose a directory for Windows version of Steam [Default: `C:\Program Files (x86)\Steam` in the prefix]
+(Not available)|`--without-wine-discord-ipc-bridge`|Don't use wine-discord-ipc-bridge for Discord Rich Presence
 (Not available)|`--version`|Print version information and quit
 
 ### Proton versions and AppIDs
