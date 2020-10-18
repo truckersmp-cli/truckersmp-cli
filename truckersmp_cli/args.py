@@ -257,7 +257,7 @@ SteamCMD can use your saved credentials for convenience.
                 [Default: "C:\\Program Files (x86)\\Steam" in the prefix]""")
     parser.add_argument(
         "--without-wine-discord-ipc-bridge",
-        help="don't use wine-discord-ipc-bridge for Discord rich presence",
+        help="don't use wine-discord-ipc-bridge for Discord Rich Presence",
         action="store_true")
     parser.add_argument(
         "--version",
