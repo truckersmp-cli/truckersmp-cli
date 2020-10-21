@@ -136,6 +136,8 @@ def check_steam_process(use_proton, wine=None, env=None):
         argv = (wine, "winedbg", "--command", "info process")
         env_wine = env.copy()
         env_wine["WINEDLLOVERRIDES"] = "winex11.drv="
+        if "WINEPREFIX" in env_wine:
+            os.makedirs(env_wine["WINEPREFIX"], exist_ok=True)
         try:
             output = subproc.check_output(argv, env=env_wine, stderr=subproc.DEVNULL)
             for line in output.decode("utf-8").splitlines():
