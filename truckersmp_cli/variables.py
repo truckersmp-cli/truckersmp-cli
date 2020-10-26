@@ -67,7 +67,7 @@ class File:
     d3dcompiler_47 = os.path.join(Dir.dllsdir, "d3dcompiler_47.dll")
     d3dcompiler_47_md5 = "b2cc65e1930e75f563078c6a20221b37"
     ipcbridge = os.path.join(Dir.ipcbrdir, "winediscordipcbridge.exe")
-    ipcbridge_md5 = "c01999eaed7bc2d1533f22e9e1361a56"
+    ipcbridge_md5 = "78fef85810c5bb8e492d3f67f48947a5"
     sdl2_soname = "libSDL2-2.0.so.0"
 
 
