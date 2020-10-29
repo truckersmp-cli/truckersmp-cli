@@ -83,8 +83,8 @@ class URL:
     github = "github.com"
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/raw/" + \
         "162e4b02445c1fb621ce81c2bdf82a7870a3fd2a/Redist/x64/d3dcompiler_47.dll"
-    ipcbrpath = "/0e4ef622/wine-discord-ipc-bridge/raw/" + \
-        "4ce68383a536b4e44b71a6764dba5ba3e2ea0aa1/winediscordipcbridge.exe"
+    ipcbrpath = "/0e4ef622/wine-discord-ipc-bridge/releases/download/" + \
+        "v0.0.1/winediscordipcbridge.exe"
     truckersmp_api = "https://api.truckersmp.com/v2/version"
     truckersmp_stats = "https://stats.truckersmp.com"
     truckersmp_downgrade_help = "https://truckersmp.com/kb/26"
