@@ -48,7 +48,7 @@ def activate_native_d3dcompiler_47(prefix, wine):
         logging.debug("Downloading d3dcompiler_47.dll")
         os.makedirs(Dir.dllsdir, exist_ok=True)
         if not download_files(
-                URL.raw_github,
+                URL.github,
                 [(URL.d3dcompilerpath, File.d3dcompiler_47, File.d3dcompiler_47_md5), ]):
             sys.exit("Failed to download d3dcompiler_47.dll")
 
@@ -388,7 +388,7 @@ def start_wine_discord_ipc_bridge(runner, env):
         logging.debug("Downloading winediscordipcbridge.exe")
         os.makedirs(Dir.ipcbrdir, exist_ok=True)
         if not download_files(
-                URL.raw_github, [(URL.ipcbrpath, File.ipcbridge, File.ipcbridge_md5), ]):
+                URL.github, [(URL.ipcbrpath, File.ipcbridge, File.ipcbridge_md5), ]):
             sys.exit("Failed to download winediscordipcbridge.exe")
 
     logging.info("Starting winediscordipcbridge.exe")
