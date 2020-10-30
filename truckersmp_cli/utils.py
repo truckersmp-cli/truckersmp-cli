@@ -186,9 +186,12 @@ def download_files(host, files_to_download, progress_count=None):
                     or res.status == 308):
                 # HTTP redirection
                 newloc = urllib.parse.urlparse(res.getheader("Location"))
+                newpath = newloc.path
+                if len(newloc.query) > 0:
+                    newpath += "?" + newloc.query
                 if not download_files(
                         newloc.netloc,
-                        [(newloc.path, dest, md5), ],
+                        [(newpath, dest, md5), ],
                         (file_count, num_of_files)):
                     return False
                 # downloaded successfully from redirected URL
