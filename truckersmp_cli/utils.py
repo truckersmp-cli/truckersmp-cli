@@ -166,7 +166,7 @@ def download_files(host, files_to_download, progress_count=None):
             path, dest, md5 = files_to_download[0]
             md5hash = hashlib.md5()
             bufsize = md5hash.block_size * 256
-            name = os.path.basename(path)
+            name = os.path.basename(dest)
             destdir = os.path.dirname(dest)
             name_getting = "[{}/{}] Get: {}".format(file_count, num_of_files, name)
             logging.debug(
