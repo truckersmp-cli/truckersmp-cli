@@ -55,14 +55,6 @@ def update_game():
     env["WINEDLLOVERRIDES"] = "winex11.drv="
 
     wine = env["WINE"] if "WINE" in env else "wine"
-    if Args.proton:
-        wine = os.path.join(Args.protondir, "dist/bin/wine")
-        env["WINEDLLPATH"] = (
-            os.path.join(Args.protondir, "dist/lib64/wine") +
-            ":" +
-            os.path.join(Args.protondir, "dist/lib/wine")
-        )
-
     os.makedirs(Dir.steamcmdpfx, exist_ok=True)
     try:
         subproc.check_call((wine, "--version"), stdout=subproc.DEVNULL, env=env)
