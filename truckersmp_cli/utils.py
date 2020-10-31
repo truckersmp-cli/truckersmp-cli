@@ -48,7 +48,7 @@ def activate_native_d3dcompiler_47(prefix, wine):
         logging.debug("Downloading d3dcompiler_47.dll")
         os.makedirs(Dir.dllsdir, exist_ok=True)
         if not download_files(
-                URL.raw_github,
+                URL.github,
                 [(URL.d3dcompilerpath, File.d3dcompiler_47, File.d3dcompiler_47_md5), ]):
             sys.exit("Failed to download d3dcompiler_47.dll")
 
@@ -166,7 +166,7 @@ def download_files(host, files_to_download, progress_count=None):
             path, dest, md5 = files_to_download[0]
             md5hash = hashlib.md5()
             bufsize = md5hash.block_size * 256
-            name = os.path.basename(path)
+            name = os.path.basename(dest)
             destdir = os.path.dirname(dest)
             name_getting = "[{}/{}] Get: {}".format(file_count, num_of_files, name)
             logging.debug(
@@ -186,9 +186,12 @@ def download_files(host, files_to_download, progress_count=None):
                     or res.status == 308):
                 # HTTP redirection
                 newloc = urllib.parse.urlparse(res.getheader("Location"))
+                newpath = newloc.path
+                if len(newloc.query) > 0:
+                    newpath += "?" + newloc.query
                 if not download_files(
                         newloc.netloc,
-                        [(newloc.path, dest, md5), ],
+                        [(newpath, dest, md5), ],
                         (file_count, num_of_files)):
                     return False
                 # downloaded successfully from redirected URL
@@ -385,7 +388,7 @@ def start_wine_discord_ipc_bridge(runner, env):
         logging.debug("Downloading winediscordipcbridge.exe")
         os.makedirs(Dir.ipcbrdir, exist_ok=True)
         if not download_files(
-                URL.raw_github, [(URL.ipcbrpath, File.ipcbridge, File.ipcbridge_md5), ]):
+                URL.github, [(URL.ipcbrpath, File.ipcbridge, File.ipcbridge_md5), ]):
             sys.exit("Failed to download winediscordipcbridge.exe")
 
     logging.info("Starting winediscordipcbridge.exe")
