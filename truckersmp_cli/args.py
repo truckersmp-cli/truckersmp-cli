@@ -89,6 +89,10 @@ Need to download (-u) Proton?""".format(Args.protondir))
             logging.info("Unable to find logged in steam user automatically.")
             sys.exit("Need the steam account name (-n name) to update.")
 
+    # Always activate the Windows Steam check when not using Proton
+    if not Args.proton:
+        Args.check_windows_steam = True
+
     # check for Wine desktop size
     if Args.wine_desktop:
         split_size = Args.wine_desktop.split("x")
@@ -226,6 +230,10 @@ SteamCMD can use your saved credentials for convenience.
         "--activate-native-d3dcompiler-47",
         help="""activate native 64-bit d3dcompiler_47.dll when starting
                 (Needed for D3D11 renderer)""",
+        action="store_true")
+    parser.add_argument(
+        "--check_windows_steam",
+        help="""check for the Windows Steam version on updating when using Proton""",
         action="store_true")
     parser.add_argument(
         "--disable-proton-overlay",
