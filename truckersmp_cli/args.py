@@ -232,7 +232,7 @@ SteamCMD can use your saved credentials for convenience.
                 (Needed for D3D11 renderer)""",
         action="store_true")
     parser.add_argument(
-        "--check_windows_steam",
+        "--check-windows-steam",
         help="""check for the Windows Steam version on updating when using Proton""",
         action="store_true")
     parser.add_argument(

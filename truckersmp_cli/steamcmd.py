@@ -121,9 +121,9 @@ def update_game():
         logging.debug("Closing Linux version of Steam")
         subproc.call(("steam", "-shutdown"))
     # Windows version of Steam
-    if (Args.check_windows_steam and
-            wine and
-            check_steam_process(use_proton=False, wine=wine, env=env_steam)):
+    if (Args.check_windows_steam
+            and wine
+            and check_steam_process(use_proton=False, wine=wine, env=env_steam)):
         logging.debug("Closing Windows version of Steam in %s", Args.wine_steam_dir)
         subproc.call(
             (wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-shutdown"),
