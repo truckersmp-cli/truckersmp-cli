@@ -38,18 +38,16 @@ def check_args_errors():
     if not Args.gamedir:
         Args.gamedir = Dir.default_gamedir[game]
 
-    # checks for starting
-    if Args.start:
-        # make sure proton and wine aren't chosen at the same time
-        if Args.proton and Args.wine:
-            sys.exit("Start with Proton (-p) or Wine (-w)?")
-        elif not Args.proton and not Args.wine:
-            if platform.system() == "Linux":
-                logging.info("Platform is Linux, use Proton")
-                Args.proton = True
-            else:
-                logging.info("Platform is not Linux, use Wine")
-                Args.wine = True
+    # make sure proton and wine aren't chosen at the same time
+    if Args.proton and Args.wine:
+        sys.exit("Start/Update with Proton (-p) or Wine (-w)?")
+    elif not Args.proton and not Args.wine:
+        if platform.system() == "Linux":
+            logging.info("Platform is Linux, using Proton")
+            Args.proton = True
+        else:
+            logging.info("Platform is not Linux, using Wine")
+            Args.wine = True
 
     # make sure proton and wine are using the same default
     if Args.wine:
@@ -58,6 +56,9 @@ def check_args_errors():
             logging.debug("""Prefix directory is the default while using Wine,
 making sure it's the same directory as Proton""")
             Args.prefixdir = os.path.join(Args.prefixdir, "pfx")
+
+        # always activate the Windows Steam check when not using Proton
+        Args.check_windows_steam = True
 
     # default Steam directory for Wine
     if not Args.wine_steam_dir:
@@ -226,6 +227,10 @@ SteamCMD can use your saved credentials for convenience.
         "--activate-native-d3dcompiler-47",
         help="""activate native 64-bit d3dcompiler_47.dll when starting
                 (Needed for D3D11 renderer)""",
+        action="store_true")
+    parser.add_argument(
+        "--check-windows-steam",
+        help="""check for the Windows Steam version on updating when using Proton""",
         action="store_true")
     parser.add_argument(
         "--disable-proton-overlay",

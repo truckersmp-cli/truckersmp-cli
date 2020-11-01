@@ -56,12 +56,13 @@ def update_game():
 
     wine = env["WINE"] if "WINE" in env else "wine"
     os.makedirs(Dir.steamcmdpfx, exist_ok=True)
-    try:
-        subproc.check_call((wine, "--version"), stdout=subproc.DEVNULL, env=env)
-        logging.debug("Wine (%s) is available", wine)
-    except subproc.CalledProcessError:
-        logging.debug("Wine is not available")
-        wine = None
+    if Args.check_windows_steam:
+        try:
+            subproc.check_call((wine, "--version"), stdout=subproc.DEVNULL, env=env)
+            logging.debug("Wine (%s) is available", wine)
+        except subproc.CalledProcessError:
+            logging.debug("Wine is not available")
+            wine = None
     if Args.proton:
         # we don't use system SteamCMD because something goes wrong in some cases
         # see https://github.com/lhark/truckersmp-cli/issues/43
@@ -120,7 +121,9 @@ def update_game():
         logging.debug("Closing Linux version of Steam")
         subproc.call(("steam", "-shutdown"))
     # Windows version of Steam
-    if wine and check_steam_process(use_proton=False, wine=wine, env=env_steam):
+    if (Args.check_windows_steam
+            and wine
+            and check_steam_process(use_proton=False, wine=wine, env=env_steam)):
         logging.debug("Closing Windows version of Steam in %s", Args.wine_steam_dir)
         subproc.call(
             (wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-shutdown"),
