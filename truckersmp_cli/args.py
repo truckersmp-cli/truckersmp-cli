@@ -57,8 +57,8 @@ def check_args_errors():
 making sure it's the same directory as Proton""")
             Args.prefixdir = os.path.join(Args.prefixdir, "pfx")
 
-        # Always activate the Windows Steam check when not using Proton
-            Args.check_windows_steam = True
+        # always activate the Windows Steam check when not using Proton
+        Args.check_windows_steam = True
 
     # default Steam directory for Wine
     if not Args.wine_steam_dir:
