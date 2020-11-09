@@ -5,7 +5,6 @@ Licensed under MIT.
 """
 
 import hashlib
-import html.parser
 import json
 import logging
 import os
@@ -14,44 +13,38 @@ import urllib.parse
 import urllib.request
 
 from .utils import check_hash, download_files
-from .variables import Args, URL
+from .variables import Args, TMPWebHTML, URL
 
 
-class DowngradeHTMLParser(html.parser.HTMLParser):
-    """Extract downgrade information from HTML code at stats.truckersmp.com."""
+def check_downgrade_needed():
+    """
+    Check whether downgrading is needed.
 
-    _data = {"ets2": False, "ats": False}
-    _is_downgrade_node = False
+    This parses TruckersMP "Server Status" page and check for
+    announcement for downgrading.
 
-    def error(self, message):
-        """Error handler."""
-        raise NotImplementedError("Error handler is not implemented")
-
-    def handle_starttag(self, tag, attrs):
-        """HTML start tag handler."""
-        for attr in attrs:
-            if (attr[0] == "href"
-                    and len(attr) > 1
-                    and attr[1] == URL.truckersmp_downgrade_help):
-                self._is_downgrade_node = True
-                break
-
-    def handle_endtag(self, tag):
-        """HTML end tag handler."""
-        self._is_downgrade_node = False
-
-    def handle_data(self, data):
-        """HTML data handler."""
-        if self._is_downgrade_node:
-            if "ETS2" in data:
-                self._data["ets2"] = True
-            if "ATS" in data:
-                self._data["ats"] = True
-
-    @property
-    def data(self):
-        """Return downgrade information."""
-        return self._data
+    This returns a dict of 'game: downgrade_needed' pairs
+    (e.g. { "ets2": False, "ats": True } ).
+    When this fails to download the page, this returns False for both games
+    ( { "ets2": False, "ats": False } ).
+    """
+    try:
+        with urllib.request.urlopen(URL.truckersmp_status) as f_in:
+            for line in f_in:
+                if line.startswith(TMPWebHTML.prefix_downgrade):
+                    games = line[len(TMPWebHTML.prefix_downgrade):]
+                    if TMPWebHTML.name_ets2 in games:
+                        if TMPWebHTML.name_ats in games:
+                            return dict(ats=True, ets2=True)
+                        return dict(ats=False, ets2=True)
+                    return dict(ats=True, ets2=False)
+                if line.startswith(TMPWebHTML.prefix_h2):
+                    # no need to read further
+                    # because no announcement after the first "h2" element
+                    break
+    except OSError as ex:
+        logging.warning("Failed to get content of TruckersMP Status page: %s", ex)
+    return dict(ats=False, ets2=False)
 
 
 def determine_game_branch():
@@ -71,12 +64,9 @@ def determine_game_branch():
 
     branch = "public"
     game_name = "ats" if Args.ats else "ets2"
+    downgrade_needed = check_downgrade_needed()
     try:
-        parser = DowngradeHTMLParser()
-        with urllib.request.urlopen(URL.truckersmp_stats) as f_in:
-            parser.feed(f_in.read().decode("utf-8"))
-
-        if parser.data[game_name]:
+        if downgrade_needed[game_name]:
             version = get_supported_game_versions()[game_name].split(".")
             branch = "temporary_{}_{}".format(version[0], version[1])
     except (OSError, TypeError):
