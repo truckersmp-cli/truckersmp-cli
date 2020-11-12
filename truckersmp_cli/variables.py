@@ -71,6 +71,15 @@ class File:
     sdl2_soname = "libSDL2-2.0.so.0"
 
 
+class TMPWebHTML:
+    """Strings in TruckersMP web site."""
+
+    prefix_downgrade = b"<p>TruckersMP does not support the latest game version of "
+    prefix_h2 = b"<h2>"
+    name_ats = b"American Truck Simulator"
+    name_ets2 = b"Euro Truck Simulator 2"
+
+
 class URL:
     """URLs."""
 
@@ -86,8 +95,7 @@ class URL:
     ipcbrpath = "/0e4ef622/wine-discord-ipc-bridge/releases/download/" + \
         "v0.0.1/winediscordipcbridge.exe"
     truckersmp_api = "https://api.truckersmp.com/v2/version"
-    truckersmp_stats = "https://stats.truckersmp.com"
-    truckersmp_downgrade_help = "https://truckersmp.com/kb/26"
+    truckersmp_status = "https://truckersmp.com/status"
     issueurl = project + "/issues"
     release = project + "/raw/master/RELEASE"
     rel_tarxz_tmpl = project + "/releases/download/{0}/truckersmp-cli-{0}.tar.xz"
