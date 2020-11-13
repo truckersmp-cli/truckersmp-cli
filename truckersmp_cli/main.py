@@ -5,7 +5,6 @@ Licensed under MIT.
 """
 
 import json
-import locale
 import logging
 import os
 import signal
@@ -68,8 +67,6 @@ def get_version_string():
 def main():
     """truckersmp-cli main function."""
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    locale.setlocale(locale.LC_MESSAGES, "")
-    locale.setlocale(locale.LC_TIME, "C")
 
     # load Proton AppID info from "proton.json":
     #     {"X.Y": AppID, ... , "default": "X.Y"}

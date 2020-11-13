@@ -8,7 +8,12 @@ truckersmp-cli main script.
 This script downloads/updates games and starts games with Wine/Proton.
 """
 
+import locale
+
 from truckersmp_cli.main import main
 
+
 if __name__ == "__main__":
+    locale.setlocale(locale.LC_MESSAGES, "")
+    locale.setlocale(locale.LC_TIME, "C")
     main()
