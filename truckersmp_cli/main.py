@@ -160,19 +160,31 @@ def start_with_proton():
         logging.debug("Creating directory %s", Args.prefixdir)
     os.makedirs(Args.prefixdir, exist_ok=True)
 
+    proton = os.path.join(Args.protondir, "proton")
+    argv = [sys.executable, proton, "run"]
+    env = os.environ.copy()
+    env["STEAM_COMPAT_DATA_PATH"] = Args.prefixdir
+    env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steamdir
+
     # activate native d3dcompiler_47
     wine = os.path.join(Args.protondir, "dist/bin/wine")
     prefix = os.path.join(Args.prefixdir, "pfx")
     if Args.activate_native_d3dcompiler_47:
+        # native d3dcompiler_47 is removed when the prefix is downgraded
+        # make sure the prefix is already upgraded/downgraded
+        try:
+            subproc.check_output(
+                argv + ["wineboot", ],  env=env, stderr=subproc.STDOUT)
+        except OSError as ex:
+            sys.exit("Failed to run wineboot: {}".format(ex))
+        except subproc.CalledProcessError as ex:
+            sys.exit("wineboot failed:\n{}".format(ex.output.decode("utf-8")))
         activate_native_d3dcompiler_47(prefix, wine)
 
     # enable Wine desktop if requested
     if Args.wine_desktop:
         set_wine_desktop_registry(prefix, wine, True)
 
-    env = os.environ.copy()
-    env["STEAM_COMPAT_DATA_PATH"] = Args.prefixdir
-    env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steamdir
     env["PROTON_USE_WINED3D"] = "1" if Args.use_wined3d else "0"
     env["PROTON_NO_D3D11"] = "1" if not Args.enable_d3d11 else "0"
     # enable Steam Overlay unless "--disable-proton-overlay" is specified
@@ -185,8 +197,6 @@ def start_with_proton():
         else:
             env["LD_PRELOAD"] = overlayrenderer
         ld_preload = "LD_PRELOAD={}\n  ".format(env["LD_PRELOAD"])
-    proton = os.path.join(Args.protondir, "proton")
-    argv = [sys.executable, proton, "run"]
 
     # start wine-discord-ipc-bridge for multiplayer
     # unless "--without-wine-discord-ipc-bridge" is specified
