@@ -439,7 +439,8 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
     """
     Wait for Steam to be running.
 
-    If use_proton is True, this function also detects
+    If use_proton is True and the value of "--native-steam-dir" option is
+    "auto" (default), this function also detects
     the Steam installation directory for Proton and returns it.
 
     On user login the timestamp in
@@ -481,6 +482,9 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
                 waittime).format(waittime), end="")
             time.sleep(1)
             waittime -= 1
+            if use_proton and Args.native_steam_dir != "auto":
+                # don't compare timestamps because the path is already given
+                continue
             for i, path in enumerate(loginvdf_paths):
                 try:
                     stat = os.stat(path)
@@ -500,17 +504,24 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
             print("\r{}".format(" " * 70))
             logging.debug("Steam should be up now.")
             if use_proton:
-                # could not detect steam installation directory
-                # fallback to $XDG_DATA_HOME/Steam
-                steamdir = os.path.join(Dir.XDG_DATA_HOME, "Steam")
+                if Args.native_steam_dir == "auto":
+                    # could not detect steam installation directory
+                    # fallback to $XDG_DATA_HOME/Steam
+                    steamdir = os.path.join(Dir.XDG_DATA_HOME, "Steam")
+                else:
+                    # use specified path
+                    steamdir = Args.native_steam_dir
     else:
         # Steam is running
         logging.debug("Steam is running")
         if use_proton:
-            # detect most recently updated "loginusers.vdf" file
-            max_mtime = max(loginusers_timestamps)
-            for i, path in enumerate(loginvdf_paths):
-                if loginusers_timestamps[i] == max_mtime:
-                    steamdir = os.path.dirname(os.path.dirname(loginvdf_paths[i]))
-                    break
+            if Args.native_steam_dir == "auto":
+                # detect most recently updated "loginusers.vdf" file
+                max_mtime = max(loginusers_timestamps)
+                for i, path in enumerate(loginvdf_paths):
+                    if loginusers_timestamps[i] == max_mtime:
+                        steamdir = os.path.dirname(os.path.dirname(loginvdf_paths[i]))
+                        break
+            else:
+                steamdir = Args.native_steam_dir
     return steamdir

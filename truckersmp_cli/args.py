@@ -257,6 +257,13 @@ SteamCMD can use your saved credentials for convenience.
                 in other GUI apps while the game is running, SIZE must be
                 'WIDTHxHEIGHT' format (e.g. 1920x1080)""")
     parser.add_argument(
+        "--native-steam-dir", metavar="DIR", type=str,
+        default="auto",
+        help="""choose native Steam installation,
+                useful only if you use Proton and you don't save account credentials
+                on this computer
+                [Default: "auto"]""")
+    parser.add_argument(
         "--wine-steam-dir", metavar="DIR", type=str,
         help="""choose a directory for Windows version of Steam
                 [Default: "C:\\Program Files (x86)\\Steam" in the prefix]""")
