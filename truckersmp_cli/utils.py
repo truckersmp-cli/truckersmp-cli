@@ -66,9 +66,9 @@ def activate_native_d3dcompiler_47(prefix, wine):
     exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
     logging.debug("Adding DLL override setting for %s", exename)
     subproc.call(
-        [wine, "reg", "add",
+        (wine, "reg", "add",
          "HKCU\\Software\\Wine\\AppDefaults\\{}\\DllOverrides".format(exename),
-         "/v", "d3dcompiler_47", "/t", "REG_SZ", "/d", "native"],
+         "/v", "d3dcompiler_47", "/t", "REG_SZ", "/d", "native", "/f"),
         env=env)
 
 
