@@ -454,11 +454,18 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
     env: A dictionary that contains environment variables
          (can be None if use_proton is True)
     """
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-statements
 
     steamdir = None
+    loginvdfs_checked = []
     loginusers_timestamps = []
-    for path in loginvdf_paths:
+    if use_proton and Args.native_steam_dir != "auto":
+        # only check the specified vdf path
+        loginvdfs_checked.append(os.path.join(Args.native_steam_dir, File.loginvdf_inner))
+    else:
+        # check all known vdf paths
+        loginvdfs_checked += loginvdf_paths
+    for path in loginvdfs_checked:
         try:
             stat = os.stat(path)
             loginusers_timestamps.append(stat.st_mtime)
@@ -482,17 +489,14 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
                 waittime).format(waittime), end="")
             time.sleep(1)
             waittime -= 1
-            if use_proton and Args.native_steam_dir != "auto":
-                # don't compare timestamps because the path is already given
-                continue
-            for i, path in enumerate(loginvdf_paths):
+            for i, path in enumerate(loginvdfs_checked):
                 try:
                     stat = os.stat(path)
                     if stat.st_mtime > loginusers_timestamps[i]:
                         print("\r{}".format(" " * 70))  # clear "Waiting..." line
                         logging.debug(
                             "Steam should now be up and running and the user logged in.")
-                        steamdir = os.path.dirname(os.path.dirname(loginvdf_paths[i]))
+                        steamdir = os.path.dirname(os.path.dirname(loginvdfs_checked[i]))
                         break
                 except OSError:
                     pass
@@ -518,9 +522,9 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
             if Args.native_steam_dir == "auto":
                 # detect most recently updated "loginusers.vdf" file
                 max_mtime = max(loginusers_timestamps)
-                for i, path in enumerate(loginvdf_paths):
+                for i, path in enumerate(loginvdfs_checked):
                     if loginusers_timestamps[i] == max_mtime:
-                        steamdir = os.path.dirname(os.path.dirname(loginvdf_paths[i]))
+                        steamdir = os.path.dirname(os.path.dirname(loginvdfs_checked[i]))
                         break
             else:
                 steamdir = Args.native_steam_dir
