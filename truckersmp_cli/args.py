@@ -237,6 +237,13 @@ SteamCMD can use your saved credentials for convenience.
         help="disable Steam Overlay when using Proton",
         action="store_true")
     parser.add_argument(
+        "--native-steam-dir", metavar="DIR", type=str,
+        default="auto",
+        help="""choose native Steam installation,
+                useful only if you use Proton and you don't save account credentials
+                on this computer
+                [Default: "auto"]""")
+    parser.add_argument(
         "--self-update",
         help="""update files to the latest release and quit
                 Note: Python package users should use pip instead""",
@@ -256,13 +263,6 @@ SteamCMD can use your saved credentials for convenience.
                 after tabbing out using DXVK, mouse clicking won't work
                 in other GUI apps while the game is running, SIZE must be
                 'WIDTHxHEIGHT' format (e.g. 1920x1080)""")
-    parser.add_argument(
-        "--native-steam-dir", metavar="DIR", type=str,
-        default="auto",
-        help="""choose native Steam installation,
-                useful only if you use Proton and you don't save account credentials
-                on this computer
-                [Default: "auto"]""")
     parser.add_argument(
         "--wine-steam-dir", metavar="DIR", type=str,
         help="""choose a directory for Windows version of Steam
