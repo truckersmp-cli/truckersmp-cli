@@ -240,8 +240,7 @@ SteamCMD can use your saved credentials for convenience.
         "--native-steam-dir", metavar="DIR", type=str,
         default="auto",
         help="""choose native Steam installation,
-                useful only if you use Proton and you don't save account credentials
-                on this computer
+                useful only if your Steam directory is not detected automatically
                 [Default: "auto"]""")
     parser.add_argument(
         "--self-update",
