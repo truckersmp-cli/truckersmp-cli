@@ -132,7 +132,8 @@ to prevent Steam from loosing connection. Your Steam password
 and guard code are required by SteamCMD once for this to work.
 
 On Linux it's possible to start TruckersMP through Proton.
-A working native Steam installation is needed for this.
+A working native Steam installation is needed for this which has
+the desired game installed or with an update pending.
 SteamCMD can use your saved credentials for convenience.
 """
     epilog = "Proton AppID list:\n"

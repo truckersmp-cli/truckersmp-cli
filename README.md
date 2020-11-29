@@ -7,7 +7,7 @@ _truckersmp-cli_ allows to download TruckersMP and handles starting TruckersMP t
 The [Windows version of Steam][steam:windows] should already be able to run in the same Wine prefix.
 The Windows versions of ATS and ETS2 can be installed and updated via [SteamCMD][steam:steamcmd] while all running Steam processes will be stopped to prevent Steam from loosing connection. Your Steam password and guard code are required by SteamCMD once for this to work.
 
-On Linux it's possible to start TruckersMP through [Proton][github:proton]. A working [native Steam][repology:steam] installation is needed for this. SteamCMD can use your saved credentials for convenience.
+On Linux it's possible to start TruckersMP through [Proton][github:proton]. A working [native Steam][repology:steam] installation is needed for this which has the desired game [installed or with an update pending][github:issue129]. SteamCMD can use your saved credentials for convenience.
 
 ## Install
 
@@ -258,6 +258,7 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 [github:inject]: https://github.com/mewrev/inject
 [github:issue90]: https://github.com/lhark/truckersmp-cli/issues/90
 [github:issue91]: https://github.com/lhark/truckersmp-cli/issues/91
+[github:issue129]: https://github.com/lhark/truckersmp-cli/issues/129
 [github:kakurasan]: https://github.com/kakurasan
 [github:Lucki]: https://github.com/Lucki
 [github:proton]: https://github.com/ValveSoftware/Proton
