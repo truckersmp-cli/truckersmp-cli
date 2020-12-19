@@ -238,6 +238,12 @@ SteamCMD can use your saved credentials for convenience.
         help="disable Steam Overlay when using Proton",
         action="store_true")
     parser.add_argument(
+        "--native-steam-dir", metavar="DIR", type=str,
+        default="auto",
+        help="""choose native Steam installation,
+                useful only if your Steam directory is not detected automatically
+                [Default: "auto"]""")
+    parser.add_argument(
         "--self-update",
         help="""update files to the latest release and quit
                 Note: Python package users should use pip instead""",
