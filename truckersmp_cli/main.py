@@ -174,7 +174,7 @@ def start_with_proton():
         # make sure the prefix is already upgraded/downgraded
         try:
             subproc.check_output(
-                argv + ["wineboot", ],  env=env, stderr=subproc.STDOUT)
+                argv + ["wineboot", ], env=env, stderr=subproc.STDOUT)
         except OSError as ex:
             sys.exit("Failed to run wineboot: {}".format(ex))
         except subproc.CalledProcessError as ex:
