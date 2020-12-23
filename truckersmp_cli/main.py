@@ -261,7 +261,7 @@ def start_with_wine():
 
     wait_for_steam(
         use_proton=False,
-        loginvdf_paths=(os.path.join(Args.wine_steam_dir, "config/loginusers.vdf"), ),
+        loginvdf_paths=(os.path.join(Args.wine_steam_dir, File.loginvdf_inner), ),
         wine=wine,
         env=env,
     )
