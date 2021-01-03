@@ -73,7 +73,6 @@ def main():
         with open(File.inject_exe):
             pass
     except OSError:
-        # pylint: disable=bad-continuation
         sys.exit("""DLL inject program ("{}") is missing.
 
 Try one of the following:
