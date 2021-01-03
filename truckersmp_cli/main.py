@@ -73,6 +73,7 @@ def main():
         with open(File.inject_exe):
             pass
     except OSError:
+        # pylint: disable=bad-continuation
         sys.exit("""DLL inject program ("{}") is missing.
 
 Try one of the following:
@@ -82,8 +83,10 @@ Try one of the following:
 * Download GitHub release file from "{}", unpack it, and run
   the "truckersmp-cli" script in the unpacked directory
 * Build "truckersmp-cli.exe" with mingw-w64, put it into "{}",
-  and run this script again""".format(
-            File.inject_exe, URL.project_releases, Dir.scriptdir))
+  and run this script again
+
+See {} for additional information.""".format(
+            File.inject_exe, URL.project_releases, Dir.scriptdir, URL.project_doc_inst))
 
     # load Proton AppID info from "proton.json":
     #     {"X.Y": AppID, ... , "default": "X.Y"}
