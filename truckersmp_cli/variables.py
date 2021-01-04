@@ -84,6 +84,8 @@ class URL:
     """URLs."""
 
     project = "https://github.com/lhark/truckersmp-cli"
+    project_doc_inst = project + "#install"
+    project_releases = project + "/releases"
     dlurl = "download.ets2mp.com"
     dlurlalt = "failover.truckersmp.com"
     listurl = "https://update.ets2mp.com/files.json"
