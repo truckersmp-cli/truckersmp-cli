@@ -169,6 +169,10 @@ def download_files(host, files_to_download, progress_count=None):
             name = os.path.basename(dest)
             destdir = os.path.dirname(dest)
             name_getting = "[{}/{}] Get: {}".format(file_count, num_of_files, name)
+            if len(name) >= 67:
+                name = name[:63] + "..."
+            if len(name_getting) >= 49:
+                name_getting = name_getting[:45] + "..."
             logging.debug(
                 "Downloading file https://%s%s to %s", host, path, destdir)
 
@@ -217,13 +221,23 @@ def download_files(host, files_to_download, progress_count=None):
                     f_out.write(buf)
                     md5hash.update(buf)
                     if content_len:
-                        progress = "{:,} / {:,}".format(downloaded, int(content_len))
+                        int_content_len = int(content_len)
+                        ten_percent_count = int(downloaded * 10 / int_content_len)
+                        # downloaded / length [progressbar]
+                        # e.g. 555.5K / 777.7K [=======>  ]
+                        progress = "{} / {} [{}{}{}]".format(
+                            get_short_size(downloaded),
+                            get_short_size(int_content_len),
+                            "=" * ten_percent_count,
+                            ">" if ten_percent_count < 10 else "",
+                            " " * max(9 - ten_percent_count, 0),
+                        )
                     else:
-                        progress = "{:,}".format(downloaded)
-                    print("\r{:40}{:>40}".format(name_getting, progress), end="")
+                        progress = get_short_size(downloaded)
+                    print("\r{:49}{:>30}".format(name_getting, progress), end="")
 
             if md5hash.hexdigest() != md5:
-                print("\r{:40}{:>40}".format(name, "MD5 MISMATCH"))
+                print("\r{:67}{:>12}".format(name, "MD5 MISMATCH"))
                 logging.error("MD5 mismatch for %s", dest)
                 return False
 
@@ -237,7 +251,7 @@ def download_files(host, files_to_download, progress_count=None):
                     pass
 
             # downloaded successfully
-            print("\r{:40}{:>40}".format(name, "OK"))
+            print("\r{:67}{:>12}".format(name, "[    OK    ]"))
 
             # skip already downloaded files
             # when trying to download from URL.dlurlalt
@@ -280,6 +294,24 @@ def get_current_steam_user():
         except (KeyError, OSError, TypeError, ValueError):
             pass
     return None
+
+
+def get_short_size(size_bytes):
+    """
+    Get a file size string in short format.
+
+    This function returns:
+        "B" size (e.g. 2) when size_bytes < 1KiB
+        "KiB" size (e.g. 345.6K) when size_bytes >= 1KiB and size_bytes < 1MiB
+        "MiB" size (e.g. 7.8M) when size_bytes >= 1MiB
+
+    size_bytes: File size in bytes
+    """
+    if size_bytes < 1024:
+        return str(size_bytes)
+    if size_bytes < 1048576:
+        return "{:.1f}K".format(size_bytes / 1024)
+    return "{:.1f}M".format(size_bytes / 1048576)
 
 
 def is_envar_enabled(envars, name):
