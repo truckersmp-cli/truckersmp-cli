@@ -68,25 +68,6 @@ def main():
     """truckersmp-cli main function."""
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    # check whether the executable of our inject program is present
-    try:
-        with open(File.inject_exe):
-            pass
-    except OSError:
-        sys.exit("""DLL inject program ("{}") is missing.
-
-Try one of the following:
-* Install truckersmp-cli via pip [RECOMMENDED]
-  (e.g. "python3 -m pip install --user truckersmp-cli[optional]")
-  and run it (e.g. "~/.local/bin/truckersmp-cli [ARGUMENTS...]")
-* Download GitHub release file from "{}", unpack it, and run
-  the "truckersmp-cli" script in the unpacked directory
-* Build "truckersmp-cli.exe" with mingw-w64, put it into "{}",
-  and run this script again
-
-See {} for additional information.""".format(
-            File.inject_exe, URL.project_releases, Dir.scriptdir, URL.project_doc_inst))
-
     # load Proton AppID info from "proton.json":
     #     {"X.Y": AppID, ... , "default": "X.Y"}
     # example:
@@ -105,6 +86,25 @@ See {} for additional information.""".format(
     if Args.version:
         print(get_version_string())
         sys.exit()
+
+    # check whether the executable of our inject program is present
+    try:
+        with open(File.inject_exe):
+            pass
+    except OSError:
+        sys.exit("""DLL inject program ("{}") is missing.
+
+Try one of the following:
+* Install truckersmp-cli via pip [RECOMMENDED]
+  (e.g. "python3 -m pip install --user truckersmp-cli[optional]")
+  and run it (e.g. "~/.local/bin/truckersmp-cli [ARGUMENTS...]")
+* Download GitHub release file from "{}", unpack it, and run
+  the "truckersmp-cli" script in the unpacked directory
+* Build "truckersmp-cli.exe" with mingw-w64, put it into "{}",
+  and run this script again
+
+See {} for additional information.""".format(
+            File.inject_exe, URL.project_releases, Dir.scriptdir, URL.project_doc_inst))
 
     # set up logging
     setup_logging()
