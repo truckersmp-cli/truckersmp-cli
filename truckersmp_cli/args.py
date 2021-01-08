@@ -254,6 +254,10 @@ SteamCMD can use your saved credentials for convenience.
                 using/testing DXVK in singleplayer, etc.""",
         action="store_true")
     parser.add_argument(
+        "--skip-update-proton",
+        help="skip updating Proton when updating game with Proton enabled",
+        action="store_true")
+    parser.add_argument(
         "--use-wined3d",
         help="use OpenGL-based D3D11 instead of DXVK when using Proton",
         action="store_true")

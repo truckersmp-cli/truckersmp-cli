@@ -33,7 +33,7 @@ def update_game():
     SteamCMD. When "--proton" is specified, this retrieves/uses
     Linux version of SteamCMD.
     """
-    # pylint: disable=too-many-branches,too-many-statements
+    # pylint: disable=too-many-branches,too-many-locals,too-many-statements
 
     steamcmd_prolog = ""
     steamcmd_cmd = []
@@ -130,26 +130,38 @@ def update_game():
             env=env_steam)
 
     if Args.proton:
-        # download/update Proton
-        os.makedirs(Args.protondir, exist_ok=True)
-        logging.debug("Updating Proton (AppID:%s)", Args.proton_appid)
-        logging.info(
-            """Command:
+        update_proton = True
+        if Args.skip_update_proton:
+            # skip updating Proton only when Proton is already installed
+            try:
+                with open(os.path.join(Args.protondir, "proton")):
+                    pass
+            except OSError:
+                logging.info("Proton is not installed yet, installing Proton")
+            else:
+                logging.info("Skipping updating Proton")
+                update_proton = False
+        if update_proton:
+            # download/update Proton
+            os.makedirs(Args.protondir, exist_ok=True)
+            logging.debug("Updating Proton (AppID:%s)", Args.proton_appid)
+            logging.info(
+                """Command:
   %s
     +login %s
     +force_install_dir %s
     +app_update %s validate
     +quit""",
-            steamcmd, Args.account, Args.protondir, Args.proton_appid)
-        try:
-            subproc.check_call(
-                (steamcmd,
-                 "+login", Args.account,
-                 "+force_install_dir", Args.protondir,
-                 "+app_update", str(Args.proton_appid), "validate",
-                 "+quit"))
-        except subproc.CalledProcessError:
-            sys.exit("SteamCMD exited abnormally")
+                steamcmd, Args.account, Args.protondir, Args.proton_appid)
+            try:
+                subproc.check_call(
+                    (steamcmd,
+                     "+login", Args.account,
+                     "+force_install_dir", Args.protondir,
+                     "+app_update", str(Args.proton_appid), "validate",
+                     "+quit"))
+            except subproc.CalledProcessError:
+                sys.exit("SteamCMD exited abnormally")
 
     # determine game branch
     branch = determine_game_branch()
