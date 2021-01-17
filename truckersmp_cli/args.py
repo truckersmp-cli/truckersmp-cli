@@ -255,7 +255,8 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "--skip-update-proton",
-        help="skip updating Proton when updating game with Proton enabled",
+        help="""skip updating already-installed Proton
+                when updating game with Proton enabled""",
         action="store_true")
     parser.add_argument(
         "--use-wined3d",
