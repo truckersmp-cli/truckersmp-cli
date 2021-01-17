@@ -130,18 +130,9 @@ def update_game():
             env=env_steam)
 
     if Args.proton:
-        update_proton = True
         if Args.skip_update_proton:
-            # skip updating Proton only when Proton is already installed
-            try:
-                with open(os.path.join(Args.protondir, "proton")):
-                    pass
-            except OSError:
-                logging.info("Proton is not installed yet, installing Proton")
-            else:
-                logging.info("Skipping updating Proton")
-                update_proton = False
-        if update_proton:
+            logging.info("Skipping updating Proton")
+        else:
             # download/update Proton
             os.makedirs(Args.protondir, exist_ok=True)
             logging.debug("Updating Proton (AppID:%s)", Args.proton_appid)

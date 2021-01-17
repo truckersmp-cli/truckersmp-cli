@@ -83,12 +83,20 @@ Need to download (-u) the game?""".format(Args.gamedir))
 Need to download (-u) Proton?""".format(Args.protondir))
 
     # checks for updating
-    if Args.update and not Args.account:
-        if VDF_IS_AVAILABLE:
-            Args.account = get_current_steam_user()
+    if Args.update:
         if not Args.account:
-            logging.info("Unable to find logged in steam user automatically.")
-            sys.exit("Need the steam account name (-n name) to update.")
+            if VDF_IS_AVAILABLE:
+                Args.account = get_current_steam_user()
+            if not Args.account:
+                logging.info("Unable to find logged in steam user automatically.")
+                sys.exit("Need the steam account name (-n name) to update.")
+
+        # check whether Proton is present
+        # when "--skip-update-proton" is specified
+        if (Args.skip_update_proton
+                and not os.access(os.path.join(Args.protondir, "proton"), os.R_OK)):
+            sys.exit(
+                "'--skip-update-proton' was specified but Proton is not found.")
 
     # check for Wine desktop size
     if Args.wine_desktop:
