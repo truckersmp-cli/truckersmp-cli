@@ -77,13 +77,6 @@ making sure it's the same directory as Proton""")
             sys.exit("""Game not found in {}
 Need to download (-u) the game?""".format(Args.gamedir))
 
-    # check for Proton availability when starting with Proton
-    if (Args.start
-            and Args.proton
-            and not os.access(os.path.join(Args.protondir, "proton"), os.R_OK)):
-        sys.exit("""Proton is not found in {}
-Run with '--update' option to install Proton""".format(Args.protondir))
-
     # checks for updating
     if Args.update and not Args.account:
         if VDF_IS_AVAILABLE:

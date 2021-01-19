@@ -139,6 +139,12 @@ See {} for additional information.""".format(
 
     # start truckersmp with proton or wine
     if Args.start:
+        # check for Proton availability when starting with Proton
+        if (Args.proton
+                and not os.access(os.path.join(Args.protondir, "proton"), os.R_OK)):
+            sys.exit("""Proton is not found in {}
+Run with '--update' option to install Proton""".format(Args.protondir))
+
         if not check_libsdl2():
             sys.exit("SDL2 was not found on your system.")
         start_functions = (("Proton", start_with_proton), ("Wine", start_with_wine))
