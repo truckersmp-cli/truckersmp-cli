@@ -77,10 +77,12 @@ making sure it's the same directory as Proton""")
             sys.exit("""Game not found in {}
 Need to download (-u) the game?""".format(Args.gamedir))
 
-        # check for proton
-        if not os.path.isfile(os.path.join(Args.protondir, "proton")) and Args.proton:
-            sys.exit("""Proton and no update wanted but Proton not found in {}
-Need to download (-u) Proton?""".format(Args.protondir))
+    # check for Proton availability when starting with Proton
+    if (Args.start
+            and Args.proton
+            and not os.access(os.path.join(Args.protondir, "proton"), os.R_OK)):
+        sys.exit("""Proton is not found in {}
+Run with '--update' option to install Proton""".format(Args.protondir))
 
     # checks for updating
     if Args.update and not Args.account:
