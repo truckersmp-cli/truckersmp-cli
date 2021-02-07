@@ -185,18 +185,20 @@ def start_with_proton():
         logging.debug("Creating directory %s", Args.prefixdir)
     os.makedirs(Args.prefixdir, exist_ok=True)
 
+    prefix = os.path.join(Args.prefixdir, "pfx")
     proton = os.path.join(Args.protondir, "proton")
     argv = [sys.executable, proton, "run"]
     env = os.environ.copy()
     env["STEAM_COMPAT_DATA_PATH"] = Args.prefixdir
     env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steamdir
 
-    # activate native d3dcompiler_47
+    # Proton's "dist" directory tree is missing until first run
+    # make sure it's present for using "dist/bin/wine" directly
     wine = os.path.join(Args.protondir, "dist/bin/wine")
-    prefix = os.path.join(Args.prefixdir, "pfx")
-    if Args.activate_native_d3dcompiler_47:
-        # native d3dcompiler_47 is removed when the prefix is downgraded
-        # make sure the prefix is already upgraded/downgraded
+    if (not os.access(wine, os.R_OK)
+            # native d3dcompiler_47 is removed when the prefix is downgraded
+            # make sure the prefix is already upgraded/downgraded
+            or Args.activate_native_d3dcompiler_47):
         try:
             subproc.check_output(
                 argv + ["wineboot", ], env=env, stderr=subproc.STDOUT)
@@ -204,6 +206,9 @@ def start_with_proton():
             sys.exit("Failed to run wineboot: {}".format(ex))
         except subproc.CalledProcessError as ex:
             sys.exit("wineboot failed:\n{}".format(ex.output.decode("utf-8")))
+
+    # activate native d3dcompiler_47
+    if Args.activate_native_d3dcompiler_47:
         activate_native_d3dcompiler_47(prefix, wine)
 
     # enable Wine desktop if requested
