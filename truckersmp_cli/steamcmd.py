@@ -130,26 +130,29 @@ def update_game():
             env=env_steam)
 
     if Args.proton:
-        # download/update Proton
-        os.makedirs(Args.protondir, exist_ok=True)
-        logging.debug("Updating Proton (AppID:%s)", Args.proton_appid)
-        logging.info(
-            """Command:
+        if Args.skip_update_proton:
+            logging.info("Skipping updating Proton")
+        else:
+            # download/update Proton
+            os.makedirs(Args.protondir, exist_ok=True)
+            logging.debug("Updating Proton (AppID:%s)", Args.proton_appid)
+            logging.info(
+                """Command:
   %s
     +login %s
     +force_install_dir %s
     +app_update %s validate
     +quit""",
-            steamcmd, Args.account, Args.protondir, Args.proton_appid)
-        try:
-            subproc.check_call(
-                (steamcmd,
-                 "+login", Args.account,
-                 "+force_install_dir", Args.protondir,
-                 "+app_update", str(Args.proton_appid), "validate",
-                 "+quit"))
-        except subproc.CalledProcessError:
-            sys.exit("SteamCMD exited abnormally")
+                steamcmd, Args.account, Args.protondir, Args.proton_appid)
+            try:
+                subproc.check_call(
+                    (steamcmd,
+                     "+login", Args.account,
+                     "+force_install_dir", Args.protondir,
+                     "+app_update", str(Args.proton_appid), "validate",
+                     "+quit"))
+            except subproc.CalledProcessError:
+                sys.exit("SteamCMD exited abnormally")
 
     # determine game branch
     branch = determine_game_branch()

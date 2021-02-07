@@ -71,6 +71,7 @@ Short option|Long option|Description
 (Not available)|`--native-steam-dir`|Choose native Steam installation, useful only if your Steam directory is not detected automatically [Default: `auto`]
 (Not available)|`--self-update`|Update files to the latest release and quit
 (Not available)|`--singleplayer`|Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.
+(Not available)|`--skip-update-proton`|Skip updating already-installed Proton when updating game with Proton enabled
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
 (Not available)|`--wine-desktop SIZE`|Use Wine desktop, work around missing TruckerMP overlay after tabbing out using DXVK, mouse clicking won't work in other GUI apps while the game is running, SIZE must be 'WIDTHxHEIGHT' format (e.g. 1920x1080)
 (Not available)|`--wine-steam-dir`|Choose a directory for Windows version of Steam [Default: `C:\Program Files (x86)\Steam` in the prefix]

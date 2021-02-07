@@ -77,11 +77,6 @@ making sure it's the same directory as Proton""")
             sys.exit("""Game not found in {}
 Need to download (-u) the game?""".format(Args.gamedir))
 
-        # check for proton
-        if not os.path.isfile(os.path.join(Args.protondir, "proton")) and Args.proton:
-            sys.exit("""Proton and no update wanted but Proton not found in {}
-Need to download (-u) Proton?""".format(Args.protondir))
-
     # checks for updating
     if Args.update and not Args.account:
         if VDF_IS_AVAILABLE:
@@ -252,6 +247,11 @@ SteamCMD can use your saved credentials for convenience.
         "--singleplayer",
         help="""start singleplayer game, useful for save editing,
                 using/testing DXVK in singleplayer, etc.""",
+        action="store_true")
+    parser.add_argument(
+        "--skip-update-proton",
+        help="""skip updating already-installed Proton
+                when updating game with Proton enabled""",
         action="store_true")
     parser.add_argument(
         "--use-wined3d",
