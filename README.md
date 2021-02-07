@@ -9,6 +9,10 @@ The Windows versions of ATS and ETS2 can be installed and updated via [SteamCMD]
 
 On Linux it's possible to start TruckersMP through [Proton][github:proton]. A working [native Steam][repology:steam] installation is needed for this which has the desired game [installed or with an update pending][github:issue129]. SteamCMD can use your saved credentials for convenience.
 
+## Known issues
+
+* It was reported that "ProMods + ETS2MP" crashes with Proton 5.13 but Proton 5.0 works ([issue #147][github:issue147])
+
 ## Install
 
 ### From repository (recommended)
@@ -261,6 +265,7 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 [github:issue90]: https://github.com/lhark/truckersmp-cli/issues/90
 [github:issue91]: https://github.com/lhark/truckersmp-cli/issues/91
 [github:issue129]: https://github.com/lhark/truckersmp-cli/issues/129
+[github:issue147]: https://github.com/lhark/truckersmp-cli/issues/147
 [github:kakurasan]: https://github.com/kakurasan
 [github:Lucki]: https://github.com/Lucki
 [github:proton]: https://github.com/ValveSoftware/Proton
