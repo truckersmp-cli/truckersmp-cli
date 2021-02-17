@@ -88,10 +88,7 @@ def main():
         sys.exit()
 
     # check whether the executable of our inject program is present
-    try:
-        with open(File.inject_exe):
-            pass
-    except OSError:
+    if not os.access(File.inject_exe, os.R_OK):
         sys.exit("""DLL inject program ("{}") is missing.
 
 Try one of the following:
