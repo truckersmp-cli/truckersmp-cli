@@ -109,9 +109,8 @@ def update_mod():
     """Download missing or outdated "multiplayer mod" files."""
     # pylint: disable=too-many-branches
 
-    if not os.path.isdir(Args.moddir):
-        logging.debug("Creating directory %s", Args.moddir)
-        os.makedirs(Args.moddir, exist_ok=True)
+    logging.debug("Creating directory %s if it doesn't exist", Args.moddir)
+    os.makedirs(Args.moddir, exist_ok=True)
 
     # get the fileinfo from the server
     try:
