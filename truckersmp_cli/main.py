@@ -178,8 +178,7 @@ def start_with_proton():
     steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
     logging.info("Steam installation directory: %s", steamdir)
 
-    if not os.path.isdir(Args.prefixdir):
-        logging.debug("Creating directory %s", Args.prefixdir)
+    logging.debug("Creating directory %s if it doesn't exist", Args.prefixdir)
     os.makedirs(Args.prefixdir, exist_ok=True)
 
     prefix = os.path.join(Args.prefixdir, "pfx")
