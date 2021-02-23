@@ -113,9 +113,11 @@ See {} for additional information.""".format(
 
     # fallback to old local folder
     if not Args.moddir:
-        if os.path.isdir(os.path.join(Dir.scriptdir, "truckersmp")):
+        old_local_moddir = os.path.join(Dir.scriptdir, "truckersmp")
+        if (os.path.isdir(old_local_moddir)
+                and os.access(old_local_moddir, os.R_OK | os.W_OK | os.X_OK)):
             logging.debug("No moddir set and fallback found")
-            Args.moddir = os.path.join(Dir.scriptdir, "truckersmp")
+            Args.moddir = old_local_moddir
         else:
             logging.debug("No moddir set, setting to default")
             Args.moddir = Dir.default_moddir
