@@ -18,9 +18,6 @@ On Linux it's possible to start TruckersMP through [Proton][github:proton]. A wo
     * `truckersmp-cli` provides `--activate-native-d3dcompiler-47` option as a workaround: When this is specified with `-s` (`--start`), `truckersmp-cli` downloads/activates the DLL
         * Once the DLL is activated, there's basically no need to specify the option again
         * When downgrading Proton, the native DLL is removed: Then `--activate-native-d3dcompiler-47` is needed again
-* When DXVK is used in fullscreen mode, TruckersMP overlay disappears after switching window (e.g. pressing Alt + Tab) ([issue #90][github:issue90])
-    * `truckersmp-cli` provides `--wine-desktop SIZE` option as a workaround
-        * Mouse clicking doesn't work in other GUI apps while the game is running
 
 ## Install
 
@@ -263,7 +260,6 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 
 [article:dll-injection]: http://securityxploded.com/dll-injection-and-hooking.php
 [github:inject]: https://github.com/mewrev/inject
-[github:issue90]: https://github.com/lhark/truckersmp-cli/issues/90
 [github:issue91]: https://github.com/lhark/truckersmp-cli/issues/91
 [github:issue129]: https://github.com/lhark/truckersmp-cli/issues/129
 [github:issue147]: https://github.com/lhark/truckersmp-cli/issues/147
