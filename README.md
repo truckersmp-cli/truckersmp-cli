@@ -12,6 +12,12 @@ On Linux it's possible to start TruckersMP through [Proton][github:proton]. A wo
 ## Known issues
 
 * It was reported that "ProMods + ETS2MP" crashes with Proton 5.13 but Proton 5.0 works ([issue #147][github:issue147])
+* If (default) OpenGL rendering backend is used, game crashes due to a bug in Multiplayer DLL when trying to choose a color for "Player tag" or "Players on the world map" ([issue #91][github:issue91])
+    * A workaround is to use D3D11 rendering backend by specifying `-d` (`--enable-d3d11`)
+* If D3D11 rendering backend is used, TruckersMP login screen is not shown without Windows native 64-bit `d3dcompiler_47.dll`
+    * `truckersmp-cli` provides `--activate-native-d3dcompiler-47` option as a workaround: When this is specified with `-s` (`--start`), `truckersmp-cli` downloads/activates the DLL
+        * Once the DLL is activated, there's basically no need to specify the option again
+        * When downgrading Proton, the native DLL is removed: Then `--activate-native-d3dcompiler-47` is needed again
 
 ## Install
 
@@ -190,23 +196,15 @@ $ truckersmp-cli --ets2 --start --wine --prefixdir "/path/to/prefix/pfx"
 
 * Stable and faster than wined3d. But slower than DXVK.
 * Useful if you're not using Vulkan-capable GPU.
-* Game crashes due to a bug in Multiplayer DLL when trying to choose color ("Player tag", "Players on the world map")
-    * See [issue #91][github:issue91] for more details
 
 ### Direct3D 11 (DXVK or wined3d)
 
 * Faster than OpenGL when DXVK is used.
     * DXVK requires Vulkan support.
     * DXVK 1.4.6 or newer is needed because older versions have rendering issue. If you're using Proton, use 4.11-10 or newer.
-* Windows native 64-bit `d3dcompiler_47.dll` is needed for multiplayer.
-    * Without this native DLL, TruckersMP login screen will not be shown.
-    * When `--activate-native-d3dcompiler-47` is specified with `-s` (`--start`), `truckersmp-cli` downloads/activates the DLL.
-    * Once the DLL is activated, there's no need to specify the option again.
 * Proton uses DXVK by default.
     * When using Proton, wined3d can be used by specifying `--use-wined3d`, but it's not recommended because this is slower than OpenGL.
 * Used only when `-d` or `--enable-d3d11` is specified.
-* When DXVK is used in fullscreen mode, TruckersMP overlay disappears after switching window (e.g. pressing Alt + Tab)
-    * See [issue #90][github:issue90] for more details
 
 ## Default directories
 
@@ -262,7 +260,6 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 
 [article:dll-injection]: http://securityxploded.com/dll-injection-and-hooking.php
 [github:inject]: https://github.com/mewrev/inject
-[github:issue90]: https://github.com/lhark/truckersmp-cli/issues/90
 [github:issue91]: https://github.com/lhark/truckersmp-cli/issues/91
 [github:issue129]: https://github.com/lhark/truckersmp-cli/issues/129
 [github:issue147]: https://github.com/lhark/truckersmp-cli/issues/147
