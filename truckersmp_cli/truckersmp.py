@@ -13,38 +13,7 @@ import urllib.parse
 import urllib.request
 
 from .utils import check_hash, download_files
-from .variables import Args, TMPWebHTML, URL
-
-
-def check_downgrade_needed():
-    """
-    Check whether downgrading is needed.
-
-    This parses TruckersMP "Server Status" page and check for
-    announcement for downgrading.
-
-    This returns a dict of 'game: downgrade_needed' pairs
-    (e.g. { "ets2": False, "ats": True } ).
-    When this fails to download the page, this returns False for both games
-    ( { "ets2": False, "ats": False } ).
-    """
-    try:
-        with urllib.request.urlopen(URL.truckersmp_status) as f_in:
-            for line in f_in:
-                if line.startswith(TMPWebHTML.prefix_downgrade):
-                    games = line[len(TMPWebHTML.prefix_downgrade):]
-                    if TMPWebHTML.name_ets2 in games:
-                        if TMPWebHTML.name_ats in games:
-                            return dict(ats=True, ets2=True)
-                        return dict(ats=False, ets2=True)
-                    return dict(ats=True, ets2=False)
-                if line.startswith(TMPWebHTML.prefix_h2):
-                    # no need to read further
-                    # because no announcement after the first "h2" element
-                    break
-    except OSError as ex:
-        logging.warning("Failed to get content of TruckersMP Status page: %s", ex)
-    return dict(ats=False, ets2=False)
+from .variables import Args, URL
 
 
 def determine_game_branch():
@@ -53,20 +22,19 @@ def determine_game_branch():
 
     When "--beta" option is specified, this returns the specified branch.
     Otherwise, this tries to determine the branch using TruckersMP Web API:
-    If downgrade is needed, this tries to get the TruckersMP-compatible
-    branch name (e.g. "temporary_1_37") and returns it if succeeded.
-    If the latest game version is compatible with TruckersMP
-    or this fails to get TruckersMP-compatible version,
-    this returns the name "public" for using the latest version.
+    If "--downgrade" option is specified, this tries to get
+    the TruckersMP-compatible branch name (e.g. "temporary_1_39")
+    and returns it if succeeded.
+    If neither of them is specified, this returns the name "public"
+    for using the latest version.
     """
     if Args.beta:
         return Args.beta
 
     branch = "public"
     game_name = "ats" if Args.ats else "ets2"
-    downgrade_needed = check_downgrade_needed()
     try:
-        if downgrade_needed[game_name]:
+        if Args.downgrade:
             version = get_supported_game_versions()[game_name].split(".")
             branch = "temporary_{}_{}".format(version[0], version[1])
     except (OSError, TypeError):

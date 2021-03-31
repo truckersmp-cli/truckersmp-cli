@@ -71,15 +71,6 @@ class File:
     sdl2_soname = "libSDL2-2.0.so.0"
 
 
-class TMPWebHTML:
-    """Strings in TruckersMP web site."""
-
-    prefix_downgrade = b"<p>TruckersMP does not support the latest game version of "
-    prefix_h2 = b"<h2>"
-    name_ats = b"American Truck Simulator"
-    name_ets2 = b"Euro Truck Simulator 2"
-
-
 class URL:
     """URLs."""
 

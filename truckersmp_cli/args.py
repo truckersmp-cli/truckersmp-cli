@@ -233,6 +233,11 @@ SteamCMD can use your saved credentials for convenience.
         help="disable Steam Overlay when using Proton",
         action="store_true")
     parser.add_argument(
+        "--downgrade",
+        help="""downgrade to latest TruckersMP-compatible version when updating,
+                ignored if "--beta" ("-b") option is specified""",
+        action="store_true")
+    parser.add_argument(
         "--native-steam-dir", metavar="DIR", type=str,
         default="auto",
         help="""choose native Steam installation,
