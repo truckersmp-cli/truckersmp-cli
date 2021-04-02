@@ -83,7 +83,7 @@ class TMPWebHTML:
 class URL:
     """URLs."""
 
-    project = "https://github.com/lhark/truckersmp-cli"
+    project = "https://github.com/truckersmp-cli/truckersmp-cli"
     project_doc_inst = project + "#install"
     project_releases = project + "/releases"
     dlurl = "download.ets2mp.com"

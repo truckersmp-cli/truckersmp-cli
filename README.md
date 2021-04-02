@@ -260,13 +260,13 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 
 [article:dll-injection]: http://securityxploded.com/dll-injection-and-hooking.php
 [github:inject]: https://github.com/mewrev/inject
-[github:issue91]: https://github.com/lhark/truckersmp-cli/issues/91
-[github:issue129]: https://github.com/lhark/truckersmp-cli/issues/129
-[github:issue147]: https://github.com/lhark/truckersmp-cli/issues/147
+[github:issue91]: https://github.com/truckersmp-cli/truckersmp-cli/issues/91
+[github:issue129]: https://github.com/truckersmp-cli/truckersmp-cli/issues/129
+[github:issue147]: https://github.com/truckersmp-cli/truckersmp-cli/issues/147
 [github:kakurasan]: https://github.com/kakurasan
 [github:Lucki]: https://github.com/Lucki
 [github:proton]: https://github.com/ValveSoftware/Proton
-[github:release-page]: https://github.com/lhark/truckersmp-cli/releases
+[github:release-page]: https://github.com/truckersmp-cli/truckersmp-cli/releases
 [github:truckersmp-launcher]: https://github.com/TheUnknownNO/TruckersMP-Launcher
 [python:genzshcomp]: https://github.com/hhatto/genzshcomp
 [python:vdf]: https://github.com/ValvePython/vdf

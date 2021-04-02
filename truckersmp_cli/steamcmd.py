@@ -65,7 +65,7 @@ def update_game():
             wine = None
     if Args.proton:
         # we don't use system SteamCMD because something goes wrong in some cases
-        # see https://github.com/lhark/truckersmp-cli/issues/43
+        # see https://github.com/truckersmp-cli/truckersmp-cli/issues/43
         steamcmd = os.path.join(Dir.steamcmddir, "steamcmd.sh")
         steamcmd_url = URL.steamcmdlnx
         gamedir = Args.gamedir
