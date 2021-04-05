@@ -97,7 +97,7 @@ jobs:
           asset_name: ${{ steps.compress_files.outputs.tarfilename }}.zst
           asset_content_type: application/x-tar
       - name: Upload package to PyPI
-        if: github.repository == 'kakurasan/truckersmp-cli'
+        if: github.repository == 'truckersmp-cli/truckersmp-cli'
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
