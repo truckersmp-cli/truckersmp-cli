@@ -18,6 +18,10 @@ def check_args_errors():
     """Check command-line arguments."""
     # pylint: disable=too-many-branches,too-many-statements
 
+    # "--downgrade" implies "--update"
+    if Args.downgrade:
+        Args.update = True
+
     # checks for updating and/or starting
     if not Args.update and not Args.start:
         logging.info("--update/--start not specified, doing both.")
@@ -231,6 +235,12 @@ SteamCMD can use your saved credentials for convenience.
     parser.add_argument(
         "--disable-proton-overlay",
         help="disable Steam Overlay when using Proton",
+        action="store_true")
+    parser.add_argument(
+        "--downgrade",
+        help="""downgrade to the latest version supported by TruckersMP
+                Note: This option implies "--update" option and
+                is ignored if "--beta" ("-b") option is specified""",
         action="store_true")
     parser.add_argument(
         "--native-steam-dir", metavar="DIR", type=str,
