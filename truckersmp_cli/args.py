@@ -238,7 +238,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "--downgrade",
-        help="""downgrade to latest TruckersMP-compatible version when updating
+        help="""downgrade to the latest version supported by TruckersMP
                 Note: This option implies "--update" option and
                 is ignored if "--beta" ("-b") option is specified""",
         action="store_true")

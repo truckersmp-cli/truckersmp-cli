@@ -78,7 +78,7 @@ Short option|Long option|Description
 (Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
 (Not available)|`--check-windows-steam`|Check for the Windows Steam version on updating when using Proton
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
-(Not available)|`--downgrade`|Downgrade to latest TruckersMP-compatible version when updating Note: This option implies "--update" option and is ignored if "--beta" ("-b") option is specified
+(Not available)|`--downgrade`|Downgrade to the latest version that is supported by TruckersMP. Note: This option implies "--update" option and is ignored if "--beta" ("-b") option is specified
 (Not available)|`--native-steam-dir`|Choose native Steam installation, useful only if your Steam directory is not detected automatically [Default: `auto`]
 (Not available)|`--self-update`|Update files to the latest release and quit
 (Not available)|`--singleplayer`|Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.
@@ -166,7 +166,7 @@ $ truckersmp-cli --ats --start
 
 #### How to downgrade games
 
-When the latest game version is not compatible with TruckersMP yet, if user updates game with `--downgrade` option (that implies `--update`), truckersmp-cli installs the latest TruckersMP-compatible version of game by determining Steam game branch name, using [TruckersMP Web API][truckersmp:webapi].
+When the latest game version is not compatible with TruckersMP yet, the user can downgrade the games with `--downgrade` (that implies `--update`) which installs the latest version that is supported by TruckersMP by determining the Steam game branch name by using [TruckersMP Web API][truckersmp:webapi].
 
 ```
 $ truckersmp-cli --ets2 --downgrade
