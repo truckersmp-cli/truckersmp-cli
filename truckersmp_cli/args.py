@@ -18,6 +18,28 @@ def check_args_errors():
     """Check command-line arguments."""
     # pylint: disable=too-many-branches,too-many-statements
 
+    # check actions in new syntax
+    if Args.action == "start":
+        Args.start = True
+    elif Args.action == "update":
+        Args.update = True
+    elif Args.action == "downgrade":
+        Args.downgrade = True
+    elif Args.action == "ustart":
+        Args.update = Args.start = True
+    elif Args.action == "dstart":
+        Args.downgrade = Args.start = True
+
+    # check game names in new syntax
+    if Args.game == "ets2mp":
+        Args.ets2 = True
+    elif Args.game == "atsmp":
+        Args.ats = True
+    elif Args.game == "ets2":
+        Args.ets2 = Args.singleplayer = True
+    elif Args.game == "ats":
+        Args.ats = Args.singleplayer = True
+
     # "--downgrade" implies "--update"
     if Args.downgrade:
         Args.update = True
@@ -147,7 +169,8 @@ SteamCMD can use your saved credentials for convenience.
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         "-a", "--ats",
-        help="use American Truck Simulator", action="store_true")
+        help="**DEPRECATED** use American Truck Simulator",
+        action="store_true")
     parser.add_argument(
         "-b", "--beta", metavar="VERSION", type=str,
         help="""set game version to VERSION,
@@ -158,7 +181,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "-e", "--ets2",
-        help="""use Euro Truck Simulator 2
+        help="""**DEPRECATED** use Euro Truck Simulator 2
                 [Default if neither ATS or ETS2 are specified] """,
         action="store_true")
     parser.add_argument(
@@ -202,12 +225,12 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "-s", "--start",
-        help="""start the game
+        help="""**DEPRECATED** start the game
                 [Default if neither start or update are specified]""",
         action="store_true")
     parser.add_argument(
         "-u", "--update",
-        help="""update the game
+        help="""**DEPRECATED** update the game
                 [Default if neither start or update are specified]""",
         action="store_true")
     parser.add_argument(
@@ -238,7 +261,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "--downgrade",
-        help="""downgrade to the latest version supported by TruckersMP
+        help="""**DEPRECATED** downgrade to the latest version supported by TruckersMP
                 Note: This option implies "--update" option and
                 is ignored if "--beta" ("-b") option is specified""",
         action="store_true")
@@ -255,7 +278,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "--singleplayer",
-        help="""start singleplayer game, useful for save editing,
+        help="""**DEPRECATED** start singleplayer game, useful for save editing,
                 using/testing DXVK in singleplayer, etc.""",
         action="store_true")
     parser.add_argument(
@@ -285,5 +308,21 @@ SteamCMD can use your saved credentials for convenience.
         "--version",
         help="""print version information and quit""",
         action="store_true")
+    parser.add_argument(
+        "action",
+        # currently we can't set the default value because it may change
+        # values from deprecated options
+        # when we drop the options we need to
+        # set default="ustart" and remove "none"
+        choices=("start", "update", "downgrade", "ustart", "dstart", "none"),
+        default="none",
+        nargs="?")
+    parser.add_argument(
+        "game",
+        # similarly, when we drop deprecated options we need to
+        # set default="ets2mp" and remove "none"
+        choices=("ets2mp", "ets2", "ats", "atsmp", "none"),
+        default="none",
+        nargs="?")
 
     return parser
