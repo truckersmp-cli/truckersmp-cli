@@ -18,6 +18,20 @@ def check_args_errors():
     """Check command-line arguments."""
     # pylint: disable=too-many-branches,too-many-statements
 
+    # warn if using deprecated options
+    if Args.ets2:
+        logging.warning("'--ets2' ('-e') option is deprecated, use new syntax instead")
+    if Args.ats:
+        logging.warning("'--ats' ('-a') option is deprecated, use new syntax instead")
+    if Args.update:
+        logging.warning("'--update' ('-u') option is deprecated, use new syntax instead")
+    if Args.downgrade:
+        logging.warning("'--downgrade' option is deprecated, use new syntax instead")
+    if Args.start:
+        logging.warning("'--start' ('-s') option is deprecated, use new syntax instead")
+    if Args.singleplayer:
+        logging.warning("'--singleplayer' option is deprecated, use new syntax instead")
+
     # check actions in new syntax
     if Args.action == "start":
         Args.start = True
