@@ -39,9 +39,9 @@ def check_args_errors():
         Args.update = True
     elif Args.action == "downgrade":
         Args.downgrade = True
-    elif Args.action == "ustart":
+    elif Args.action == "updateandstart" or Args.action == "ustart":
         Args.update = Args.start = True
-    elif Args.action == "dstart":
+    elif Args.action == "downgradeandstart" or Args.action == "dstart":
         Args.downgrade = Args.start = True
 
     # check game names in new syntax
@@ -327,8 +327,11 @@ SteamCMD can use your saved credentials for convenience.
         # currently we can't set the default value because it may change
         # values from deprecated options
         # when we drop the options we need to
-        # set default="ustart" and remove "none"
-        choices=("start", "update", "downgrade", "ustart", "dstart", "none"),
+        # set default="updateandstart" and remove "none"
+        choices=(
+            "start", "update", "downgrade",
+            "updateandstart", "ustart", "downgradeandstart", "dstart", "none",
+        ),
         default="none",
         nargs="?")
     parser.add_argument(
