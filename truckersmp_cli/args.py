@@ -322,7 +322,16 @@ SteamCMD can use your saved credentials for convenience.
         "--version",
         help="""print version information and quit""",
         action="store_true")
-    parser.add_argument(
+    group_action = parser.add_argument_group(
+        "action",
+        '''choose an action
+  start                           : Start game
+  update                          : Update/install latest game
+  downgrade                       : Downgrade game
+                                    (install game from "temporary_X_Y" branch)
+  updateandstart (or "ustart")    : "update" + "start"
+  downgradeandstart (or "dstart") : "downgrade" + "start"''')
+    group_action.add_argument(
         "action",
         # currently we can't set the default value because it may change
         # values from deprecated options
@@ -334,7 +343,14 @@ SteamCMD can use your saved credentials for convenience.
         ),
         default="none",
         nargs="?")
-    parser.add_argument(
+    group_game = parser.add_argument_group(
+        "game",
+        """choose a game
+  ets2mp : ETS2 multiplayer
+  ets2   : ETS2 singleplayer
+  atsmp  : ATS multiplayer
+  ats    : ATS singleplayer""")
+    group_game.add_argument(
         "game",
         # similarly, when we drop deprecated options we need to
         # set default="ets2mp" and remove "none"
