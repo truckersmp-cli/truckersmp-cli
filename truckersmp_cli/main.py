@@ -17,7 +17,7 @@ from .truckersmp import update_mod
 from .utils import (
     activate_native_d3dcompiler_47, check_libsdl2,
     perform_self_update, set_wine_desktop_registry,
-    start_wine_discord_ipc_bridge, wait_for_steam,
+    setup_wine_discord_ipc_bridge, wait_for_steam,
 )
 from .variables import AppId, Args, Dir, File, URL
 
@@ -230,7 +230,11 @@ def start_with_proton():
     # unless "--without-wine-discord-ipc-bridge" is specified
     ipcbr_proc = None
     if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:
-        ipcbr_proc = start_wine_discord_ipc_bridge(argv, env)
+        ipcbr_path = setup_wine_discord_ipc_bridge()
+        logging.info("Starting wine-discord-ipc-bridge")
+        ipcbr_proc = subproc.Popen(
+            argv + [ipcbr_path, ],
+            env=env, stdout=subproc.DEVNULL, stderr=subproc.DEVNULL)
 
     # check whether singleplayer or multiplayer
     if Args.singleplayer:
@@ -298,7 +302,11 @@ def start_with_wine():
 
     ipcbr_proc = None
     if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:
-        ipcbr_proc = start_wine_discord_ipc_bridge(argv, env)
+        ipcbr_path = setup_wine_discord_ipc_bridge()
+        logging.info("Starting wine-discord-ipc-bridge")
+        ipcbr_proc = subproc.Popen(
+            argv + [ipcbr_path, ],
+            env=env, stdout=subproc.DEVNULL, stderr=subproc.DEVNULL)
 
     if "WINEDLLOVERRIDES" not in env:
         env["WINEDLLOVERRIDES"] = ""

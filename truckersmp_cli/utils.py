@@ -393,17 +393,13 @@ def perform_self_update():
     logging.info("Self update complete")
 
 
-def start_wine_discord_ipc_bridge(runner, env):
+def setup_wine_discord_ipc_bridge():
     """
-    Check/download/run wine-discord-ipc-bridge.
+    Check and download wine-discord-ipc-bridge.
 
     This checks whether winediscordipcbridge.exe is already downloaded
     and download it only when it is not present.
-    When ready, this starts winediscordipcbridge.exe and
-    returns subprocess.Popen object for its process.
-
-    runner: ["/path/to/proton", "run"] (Proton) or ["/path/to/wine"] (Wine)
-    env: Environment variables
+    When ready, this function returns the path to wine-discord-ipc-bridge.
     """
     # check whether the file is already downloaded
     need_download = True
@@ -423,11 +419,7 @@ def start_wine_discord_ipc_bridge(runner, env):
                 URL.github, [(URL.ipcbrpath, File.ipcbridge, File.ipcbridge_md5), ]):
             sys.exit("Failed to download winediscordipcbridge.exe")
 
-    logging.info("Starting winediscordipcbridge.exe")
-
-    return subproc.Popen(
-        runner + [File.ipcbridge, ],
-        env=env, stdout=subproc.DEVNULL, stderr=subproc.DEVNULL)
+    return File.ipcbridge
 
 
 def set_wine_desktop_registry(prefix, wine, enable):
