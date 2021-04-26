@@ -18,6 +18,42 @@ def check_args_errors():
     """Check command-line arguments."""
     # pylint: disable=too-many-branches,too-many-statements
 
+    # warn if using deprecated options
+    if Args.ets2:
+        logging.warning("'--ets2' ('-e') option is deprecated, use new syntax instead")
+    if Args.ats:
+        logging.warning("'--ats' ('-a') option is deprecated, use new syntax instead")
+    if Args.update:
+        logging.warning("'--update' ('-u') option is deprecated, use new syntax instead")
+    if Args.downgrade:
+        logging.warning("'--downgrade' option is deprecated, use new syntax instead")
+    if Args.start:
+        logging.warning("'--start' ('-s') option is deprecated, use new syntax instead")
+    if Args.singleplayer:
+        logging.warning("'--singleplayer' option is deprecated, use new syntax instead")
+
+    # check actions in new syntax
+    if Args.action == "start":
+        Args.start = True
+    elif Args.action == "update":
+        Args.update = True
+    elif Args.action == "downgrade":
+        Args.downgrade = True
+    elif Args.action == "updateandstart" or Args.action == "ustart":
+        Args.update = Args.start = True
+    elif Args.action == "downgradeandstart" or Args.action == "dstart":
+        Args.downgrade = Args.start = True
+
+    # check game names in new syntax
+    if Args.game == "ets2mp":
+        Args.ets2 = True
+    elif Args.game == "atsmp":
+        Args.ats = True
+    elif Args.game == "ets2":
+        Args.ets2 = Args.singleplayer = True
+    elif Args.game == "ats":
+        Args.ats = Args.singleplayer = True
+
     # "--downgrade" implies "--update"
     if Args.downgrade:
         Args.update = True
@@ -147,7 +183,8 @@ SteamCMD can use your saved credentials for convenience.
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         "-a", "--ats",
-        help="use American Truck Simulator", action="store_true")
+        help="**DEPRECATED** use American Truck Simulator",
+        action="store_true")
     parser.add_argument(
         "-b", "--beta", metavar="VERSION", type=str,
         help="""set game version to VERSION,
@@ -158,7 +195,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "-e", "--ets2",
-        help="""use Euro Truck Simulator 2
+        help="""**DEPRECATED** use Euro Truck Simulator 2
                 [Default if neither ATS or ETS2 are specified] """,
         action="store_true")
     parser.add_argument(
@@ -202,12 +239,12 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "-s", "--start",
-        help="""start the game
+        help="""**DEPRECATED** start the game
                 [Default if neither start or update are specified]""",
         action="store_true")
     parser.add_argument(
         "-u", "--update",
-        help="""update the game
+        help="""**DEPRECATED** update the game
                 [Default if neither start or update are specified]""",
         action="store_true")
     parser.add_argument(
@@ -238,7 +275,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "--downgrade",
-        help="""downgrade to the latest version supported by TruckersMP
+        help="""**DEPRECATED** downgrade to the latest version supported by TruckersMP
                 Note: This option implies "--update" option and
                 is ignored if "--beta" ("-b") option is specified""",
         action="store_true")
@@ -255,7 +292,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true")
     parser.add_argument(
         "--singleplayer",
-        help="""start singleplayer game, useful for save editing,
+        help="""**DEPRECATED** start singleplayer game, useful for save editing,
                 using/testing DXVK in singleplayer, etc.""",
         action="store_true")
     parser.add_argument(
@@ -285,5 +322,40 @@ SteamCMD can use your saved credentials for convenience.
         "--version",
         help="""print version information and quit""",
         action="store_true")
+    group_action = parser.add_argument_group(
+        "action",
+        '''choose an action
+  start                           : Start game
+  update                          : Update/install latest game
+  downgrade                       : Downgrade game
+                                    (install game from "temporary_X_Y" branch)
+  updateandstart (or "ustart")    : "update" + "start"
+  downgradeandstart (or "dstart") : "downgrade" + "start"''')
+    group_action.add_argument(
+        "action",
+        # currently we can't set the default value because it may change
+        # values from deprecated options
+        # when we drop the options we need to
+        # set default="updateandstart" and remove "none"
+        choices=(
+            "start", "update", "downgrade",
+            "updateandstart", "ustart", "downgradeandstart", "dstart", "none",
+        ),
+        default="none",
+        nargs="?")
+    group_game = parser.add_argument_group(
+        "game",
+        """choose a game
+  ets2mp : ETS2 multiplayer
+  ets2   : ETS2 singleplayer
+  atsmp  : ATS multiplayer
+  ats    : ATS singleplayer""")
+    group_game.add_argument(
+        "game",
+        # similarly, when we drop deprecated options we need to
+        # set default="ets2mp" and remove "none"
+        choices=("ets2mp", "ets2", "ats", "atsmp", "none"),
+        default="none",
+        nargs="?")
 
     return parser

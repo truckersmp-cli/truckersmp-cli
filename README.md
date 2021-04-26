@@ -54,15 +54,40 @@ You can get the latest pre-built release from [the release page][github:release-
 * [`vdf`][python:vdf] to automatically detect the steam account with saved credentials
 * [`wine`][repology:wine] as a possible replacement to Proton
 
-## Usage options
+## Syntax
+
+```
+$ truckersmp-cli (options...) [action] [game name]
+```
+
+### Actions
+
+Name|Description
+---|---
+`start`|Start game
+`update`|Update/install latest game
+`downgrade`|Downgrade game (install game from `temporary_X_Y` branch)
+`updateandstart`(or `ustart`)|`update` + `start` (Default)
+`downgradeandstart`(or `dstart`)|`downgrade` + `start`
+
+### Game names
+
+Name|Game
+---|---
+`ets2mp`|ETS2 multiplayer (Default)
+`ets2`|ETS2 singleplayer
+`atsmp`|ATS multiplayer
+`ats`|ATS singleplayer
+
+## Options
 
 Short option|Long option|Description
 ---|---|---
 `-h`|`--help`|Show help
-`-a`|`--ats`|Use American Truck Simulator
+`-a`|`--ats`|**DEPRECATED** Use American Truck Simulator
 `-b VERSION`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
 `-d`|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
-`-e`|`--ets2`|Use Euro Truck Simulator 2 [Default if neither ATS or ETS2 are specified]
+`-e`|`--ets2`|**DEPRECATED** Use Euro Truck Simulator 2 [Default if neither ATS or ETS2 are specified]
 `-g DIR`|`--gamedir DIR`|Choose a different directory for the game files [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`]
 `-i APPID`|`--proton-appid APPID`|Choose a different AppID for Proton (Needs an update for changes)
 `-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended [Default: Empty string (only stderr)] Note: Messages from Steam/SteamCMD won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
@@ -70,18 +95,18 @@ Short option|Long option|Description
 `-n NAME`|`--account NAME`|Steam account name to use
 `-o DIR`|`--protondir DIR`|Choose a different Proton directory [Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`]
 `-p`|`--proton`|Start the game with Proton [Default on Linux if neither Proton or Wine are specified]
-`-s`|`--start`|Start the game [Default if neither start or update are specified]
-`-u`|`--update`|Update the game [Default if neither start or update are specified]
+`-s`|`--start`|**DEPRECATED** Start the game [Default if neither start or update are specified]
+`-u`|`--update`|**DEPRECATED** Update the game [Default if neither start or update are specified]
 `-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
 `-w`|`--wine`|Start the game with Wine [Default on other systems if neither Proton or Wine are specified]
 `-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]
 (Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
 (Not available)|`--check-windows-steam`|Check for the Windows Steam version on updating when using Proton
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
-(Not available)|`--downgrade`|Downgrade to the latest version that is supported by TruckersMP. Note: This option implies "--update" option and is ignored if "--beta" ("-b") option is specified
+(Not available)|`--downgrade`|**DEPRECATED** Downgrade to the latest version that is supported by TruckersMP. Note: This option implies "--update" option and is ignored if "--beta" ("-b") option is specified
 (Not available)|`--native-steam-dir`|Choose native Steam installation, useful only if your Steam directory is not detected automatically [Default: `auto`]
 (Not available)|`--self-update`|Update files to the latest release and quit
-(Not available)|`--singleplayer`|Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.
+(Not available)|`--singleplayer`|**DEPRECATED** Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.
 (Not available)|`--skip-update-proton`|Skip updating already-installed Proton when updating game with Proton enabled
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
 (Not available)|`--wine-desktop SIZE`|Use Wine desktop, work around missing TruckerMP overlay after tabbing out using DXVK, mouse clicking won't work in other GUI apps while the game is running, SIZE must be 'WIDTHxHEIGHT' format (e.g. 1920x1080)
@@ -155,27 +180,27 @@ To just try out TruckersMP (ETS2) on Linux with nothing already downloaded you c
 #### Install and update Euro Truck Simulator 2
 
 ```
-$ truckersmp-cli --ets2 --update
+$ truckersmp-cli update ets2mp
 ```
 
 #### Start American Truck Simulator with TruckersMP
 
 ```
-$ truckersmp-cli --ats --start
+$ truckersmp-cli start atsmp
 ```
 
 #### How to downgrade games
 
-When the latest game version is not compatible with TruckersMP yet, the user can downgrade the games with `--downgrade` (that implies `--update`) which installs the latest version that is supported by TruckersMP by determining the Steam game branch name by using [TruckersMP Web API][truckersmp:webapi].
+When the latest game version is not compatible with TruckersMP yet, the user can downgrade the games with `truckersmp-cli downgrade [game name]` which installs the latest version that is supported by TruckersMP by determining the Steam game branch name by using [TruckersMP Web API][truckersmp:webapi].
 
 ```
-$ truckersmp-cli --ets2 --downgrade
+$ truckersmp-cli downgrade ets2mp
 ```
 
 `--beta` option can be used to specify the branch name directly.
 
 ```
-$ truckersmp-cli --ets2 --update --beta temporary_1_39
+$ truckersmp-cli --beta temporary_1_39 downgrade ets2mp
 ```
 
 If both options are given, the branch name from `--beta` option is used.
@@ -185,13 +210,13 @@ If both options are given, the branch name from `--beta` option is used.
 #### Install, update and start TruckersMP (ATS) with Proton from a custom location
 
 ```
-$ truckermsp-cli --ats --update --start --gamedir "/path/to/gamedir"
+$ truckermsp-cli --gamedir "/path/to/gamedir" ustart atsmp
 ```
 
 #### Start TruckersMP (ETS2) using Wine
 
 ```
-$ truckersmp-cli --ets2 --start --wine
+$ truckersmp-cli --wine start ets2mp
 ```
 Make sure that
 * The Windows version of Steam is already running in the same Wine prefix **or**
@@ -201,8 +226,8 @@ Make sure that
 #### Using a different prefix location
 
 ```
-$ truckersmp-cli --ets2 --start --proton --prefixdir "/path/to/prefix"
-$ truckersmp-cli --ets2 --start --wine --prefixdir "/path/to/prefix/pfx"
+$ truckersmp-cli --proton --prefixdir "/path/to/prefix" start ets2mp
+$ truckersmp-cli --wine --prefixdir "/path/to/prefix/pfx" start ets2mp
 ```
 * While the prefix for Wine will point directly to the prefix location, Proton uses a subfolder `pfx` for the actual prefix and points to the parent folder.
 * Your prefix must be 64bits, the mod is not 32bits-compatible.
