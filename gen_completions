@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+
+"""
+truckersmp-cli completions generator.
+
+This script generates completions for bash and zsh.
+"""
+
+import argparse
+import json
+import locale
+import sys
+from string import Template
+
+from truckersmp_cli.args import ACTIONS, GAMES, create_arg_parser
+from truckersmp_cli.variables import AppId, File
+
+
+class CompletionTemplate(Template):
+    """Template class that uses "%" as delimiter."""
+
+    delimiter = "%"
+
+
+TMPL_BASH = CompletionTemplate(
+    """# bash completion for truckersmp-cli              -*- shell-script -*-
+
+_truckersmp_cli() {
+    local cur prev
+    _get_comp_words_by_ref -n : cur prev
+
+    if [[ "${cur}" == -* ]]; then
+        COMPREPLY=( $(compgen -W "%{tmpl_bash_options}" -- "${cur}") )
+        return
+    fi
+
+    local diropts="%{tmpl_dir_options_regex}"
+    if [[ "${prev}" =~ ${diropts} ]]; then
+        local IFS=$'\\n'
+        compopt -o filenames
+        COMPREPLY=( $(compgen -d -- "${cur}") )
+        return
+    fi
+    local fileopts="%{tmpl_file_options_regex}"
+    if [[ "${prev}" =~ ${fileopts} ]]; then
+        local IFS=$'\\n'
+        compopt -o filenames
+        COMPREPLY=( $(compgen -f -- "${cur}") )
+        return
+    fi
+
+    local games="%{tmpl_games_regex}"
+    for ((i=1; i < ${COMP_CWORD}; i++)); do
+        if [[ "${COMP_WORDS[i]}" =~ ${games} ]]; then
+            COMPREPLY=()
+            return
+        fi
+    done
+
+    local acts="%{tmpl_actions_regex}"
+    for ((i=1; i < ${COMP_CWORD}; i++)); do
+        if [[ "${COMP_WORDS[i]}" =~ ${acts} ]]; then
+            COMPREPLY=( $(compgen -W "%{tmpl_games}" -- "${cur}") )
+            return
+        fi
+    done
+
+    COMPREPLY=( $(compgen -W "%{tmpl_actions}" -- "${cur}") )
+} &&
+    complete -F _truckersmp_cli truckersmp-cli
+""")
+
+TMPL_ZSH = CompletionTemplate(
+    """#compdef truckersmp-cli                           -*- shell-script -*-
+# zsh completion for truckersmp-cli
+
+__truckersmp_cli() {
+    typeset -A opt_args
+    local prev="${words[CURRENT-1]}"
+    local diropts="%{tmpl_dir_options_regex}"
+    local fileopts="%{tmpl_file_options_regex}"
+
+    if [[ "${prev}" =~ ${diropts} ]]; then
+        _path_files -/
+        return
+    elif [[ "${prev}" =~ ${fileopts} ]]; then
+        _path_files
+        return
+    fi
+
+    _arguments -s -S "1: :->action" "2: :->game" %{tmpl_zsh_options}
+
+    case "${state}" in
+        action)
+            _values action '%{tmpl_zsh_actions}'
+            ;;
+        game)
+            _values game '%{tmpl_zsh_games}'
+            ;;
+    esac
+}
+
+__truckersmp_cli
+""")
+
+
+def write_shell_completion_file(shellname, path, content):
+    """
+    Write given content to specified completion file.
+
+    If path is None, this function does nothing and returns True.
+    If it successfully writes data to the file,
+    this function returns True.
+    If it fails to write, it prints an error message
+    and returns False.
+
+    shellname: Shell name, used in messages
+    path: Path to output completion file
+    content: Content of completion file
+    """
+    if path is None:
+        return True
+
+    try:
+        with open(path, "w") as f_out:
+            f_out.write(content)
+    except OSError as ex:
+        print(
+            "Failed to write {} completion file {}: {}".format(
+                shellname, path, ex),
+            file=sys.stderr)
+        return False
+
+    print("Wrote {} completion file {}".format(shellname, path))
+    return True
+
+
+def main():
+    """Generate completions for bash and zsh."""
+    try:
+        with open(File.proton_json) as f_in:
+            AppId.proton = json.load(f_in)
+    except (OSError, ValueError) as ex:
+        sys.exit("Failed to load proton.json: {}".format(ex))
+
+    parser = argparse.ArgumentParser(
+        description="Shell completions generator")
+    parser.add_argument(
+        "-b", "--bash-completion", metavar="FILE",
+        help="write bash completion file.")
+    parser.add_argument(
+        "-z", "--zsh-completion", metavar="FILE",
+        help="write zsh completion file.")
+    config = parser.parse_args()
+
+    if config.bash_completion is None and config.zsh_completion is None:
+        return "At least --bash-completion(-b) or --zsh-completion(-z) option needed."
+
+    comp_data = dict(
+        action_names=[act[0] for act in ACTIONS],
+        bash_options=["-h --help"],
+        dir_options=[],
+        file_options=[],
+        game_names=[game[0] for game in GAMES],
+        zsh_actions=[],
+        zsh_games=[],
+        zsh_options=['{-h,--help}"[show help message and exit]:"', ],
+    )
+    for act in create_arg_parser()[1]:
+        if act.help.startswith("**DEPRECATED** "):
+            continue
+        if len(act.option_strings) > 1:
+            zsh_arg_optnames = "{" + ",".join(act.option_strings) + "}"
+        else:
+            zsh_arg_optnames = act.option_strings[0]
+        for opt in act.option_strings:
+            comp_data["bash_options"].append(opt)
+            if opt.endswith("dir"):
+                comp_data["dir_options"].append(opt)
+            elif opt.endswith("file"):
+                comp_data["file_options"].append(opt)
+        desc = act.help.replace("[", "\\[").replace("]", "\\]").replace('"', '\\"')
+        comp_data["zsh_options"].append(
+            '{}"[{}]"'.format(zsh_arg_optnames, " ".join(desc.split())))
+    for name, desc in ACTIONS:
+        comp_data["zsh_actions"].append("{}[{}]".format(name, desc))
+    for name, desc in GAMES:
+        comp_data["zsh_games"].append("{}[{}]".format(name, desc))
+
+    return (
+        write_shell_completion_file(
+            "bash", config.bash_completion, TMPL_BASH.substitute(
+                tmpl_actions=" ".join(comp_data["action_names"]),
+                tmpl_actions_regex="|".join(comp_data["action_names"]),
+                tmpl_bash_options=" ".join(comp_data["bash_options"]),
+                tmpl_dir_options_regex="|".join(comp_data["dir_options"]),
+                tmpl_file_options_regex="|".join(comp_data["file_options"]),
+                tmpl_games=" ".join(comp_data["game_names"]),
+                tmpl_games_regex="|".join(comp_data["game_names"]),
+            )
+        ) is False or write_shell_completion_file(
+            "zsh", config.zsh_completion, TMPL_ZSH.substitute(
+                tmpl_dir_options_regex="|".join(comp_data["dir_options"]),
+                tmpl_file_options_regex="|".join(comp_data["file_options"]),
+                tmpl_zsh_actions="' '".join(comp_data["zsh_actions"]),
+                tmpl_zsh_games="' '".join(comp_data["zsh_games"]),
+                tmpl_zsh_options=" ".join(comp_data["zsh_options"]),
+            )
+        ) is False
+    )
+
+
+if __name__ == "__main__":
+    locale.setlocale(locale.LC_MESSAGES, "")
+    locale.setlocale(locale.LC_TIME, "C")
+    sys.exit(main())
