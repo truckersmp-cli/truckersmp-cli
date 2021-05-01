@@ -176,7 +176,7 @@ def setup_logging():
 
 def start_with_proton():
     """Start game with Proton."""
-    # pylint: disable=too-many-branches,too-many-statements
+    # pylint: disable=consider-using-with,too-many-branches,too-many-statements
     steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
     logging.info("Steam installation directory: %s", steamdir)
 
@@ -282,6 +282,7 @@ def start_with_proton():
 
 def start_with_wine():
     """Start game with Wine."""
+    # pylint: disable=consider-using-with
     wine = os.environ["WINE"] if "WINE" in os.environ else "wine"
     if Args.activate_native_d3dcompiler_47:
         activate_native_d3dcompiler_47(Args.prefixdir, wine)
