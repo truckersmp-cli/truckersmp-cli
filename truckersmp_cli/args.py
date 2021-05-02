@@ -283,6 +283,7 @@ SteamCMD can use your saved credentials for convenience.
         "--game-options", metavar="OPTIONS", type=str,
         default="-nointro -64bit",
         help="""specify ATS/ETS2 options
+                Note: If specifying one option, use "--game-options=-option" format
                 [Default: "-nointro -64bit"]""")
     parser.add_argument(
         "--native-steam-dir", metavar="DIR", type=str,
