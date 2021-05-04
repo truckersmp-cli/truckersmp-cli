@@ -29,7 +29,7 @@ jobs:
       - name: Build truckersmp-cli.exe
              # we need "make clean" because we already have truckersmp-cli.exe
              # and "make" does nothing even when truckersmp-cli.c is changed
-        run: make clean && make
+        run: make clean && make truckersmp_cli/truckersmp-cli.exe
       - name: Strip truckersmp-cli.exe
         run: x86_64-w64-mingw32-strip truckersmp_cli/truckersmp-cli.exe
       - uses: actions/upload-artifact@v1
