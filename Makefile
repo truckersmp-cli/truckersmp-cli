@@ -5,15 +5,11 @@ all: truckersmp_cli/truckersmp-cli.exe _truckersmp-cli truckersmp-cli.bash
 truckersmp_cli/truckersmp-cli.exe: truckersmp-cli.c
 	$(CC) $< -o $@
 
-_truckersmp-cli:
-	if command -v genzshcomp > /dev/null; then \
-		./truckersmp-cli --help | genzshcomp -f zsh > _truckersmp-cli; \
-	fi
+_truckersmp-cli: gen_completions truckersmp_cli/args.py truckersmp_cli/variables.py truckersmp_cli/proton.json
+	./gen_completions --zsh-completion $@
 
-truckersmp-cli.bash:
-	if command -v genzshcomp > /dev/null; then \
-		./truckersmp-cli --help | genzshcomp -f bash > truckersmp-cli.bash; \
-	fi
+truckersmp-cli.bash: gen_completions truckersmp_cli/args.py truckersmp_cli/variables.py truckersmp_cli/proton.json
+	./gen_completions --bash-completion $@
 
 clean:
 	rm -f truckersmp_cli/truckersmp-cli.exe _truckersmp-cli truckersmp-cli.bash
