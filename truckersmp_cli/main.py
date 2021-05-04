@@ -79,7 +79,7 @@ def main():
         sys.exit("Failed to load proton.json: {}".format(ex))
 
     # parse options
-    arg_parser = create_arg_parser()
+    arg_parser = create_arg_parser()[0]
     arg_parser.parse_args(namespace=Args)
 
     # print version

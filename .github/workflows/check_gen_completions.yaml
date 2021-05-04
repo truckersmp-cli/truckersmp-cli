@@ -1,0 +1,43 @@
+name: Completions generator
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+    paths:
+      - .github/workflows/check_gen_completions.yaml
+      - gen_completions
+  pull_request:
+    branches:
+      - master
+      - dev
+    paths:
+      - .github/workflows/check_gen_completions.yaml
+      - gen_completions
+
+jobs:
+  check_by_flake8:
+    name: Check completions generator by flake8
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - name: Install flake8, flake8-docstrings, and flake8-import-order
+        run: pip install flake8 flake8-docstrings flake8-import-order
+      - name: Check Python script by flake8
+        run: flake8 --max-line-length=90 --show-source --statistics gen_completions
+  check_by_pylint:
+    name: Check main scripts by pylint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - name: Install pylint
+        run: pip install pylint
+      - name: Check Python scripts by pylint
+        run: pylint -j2 gen_completions

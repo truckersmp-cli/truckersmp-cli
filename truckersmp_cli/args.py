@@ -14,6 +14,24 @@ from .utils import VDF_IS_AVAILABLE, get_current_steam_user
 from .variables import AppId, Args, Dir
 
 
+ACTIONS = (
+    ("start", "start game"),
+    ("update", "update/install latest game"),
+    ("downgrade", 'downgrade game (install game from "temporary_X_Y" branch)'),
+    ("updateandstart", '"update" and "start"'),
+    ("ustart", 'same as "updateandstart" ("update" and "start")'),
+    ("downgradeandstart", '"downgrade" and "start"'),
+    ("dstart", 'same as "downgradeandstart" ("downgrade" and "start")'),
+)
+
+GAMES = (
+    ("ets2mp", "ETS2 multiplayer"),
+    ("ets2", "ETS2 singleplayer"),
+    ("atsmp", "ATS multiplayer"),
+    ("ats", "ATS singleplayer"),
+)
+
+
 def check_args_errors():
     """Check command-line arguments."""
     # pylint: disable=too-many-branches,too-many-statements
@@ -152,7 +170,15 @@ Need to download (-u) the game?""".format(Args.gamedir))
 
 
 def create_arg_parser():
-    """Create ArgumentParser for this program."""
+    """
+    Create an ArgumentParser object.
+
+    This function returns 2-element tuple:
+    * The 1st element is the new ArgumentParser object
+      (used only in "truckersmp-cli" program)
+    * The 2nd element is a list of _StoreAction objects
+      (used only in "gen_completions" program)
+    """
     desc = """
 A simple launcher for TruckersMP to play ATS or ETS2 in multiplayer.
 
@@ -171,6 +197,7 @@ A working native Steam installation is needed for this which has
 the desired game installed or with an update pending.
 SteamCMD can use your saved credentials for convenience.
 """
+    store_actions = []
     epilog = "Proton AppID list:\n"
     for key, val in AppId.proton.items():
         default_mark = ""
@@ -181,181 +208,170 @@ SteamCMD can use your saved credentials for convenience.
     parser = argparse.ArgumentParser(
         description=desc, epilog=epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument(
+    store_actions.append(parser.add_argument(
         "-a", "--ats",
         help="**DEPRECATED** use American Truck Simulator",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "-b", "--beta", metavar="VERSION", type=str,
         help="""set game version to VERSION,
-                useful for downgrading (e.g. "temporary_1_35")""")
-    parser.add_argument(
+                useful for downgrading (e.g. "temporary_1_35")"""))
+    store_actions.append(parser.add_argument(
         "-d", "--enable-d3d11",
         help="use Direct3D 11 instead of OpenGL",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "-e", "--ets2",
         help="""**DEPRECATED** use Euro Truck Simulator 2
                 [Default if neither ATS or ETS2 are specified] """,
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "-g", "--gamedir", metavar="DIR", type=str,
         help="""choose a different directory for the game files
-                [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/data]""")
-    parser.add_argument(
+                [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/data]"""))
+    store_actions.append(parser.add_argument(
         "-i", "--proton-appid", metavar="APPID", type=int,
         default=AppId.proton[AppId.proton["default"]],
         help="""choose a different AppID for Proton (Needs an update for changes)
-                [Default: {}]""".format(AppId.proton[AppId.proton["default"]]))
-    parser.add_argument(
+                [Default: {}]""".format(AppId.proton[AppId.proton["default"]])))
+    store_actions.append(parser.add_argument(
         "-l", "--logfile", metavar="LOG", type=str,
         default="",
         help="""write log into LOG, "-vv" option is recommended
                 [Default: Empty string (only stderr)]
                 Note: Messages from Steam/SteamCMD won't be written,
                 only from this script (Game logs are written into
-                "My Documents/{ETS2,ATS}MP/logs/client_*.log")""")
-    parser.add_argument(
+                "My Documents/{ETS2,ATS}MP/logs/client_*.log")"""))
+    store_actions.append(parser.add_argument(
         "-m", "--moddir", metavar="DIR", type=str,
         help="""choose a different directory for the mod files
                 [Default: $XDG_DATA_HOME/truckersmp-cli/TruckersMP,
-                Fallback: ./truckersmp]""")
-    parser.add_argument(
+                Fallback: ./truckersmp]"""))
+    store_actions.append(parser.add_argument(
         "-n", "--account", metavar="NAME", type=str,
         help="""steam account name to use
                 (This account should own the game and ideally is logged in
-                with saved credentials)""")
-    parser.add_argument(
+                with saved credentials)"""))
+    store_actions.append(parser.add_argument(
         "-o", "--protondir", metavar="DIR", type=str,
         default=Dir.default_protondir,
         help="""choose a different Proton directory
                 [Default: $XDG_DATA_HOME/truckersmp-cli/Proton]
                 While updating any previous version in this folder gets changed
-                to the given (-i) or default Proton version""")
-    parser.add_argument(
+                to the given (-i) or default Proton version"""))
+    store_actions.append(parser.add_argument(
         "-p", "--proton",
         help="""start the game with Proton
                 [Default on Linux if neither Proton or Wine are specified] """,
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "-s", "--start",
         help="""**DEPRECATED** start the game
                 [Default if neither start or update are specified]""",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "-u", "--update",
         help="""**DEPRECATED** update the game
                 [Default if neither start or update are specified]""",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "-v", "--verbose",
         help="verbose output (none:error, once:info, twice or more:debug)",
-        action="count")
-    parser.add_argument(
+        action="count"))
+    store_actions.append(parser.add_argument(
         "-w", "--wine",
         help="""start the game with Wine
                 [Default on other systems if neither Proton or Wine are specified]""",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "-x", "--prefixdir", metavar="DIR", type=str,
         help="""choose a different directory for the prefix
-                [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix]""")
-    parser.add_argument(
+                [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix]"""))
+    store_actions.append(parser.add_argument(
         "--activate-native-d3dcompiler-47",
         help="""activate native 64-bit d3dcompiler_47.dll when starting
                 (Needed for D3D11 renderer)""",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--check-windows-steam",
         help="""check for the Windows Steam version on updating when using Proton""",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--disable-proton-overlay",
         help="disable Steam Overlay when using Proton",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--downgrade",
         help="""**DEPRECATED** downgrade to the latest version supported by TruckersMP
                 Note: This option implies "--update" option and
                 is ignored if "--beta" ("-b") option is specified""",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--native-steam-dir", metavar="DIR", type=str,
         default="auto",
         help="""choose native Steam installation,
                 useful only if your Steam directory is not detected automatically
-                [Default: "auto"]""")
-    parser.add_argument(
+                [Default: "auto"]"""))
+    store_actions.append(parser.add_argument(
         "--self-update",
         help="""update files to the latest release and quit
                 Note: Python package users should use pip instead""",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--singleplayer",
         help="""**DEPRECATED** start singleplayer game, useful for save editing,
                 using/testing DXVK in singleplayer, etc.""",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--skip-update-proton",
         help="""skip updating already-installed Proton
                 when updating game with Proton enabled""",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--use-wined3d",
         help="use OpenGL-based D3D11 instead of DXVK when using Proton",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--wine-desktop", metavar="SIZE", type=str,
         help="""use Wine desktop, work around missing TruckerMP overlay
                 after tabbing out using DXVK, mouse clicking won't work
                 in other GUI apps while the game is running, SIZE must be
-                'WIDTHxHEIGHT' format (e.g. 1920x1080)""")
-    parser.add_argument(
+                'WIDTHxHEIGHT' format (e.g. 1920x1080)"""))
+    store_actions.append(parser.add_argument(
         "--wine-steam-dir", metavar="DIR", type=str,
         help="""choose a directory for Windows version of Steam
-                [Default: "C:\\Program Files (x86)\\Steam" in the prefix]""")
-    parser.add_argument(
+                [Default: "C:\\Program Files (x86)\\Steam" in the prefix]"""))
+    store_actions.append(parser.add_argument(
         "--without-wine-discord-ipc-bridge",
         help="don't use wine-discord-ipc-bridge for Discord Rich Presence",
-        action="store_true")
-    parser.add_argument(
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--version",
         help="""print version information and quit""",
-        action="store_true")
-    group_action = parser.add_argument_group(
-        "action",
-        '''choose an action
-  start                           : Start game
-  update                          : Update/install latest game
-  downgrade                       : Downgrade game
-                                    (install game from "temporary_X_Y" branch)
-  updateandstart (or "ustart")    : "update" + "start"
-  downgradeandstart (or "dstart") : "downgrade" + "start"''')
+        action="store_true"))
+    group_action_desc = "choose an action"
+    for name, desc in ACTIONS:
+        group_action_desc += "\n  {:17} : {}".format(name, desc)
+    group_action = parser.add_argument_group("action", group_action_desc)
     group_action.add_argument(
         "action",
         # currently we can't set the default value because it may change
         # values from deprecated options
         # when we drop the options we need to
         # set default="updateandstart" and remove "none"
-        choices=(
-            "start", "update", "downgrade",
-            "updateandstart", "ustart", "downgradeandstart", "dstart", "none",
-        ),
+        choices=[act[0] for act in ACTIONS] + ["none", ],
         default="none",
         nargs="?")
-    group_game = parser.add_argument_group(
-        "game",
-        """choose a game
-  ets2mp : ETS2 multiplayer
-  ets2   : ETS2 singleplayer
-  atsmp  : ATS multiplayer
-  ats    : ATS singleplayer""")
+    group_game_desc = "choose a game"
+    for name, desc in GAMES:
+        group_game_desc += "\n  {:6} : {}".format(name, desc)
+    group_game = parser.add_argument_group("game", group_game_desc)
     group_game.add_argument(
         "game",
         # similarly, when we drop deprecated options we need to
         # set default="ets2mp" and remove "none"
-        choices=("ets2mp", "ets2", "ats", "atsmp", "none"),
+        choices=[game[0] for game in GAMES] + ["none", ],
         default="none",
         nargs="?")
 
-    return parser
+    return parser, store_actions

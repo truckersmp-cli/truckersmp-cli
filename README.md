@@ -124,7 +124,7 @@ Version|AppID
 ## Build
 
 1. Clone or download this repository
-1. Run `make` in the main folder to build the injector executable. Bash/zsh completion files will also be generated if [genzshcomp][python:genzshcomp] is available.
+1. Run `make` in the main folder to build the injector executable. Bash/zsh completion files will also be generated.
 1. Optional run [`setup.py`][setuptools:command-reference] to manually start the installation process.
 
 ### Buildtime dependencies
@@ -136,13 +136,12 @@ Version|AppID
 
 #### Optional
 
-* [`genzshcomp`][python:genzshcomp] to generate bash/zsh completions
 * [`git`][repology:git] to clone this repo and help developing
 * [`setuptools`][repology:python-setuptools] to run `setup.py`
 
 ### bash/zsh completion
 
-If [`genzshcomp`][python:genzshcomp] is installed, `make` generates shell completion files for bash (bash-completion) and zsh. They enable tab-completion of available command-line options.
+`make` generates shell completion files for bash (bash-completion) and zsh. They enable tab-completion of available positional arguments and command-line options.
 
 #### System-wide installation
 
@@ -310,7 +309,6 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 [github:proton]: https://github.com/ValveSoftware/Proton
 [github:release-page]: https://github.com/truckersmp-cli/truckersmp-cli/releases
 [github:truckersmp-launcher]: https://github.com/TheUnknownNO/TruckersMP-Launcher
-[python:genzshcomp]: https://github.com/hhatto/genzshcomp
 [python:vdf]: https://github.com/ValvePython/vdf
 [repology:gcc-mingw-w64]: https://repology.org/project/gcc-mingw-w64/versions
 [repology:git]: https://repology.org/project/git/versions
