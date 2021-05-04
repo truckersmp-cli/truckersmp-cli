@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <windows.h>
 #include <unistd.h>
 
@@ -29,13 +30,13 @@ int
 main(int argc, char **argv)
 {
 	int i, len;
-	const char opts[] = "-nointro -64bit";
+	char opts[BUF_SIZE] = {0};
 	char cmd[BUF_SIZE];
 	char dll[BUF_SIZE];
 	char *exepath, *dllpath, *steamid;
 
 	if (argc < 3)
-		die("Usage: truckersmp-cli GAMEDIR MODDIR\n");
+		die("Usage: truckersmp-cli GAMEDIR MODDIR GAME_OPTIONS...\n");
 
 	for (i = 1; i < 3; i++) { /* '\' and '/' can be mixed in windows type pathes */
 		len = strlen(argv[i]);
@@ -59,7 +60,25 @@ main(int argc, char **argv)
 		}
 	}
 
-	snprintf(cmd, sizeof(cmd), "%s%s %s", argv[1], exepath, opts);
+	if (argc == 3) {
+		/* if game options are not given, use default options for compatibility */
+		strcpy(opts, " -nointro -64bit");
+	} else {
+		/* build game options string */
+		len = strlen(argv[1]) + strlen(exepath) + 1;  /* game exe path + "\0" */
+		for (i = 3; i < argc; i++) {
+			/* check whether a space and the option can be added to the buffer */
+			len += 1 + strlen(argv[i]);  /* 1 = strlen(" ") */
+			if (len <= BUF_SIZE) {
+				strcat(opts, " ");
+				strcat(opts, argv[i]);
+			} else {
+				die("Game options are too long.");
+			}
+		}
+	}
+
+	snprintf(cmd, sizeof(cmd), "%s%s%s", argv[1], exepath, opts);
 	snprintf(dll, sizeof(dll), "%s%s", argv[2], dllpath);
 
 	SetEnvironmentVariable("SteamGameId", steamid);

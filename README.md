@@ -104,6 +104,7 @@ Short option|Long option|Description
 (Not available)|`--check-windows-steam`|Check for the Windows Steam version on updating when using Proton
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
 (Not available)|`--downgrade`|**DEPRECATED** Downgrade to the latest version that is supported by TruckersMP. Note: This option implies "--update" option and is ignored if "--beta" ("-b") option is specified
+(Not available)|`--game-options OPTIONS`|Specify ATS/ETS2 options Note: If specifying one option, use `--game-options=-option` format [Default: `-nointro -64bit`]
 (Not available)|`--native-steam-dir`|Choose native Steam installation, useful only if your Steam directory is not detected automatically [Default: `auto`]
 (Not available)|`--self-update`|Update files to the latest release and quit
 (Not available)|`--singleplayer`|**DEPRECATED** Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.

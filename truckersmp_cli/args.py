@@ -307,6 +307,13 @@ SteamCMD can use your saved credentials for convenience.
                 is ignored if "--beta" ("-b") option is specified""",
         action="store_true"))
     store_actions.append(parser.add_argument(
+        "--game-options", metavar="OPTIONS", type=str,
+        default="-nointro -64bit",
+        help="""specify ATS/ETS2 options
+                Note: If specifying one option, use "--game-options=-option" format
+                [Default: "-nointro -64bit"]""",
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--native-steam-dir", metavar="DIR", type=str,
         default="auto",
         help="""choose native Steam installation,
