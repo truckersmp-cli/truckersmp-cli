@@ -305,13 +305,13 @@ SteamCMD can use your saved credentials for convenience.
         help="""**DEPRECATED** downgrade to the latest version supported by TruckersMP
                 Note: This option implies "--update" option and
                 is ignored if "--beta" ("-b") option is specified""",
-        action="store_true")
+        action="store_true"))
     store_actions.append(parser.add_argument(
         "--game-options", metavar="OPTIONS", type=str,
         default="-nointro -64bit",
         help="""specify ATS/ETS2 options
                 Note: If specifying one option, use "--game-options=-option" format
-                [Default: "-nointro -64bit"]""")
+                [Default: "-nointro -64bit"]""",
         action="store_true"))
     store_actions.append(parser.add_argument(
         "--native-steam-dir", metavar="DIR", type=str,
