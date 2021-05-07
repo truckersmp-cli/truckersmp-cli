@@ -327,13 +327,15 @@ def start_with_proton():
     cmd_str += "\n    ".join(proton_args)
     logging.info("Running Steam Runtime helper:\n  %s%s", env_str, cmd_str)
     try:
-        logging.info(
-            "Steam Runtime helper output:\n%s",
-            subproc.check_output(
-                argv_helper, env=env, stderr=subproc.STDOUT).decode("utf-8"))
+        with subproc.Popen(
+                argv_helper,
+                env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
+            if Args.verbose and Args.verbose >= 1:
+                for line in proc.stdout:
+                    print(line.decode("utf-8"), end="")
     except subproc.CalledProcessError as ex:
         logging.error(
-            "Steam Runtime helper output:\n%s", ex.output.decode("utf-8"))
+            "Steam Runtime helper exited abnormally:\n%s", ex.output.decode("utf-8"))
 
     # disable Wine desktop if enabled
     if Args.wine_desktop:
