@@ -341,13 +341,6 @@ SteamCMD can use your saved credentials for convenience.
                 when updating game with Proton enabled""",
         action="store_true"))
     store_actions.append(parser.add_argument(
-        "--use-steam-runtime",
-        help="""use Steam Runtime when using Proton 5.13 or newer
-                Note: If you want to use Discord Rich Presence, you need to
-                start Discord with "XDG_RUNTIME_DIR=/path/to/dir" beforehand
-                and also specify "--xdg-runtime-dir" option""",
-        action="store_true"))
-    store_actions.append(parser.add_argument(
         "--use-wined3d",
         help="use OpenGL-based D3D11 instead of DXVK when using Proton",
         action="store_true"))
@@ -364,6 +357,14 @@ SteamCMD can use your saved credentials for convenience.
         "--wine-steam-dir", metavar="DIR", type=str,
         help="""choose a directory for Windows version of Steam
                 [Default: "C:\\Program Files (x86)\\Steam" in the prefix]"""))
+    store_actions.append(parser.add_argument(
+        "--without-steam-runtime",
+        help="""don't use Steam Runtime even when using Proton 5.13 or newer
+                Note: If you want to use Discord Rich Presence
+                without this option, you need to start Discord with
+                "XDG_RUNTIME_DIR=/path/to/dir" beforehand
+                and also specify "--xdg-runtime-dir" option""",
+        action="store_true"))
     store_actions.append(parser.add_argument(
         "--without-wine-discord-ipc-bridge",
         help="don't use wine-discord-ipc-bridge for Discord Rich Presence",

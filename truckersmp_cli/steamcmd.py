@@ -181,7 +181,7 @@ def update_game():
         if Args.skip_update_proton:
             logging.info("Skipping updating Proton and Steam Runtime")
         else:
-            if Args.use_steam_runtime:
+            if not Args.without_steam_runtime:
                 # download/update Steam Runtime and Proton
                 os.makedirs(Args.steamruntimedir, exist_ok=True)
                 # Proton and Steam Linux Runtime work only on Linux systems

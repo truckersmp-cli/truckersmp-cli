@@ -158,7 +158,7 @@ Run with '--update' option to install Proton""".format(Args.protondir))
             # when starting with Proton + Steam Runtime
             run = os.path.join(Args.steamruntimedir, "run")
             var = os.path.join(Args.steamruntimedir, "var")
-            if Args.use_steam_runtime:
+            if not Args.without_steam_runtime:
                 if not os.access(run, os.R_OK | os.X_OK):
                     sys.exit("""Steam Runtime is not found in {}
 Update game with '--use-steam-runtime' option to install Steam Runtime""".format(
@@ -213,7 +213,7 @@ def start_with_proton():
     logging.info("Proton version is (major=%d, minor=%d)", major, minor)
     proton_args = []
     run_in_steamrt = []
-    if Args.use_steam_runtime and (major >= 6 or (major == 5 and minor >= 13)):
+    if not Args.without_steam_runtime and (major >= 6 or (major == 5 and minor >= 13)):
         # use Steam Runtime container for Proton 5.13+
         logging.info("Using Steam Runtime container")
         # share directories with Steam Runtime container
