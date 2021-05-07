@@ -315,10 +315,7 @@ def start_with_proton():
     if Args.xdg_runtime_dir:
         argv_helper += ["--xdg-runtime-dir", Args.xdg_runtime_dir]
     if Args.verbose:
-        if Args.verbose == 1:
-            argv_helper.append("-v")
-        else:
-            argv_helper.append("-vv")
+        argv_helper.append("-v" if Args.verbose == 1 else "-vv")
     argv_helper += proton_args
 
     env_str = ""
