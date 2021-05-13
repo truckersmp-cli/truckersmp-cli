@@ -26,21 +26,15 @@ def main():
         help="""3rd party executable to start in Steam Runtime container
                 (can be specified multiple times for multiple files)""")
     arg_parser.add_argument(
-        "--xdg-runtime-dir", metavar="DIR",
-        help="use custom XDG_RUNTIME_DIR for Discord IPC sockets")
-    arg_parser.add_argument(
         "game_arguments", nargs="+",
         help="argv for starting game (ATS/ETS2 executable or truckersmp-cli.exe)")
     args = arg_parser.parse_args()
 
     if args.verbose is not None and args.verbose > 1:
         print("Executables:", args.executable)
-        print("XDG Runtime Dir:", args.xdg_runtime_dir)
         print("Game Arguments:", args.game_arguments)
 
     env = os.environ.copy()
-    if args.xdg_runtime_dir is not None:
-        env["XDG_RUNTIME_DIR"] = args.xdg_runtime_dir
 
     third_party_processes = []
     if args.executable is not None:

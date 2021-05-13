@@ -5,6 +5,7 @@ Licensed under MIT.
 """
 
 import ctypes
+import glob
 import hashlib
 import http.client
 import io
@@ -270,6 +271,21 @@ def download_files(host, files_to_download, progress_count=None):
         conn.close()
 
     return True
+
+
+def find_discord_ipc_sockets():
+    """
+    Find Discord IPC sockets.
+
+    This function returns a list of Discord IPC socket paths.
+    When no sockets found, an empty list ([]) is returned.
+    """
+    # Discord creates sockets in $XDG_RUNTIME_DIR
+    sockets_dir = os.getenv("XDG_RUNTIME_DIR")
+    if sockets_dir is None:
+        # "/tmp/" is used as fallback directory
+        sockets_dir = "/tmp"
+    return glob.glob(os.path.join(sockets_dir, "discord-ipc-*"))
 
 
 def get_current_steam_user():

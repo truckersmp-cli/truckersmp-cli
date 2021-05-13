@@ -15,8 +15,8 @@ from .args import check_args_errors, create_arg_parser
 from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import (
-    activate_native_d3dcompiler_47, check_libsdl2, get_proton_version,
-    perform_self_update, set_wine_desktop_registry,
+    activate_native_d3dcompiler_47, check_libsdl2, find_discord_ipc_sockets,
+    get_proton_version, perform_self_update, set_wine_desktop_registry,
     setup_wine_discord_ipc_bridge, wait_for_steam,
 )
 from .variables import AppId, Args, Dir, File, URL
@@ -217,23 +217,24 @@ def start_with_proton():
         # use Steam Runtime container for Proton 5.13+
         logging.info("Using Steam Runtime container")
         # share directories with Steam Runtime container
-        shared_dirs = [
+        shared_paths = [
             Args.gamedir,
             Args.protondir,
             Args.prefixdir,
         ]
         if not Args.singleplayer:
-            shared_dirs += [
+            shared_paths += [
                 Args.moddir,
                 Dir.truckersmp_cli_data,
                 Dir.scriptdir,
             ]
-        if Args.xdg_runtime_dir:
-            shared_dirs.append(Args.xdg_runtime_dir)
-        logging.debug("Shared directories: %s", shared_dirs)
+        discord_sockets = find_discord_ipc_sockets()
+        if len(discord_sockets) > 0:
+            shared_paths += discord_sockets
+        logging.debug("Shared paths: %s", shared_paths)
         run_in_steamrt.append(os.path.join(Args.steamruntimedir, "run"))
-        for shared_dir in shared_dirs:
-            run_in_steamrt += ["--filesystem", shared_dir]
+        for shared_path in shared_paths:
+            run_in_steamrt += ["--filesystem", shared_path]
         run_in_steamrt += ["--", "python3"]  # helper script
         proton_args += ["--", "python3"]     # Proton script
         wine = run_in_steamrt.copy()
@@ -310,10 +311,11 @@ def start_with_proton():
 
     argv_helper = run_in_steamrt
     argv_helper.append(File.steamruntime_helper)
-    if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:
+    if (not Args.singleplayer
+            and not Args.without_wine_discord_ipc_bridge
+            # don't start wine-discord-ipc-bridge when no Discord sockets found
+            and len(discord_sockets) > 0):
         argv_helper += ["--executable", File.ipcbridge]
-    if Args.xdg_runtime_dir:
-        argv_helper += ["--xdg-runtime-dir", Args.xdg_runtime_dir]
     if Args.verbose:
         argv_helper.append("-v" if Args.verbose == 1 else "-vv")
     argv_helper += proton_args
