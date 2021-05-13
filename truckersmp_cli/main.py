@@ -209,7 +209,7 @@ def start_with_proton():
 
     prefix = os.path.join(Args.prefixdir, "pfx")
     proton = os.path.join(Args.protondir, "proton")
-    (major, minor) = get_proton_version(Args.protondir)
+    major, minor = get_proton_version(Args.protondir)
     logging.info("Proton version is (major=%d, minor=%d)", major, minor)
     proton_args = []
     run_in_steamrt = []
@@ -217,17 +217,9 @@ def start_with_proton():
         # use Steam Runtime container for Proton 5.13+
         logging.info("Using Steam Runtime container")
         # share directories with Steam Runtime container
-        shared_paths = [
-            Args.gamedir,
-            Args.protondir,
-            Args.prefixdir,
-        ]
+        shared_paths = [Args.gamedir, Args.protondir, Args.prefixdir]
         if not Args.singleplayer:
-            shared_paths += [
-                Args.moddir,
-                Dir.truckersmp_cli_data,
-                Dir.scriptdir,
-            ]
+            shared_paths += [Args.moddir, Dir.truckersmp_cli_data, Dir.scriptdir]
         discord_sockets = find_discord_ipc_sockets()
         if len(discord_sockets) > 0:
             shared_paths += discord_sockets
@@ -237,13 +229,12 @@ def start_with_proton():
             run_in_steamrt += ["--filesystem", shared_path]
         run_in_steamrt += ["--", "python3"]  # helper script
         proton_args += ["--", "python3"]     # Proton script
-        wine = run_in_steamrt.copy()
     else:
         # don't use Steam Runtime container for older Proton
         logging.info("Not using Steam Runtime container")
         run_in_steamrt.append(sys.executable)  # helper
         proton_args += ["--", sys.executable]  # Proton
-        wine = []
+    wine = run_in_steamrt.copy()
     proton_args += [proton, "run"]
 
     env = os.environ.copy()
