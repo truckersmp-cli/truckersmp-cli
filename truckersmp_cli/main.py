@@ -161,11 +161,14 @@ Run with '--update' option to install Proton""".format(Args.protondir))
             if not Args.without_steam_runtime:
                 if not os.access(run, os.R_OK | os.X_OK):
                     sys.exit("""Steam Runtime is not found in {}
-Update game with '--use-steam-runtime' option to install Steam Runtime""".format(
+Update the game or start with "--without-steam-runtime" option
+to disable the Steam Runtime""".format(
                              Args.steamruntimedir))
-                if not os.access(var, os.R_OK | os.W_OK | os.X_OK):
-                    sys.exit("""The "var" directory in Steam Runtime
-({}) must be writable""".format(var))
+                if (not os.access(Args.steamruntimedir, os.R_OK | os.W_OK | os.X_OK)
+                        or (os.path.isdir(var)
+                            and not os.access(var, os.R_OK | os.W_OK | os.X_OK))):
+                    sys.exit("""The Steam Runtime directory ({}) and
+the "var" subdirectory must be writable""".format(Args.steamruntimedir))
 
         if not check_libsdl2():
             sys.exit("SDL2 was not found on your system.")
@@ -213,6 +216,7 @@ def start_with_proton():
     logging.info("Proton version is (major=%d, minor=%d)", major, minor)
     proton_args = []
     run_in_steamrt = []
+    discord_sockets = []
     if not Args.without_steam_runtime and (major >= 6 or (major == 5 and minor >= 13)):
         # use Steam Runtime container for Proton 5.13+
         logging.info("Using Steam Runtime container")
@@ -228,12 +232,12 @@ def start_with_proton():
         for shared_path in shared_paths:
             run_in_steamrt += ["--filesystem", shared_path]
         run_in_steamrt += ["--", "python3"]  # helper script
-        proton_args += ["--", "python3"]     # Proton script
+        proton_args.append("python3")        # Proton script
     else:
         # don't use Steam Runtime container for older Proton
         logging.info("Not using Steam Runtime container")
         run_in_steamrt.append(sys.executable)  # helper
-        proton_args += ["--", sys.executable]  # Proton
+        proton_args.append(sys.executable)     # Proton
     wine = run_in_steamrt.copy()
     proton_args += [proton, "run"]
 
@@ -309,7 +313,7 @@ def start_with_proton():
         argv_helper += ["--executable", File.ipcbridge]
     if Args.verbose:
         argv_helper.append("-v" if Args.verbose == 1 else "-vv")
-    argv_helper += proton_args
+    argv_helper += ["--", ] + proton_args
 
     env_str = ""
     cmd_str = ""
