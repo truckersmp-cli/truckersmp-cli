@@ -15,8 +15,8 @@ from .args import check_args_errors, create_arg_parser
 from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import (
-    activate_native_d3dcompiler_47, check_libsdl2,
-    perform_self_update, set_wine_desktop_registry,
+    activate_native_d3dcompiler_47, check_libsdl2, find_discord_ipc_sockets,
+    get_proton_version, perform_self_update, set_wine_desktop_registry,
     setup_wine_discord_ipc_bridge, wait_for_steam,
 )
 from .variables import AppId, Args, Dir, File, URL
@@ -66,6 +66,7 @@ def get_version_string():
 
 def main():
     """truckersmp-cli main function."""
+    # pylint: disable=too-many-branches,too-many-statements
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # load Proton AppID info from "proton.json":
@@ -77,6 +78,16 @@ def main():
             AppId.proton = json.load(f_in)
     except (OSError, ValueError) as ex:
         sys.exit("Failed to load proton.json: {}".format(ex))
+
+    # load Steam Runtime AppID info from "steamruntime.json":
+    #     {"platform": AppID, ... }
+    # example:
+    #     {"Linux": 1391110}
+    try:
+        with open(File.steamruntime_json) as f_in:
+            AppId.steamruntime = json.load(f_in)
+    except (OSError, ValueError) as ex:
+        sys.exit("Failed to load steamruntime.json: {}".format(ex))
 
     # parse options
     arg_parser = create_arg_parser()[0]
@@ -138,11 +149,26 @@ See {} for additional information.""".format(
 
     # start truckersmp with proton or wine
     if Args.start:
-        # check for Proton availability when starting with Proton
-        if (Args.proton
-                and not os.access(os.path.join(Args.protondir, "proton"), os.R_OK)):
-            sys.exit("""Proton is not found in {}
+        if Args.proton:
+            # check for Proton availability when starting with Proton
+            if not os.access(os.path.join(Args.protondir, "proton"), os.R_OK):
+                sys.exit("""Proton is not found in {}
 Run with '--update' option to install Proton""".format(Args.protondir))
+            # check for Steam Runtime availability and the permission of "var"
+            # when starting with Proton + Steam Runtime
+            run = os.path.join(Args.steamruntimedir, "run")
+            var = os.path.join(Args.steamruntimedir, "var")
+            if not Args.without_steam_runtime:
+                if not os.access(run, os.R_OK | os.X_OK):
+                    sys.exit("""Steam Runtime is not found in {}
+Update the game or start with "--without-steam-runtime" option
+to disable the Steam Runtime""".format(
+                             Args.steamruntimedir))
+                if (not os.access(Args.steamruntimedir, os.R_OK | os.W_OK | os.X_OK)
+                        or (os.path.isdir(var)
+                            and not os.access(var, os.R_OK | os.W_OK | os.X_OK))):
+                    sys.exit("""The Steam Runtime directory ({}) and
+the "var" subdirectory must be writable""".format(Args.steamruntimedir))
 
         if not check_libsdl2():
             sys.exit("SDL2 was not found on your system.")
@@ -186,21 +212,50 @@ def start_with_proton():
 
     prefix = os.path.join(Args.prefixdir, "pfx")
     proton = os.path.join(Args.protondir, "proton")
-    argv = [sys.executable, proton, "run"]
+    major, minor = get_proton_version(Args.protondir)
+    logging.info("Proton version is (major=%d, minor=%d)", major, minor)
+    proton_args = []
+    run_in_steamrt = []
+    discord_sockets = []
+    if not Args.without_steam_runtime and (major >= 6 or (major == 5 and minor >= 13)):
+        # use Steam Runtime container for Proton 5.13+
+        logging.info("Using Steam Runtime container")
+        # share directories with Steam Runtime container
+        shared_paths = [Args.gamedir, Args.protondir, Args.prefixdir]
+        if not Args.singleplayer:
+            shared_paths += [Args.moddir, Dir.truckersmp_cli_data, Dir.scriptdir]
+        discord_sockets = find_discord_ipc_sockets()
+        if len(discord_sockets) > 0:
+            shared_paths += discord_sockets
+        logging.debug("Shared paths: %s", shared_paths)
+        run_in_steamrt.append(os.path.join(Args.steamruntimedir, "run"))
+        for shared_path in shared_paths:
+            run_in_steamrt += ["--filesystem", shared_path]
+        run_in_steamrt += ["--", "python3"]  # helper script
+        proton_args.append("python3")        # Proton script
+    else:
+        # don't use Steam Runtime container for older Proton
+        logging.info("Not using Steam Runtime container")
+        run_in_steamrt.append(sys.executable)  # helper
+        proton_args.append(sys.executable)     # Proton
+    wine = run_in_steamrt.copy()
+    proton_args += [proton, "run"]
+
     env = os.environ.copy()
     env["STEAM_COMPAT_DATA_PATH"] = Args.prefixdir
     env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steamdir
 
     # Proton's "dist" directory tree is missing until first run
     # make sure it's present for using "dist/bin/wine" directly
-    wine = os.path.join(Args.protondir, "dist/bin/wine")
-    if (not os.access(wine, os.R_OK)
+    wine_command = os.path.join(Args.protondir, "dist/bin/wine")
+    wine.append(wine_command)
+    if (not os.access(wine_command, os.R_OK)
             # native d3dcompiler_47 is removed when the prefix is downgraded
             # make sure the prefix is already upgraded/downgraded
             or Args.activate_native_d3dcompiler_47):
         try:
             subproc.check_output(
-                argv + ["wineboot", ], env=env, stderr=subproc.STDOUT)
+                proton_args + ["wineboot", ], env=env, stderr=subproc.STDOUT)
         except OSError as ex:
             sys.exit("Failed to run wineboot: {}".format(ex))
         except subproc.CalledProcessError as ex:
@@ -224,28 +279,18 @@ def start_with_proton():
         else:
             env["LD_PRELOAD"] = overlayrenderer
 
-    # start wine-discord-ipc-bridge for multiplayer
-    # unless "--without-wine-discord-ipc-bridge" is specified
-    ipcbr_proc = None
-    if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:
-        ipcbr_path = setup_wine_discord_ipc_bridge()
-        logging.info("Starting wine-discord-ipc-bridge")
-        ipcbr_proc = subproc.Popen(
-            argv + [ipcbr_path, ],
-            env=env, stdout=subproc.DEVNULL, stderr=subproc.DEVNULL)
-
     # check whether singleplayer or multiplayer
     if Args.singleplayer:
         exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
         gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
-        argv.append(gamepath)
+        proton_args.append(gamepath)
     else:
-        argv += File.inject_exe, Args.gamedir, Args.moddir
+        proton_args += File.inject_exe, Args.gamedir, Args.moddir
 
     # game options
     for opt in Args.game_options.split(" "):
         if opt != "":
-            argv.append(opt)
+            proton_args.append(opt)
 
     env["SteamGameId"] = Args.steamid
     env["SteamAppId"] = Args.steamid
@@ -259,25 +304,35 @@ def start_with_proton():
         "STEAM_COMPAT_DATA_PATH",
     ]
 
+    argv_helper = run_in_steamrt
+    argv_helper.append(File.steamruntime_helper)
+    if (not Args.singleplayer
+            and not Args.without_wine_discord_ipc_bridge
+            # don't start wine-discord-ipc-bridge when no Discord sockets found
+            and len(discord_sockets) > 0):
+        argv_helper += ["--executable", File.ipcbridge]
+    if Args.verbose:
+        argv_helper.append("-v" if Args.verbose == 1 else "-vv")
+    argv_helper += ["--", ] + proton_args
+
     env_str = ""
     cmd_str = ""
     name_value_pairs = []
     for name in env_print:
         name_value_pairs.append("{}={}".format(name, env[name]))
     env_str += "\n  ".join(name_value_pairs) + "\n  "
-    cmd_str += "\n    ".join(argv)
-    logging.info("Running Proton:\n  %s%s", env_str, cmd_str)
+    cmd_str += "\n    ".join(proton_args)
+    logging.info("Running Steam Runtime helper:\n  %s%s", env_str, cmd_str)
     try:
-        output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
-        logging.info("Proton output:\n%s", output.decode("utf-8"))
+        with subproc.Popen(
+                argv_helper,
+                env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
+            if Args.verbose and Args.verbose >= 1:
+                for line in proc.stdout:
+                    print(line.decode("utf-8"), end="")
     except subproc.CalledProcessError as ex:
-        logging.error("Proton output:\n%s", ex.output.decode("utf-8"))
-
-    if ipcbr_proc:
-        # make sure wine-discord-ipc-bridge is exited
-        if ipcbr_proc.poll() is None:
-            ipcbr_proc.kill()
-        ipcbr_proc.wait()
+        logging.error(
+            "Steam Runtime helper exited abnormally:\n%s", ex.output.decode("utf-8"))
 
     # disable Wine desktop if enabled
     if Args.wine_desktop:
@@ -288,8 +343,9 @@ def start_with_wine():
     """Start game with Wine."""
     # pylint: disable=consider-using-with,too-many-branches
     wine = os.environ["WINE"] if "WINE" in os.environ else "wine"
+    argv = [wine, ]
     if Args.activate_native_d3dcompiler_47:
-        activate_native_d3dcompiler_47(Args.prefixdir, wine)
+        activate_native_d3dcompiler_47(Args.prefixdir, argv)
 
     env = os.environ.copy()
     env["WINEDEBUG"] = "-all"
@@ -302,8 +358,6 @@ def start_with_wine():
         wine=wine,
         env=env,
     )
-
-    argv = [wine, ]
 
     ipcbr_proc = None
     if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:

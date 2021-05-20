@@ -167,6 +167,7 @@ Need to download (-u) the game?""".format(Args.gamedir))
     logging.info("Prefix: %s", Args.prefixdir)
     if Args.proton:
         logging.info("Proton directory: %s", Args.protondir)
+        logging.info("Steam Runtime directory: %s", Args.steamruntimedir)
 
 
 def create_arg_parser():
@@ -270,6 +271,11 @@ SteamCMD can use your saved credentials for convenience.
                 [Default if neither start or update are specified]""",
         action="store_true"))
     store_actions.append(parser.add_argument(
+        "--steamruntimedir", metavar="DIR",
+        default=Dir.default_steamruntimedir,
+        help="""choose a different Steam Runtime directory for Proton 5.13 or newer
+                [Default: $XDG_DATA_HOME/truckersmp-cli/SteamRuntime]"""))
+    store_actions.append(parser.add_argument(
         "-u", "--update",
         help="""**DEPRECATED** update the game
                 [Default if neither start or update are specified]""",
@@ -330,7 +336,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true"))
     store_actions.append(parser.add_argument(
         "--skip-update-proton",
-        help="""skip updating already-installed Proton
+        help="""skip updating already-installed Proton and Steam Runtime
                 when updating game with Proton enabled""",
         action="store_true"))
     store_actions.append(parser.add_argument(
@@ -347,6 +353,10 @@ SteamCMD can use your saved credentials for convenience.
         "--wine-steam-dir", metavar="DIR", type=str,
         help="""choose a directory for Windows version of Steam
                 [Default: "C:\\Program Files (x86)\\Steam" in the prefix]"""))
+    store_actions.append(parser.add_argument(
+        "--without-steam-runtime",
+        help="don't use Steam Runtime even when using Proton 5.13 or newer",
+        action="store_true"))
     store_actions.append(parser.add_argument(
         "--without-wine-discord-ipc-bridge",
         help="don't use wine-discord-ipc-bridge for Discord Rich Presence",
