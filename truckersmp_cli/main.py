@@ -247,7 +247,14 @@ def start_with_proton():
 
     # Proton's "dist" directory tree is missing until first run
     # make sure it's present for using "dist/bin/wine" directly
-    wine_command = os.path.join(Args.protondir, "dist/bin/wine")
+    wine_command = os.path.join(
+        Args.protondir,
+        # if proton-tkg (files/bin/wine) is installed, use it
+        "files" if os.access(
+            os.path.join(Args.protondir, "files/bin/wine"),
+            os.R_OK | os.X_OK,
+        ) else "dist",
+        "bin/wine")
     wine.append(wine_command)
     if (not os.access(wine_command, os.R_OK)
             # native d3dcompiler_47 is removed when the prefix is downgraded
