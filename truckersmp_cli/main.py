@@ -220,6 +220,7 @@ def start_with_proton():
     if not Args.without_steam_runtime and (major >= 6 or (major == 5 and minor >= 13)):
         # use Steam Runtime container for Proton 5.13+
         logging.info("Using Steam Runtime container")
+        python = "python3"
         # share directories with Steam Runtime container
         shared_paths = [Args.gamedir, Args.protondir, Args.prefixdir]
         if not Args.singleplayer:
@@ -231,14 +232,14 @@ def start_with_proton():
         run_in_steamrt.append(os.path.join(Args.steamruntimedir, "run"))
         for shared_path in shared_paths:
             run_in_steamrt += ["--filesystem", shared_path]
-        run_in_steamrt += ["--", "python3"]  # helper script
-        proton_args.append("python3")        # Proton script
+        run_in_steamrt.append("--")
     else:
         # don't use Steam Runtime container for older Proton
         logging.info("Not using Steam Runtime container")
-        run_in_steamrt.append(sys.executable)  # helper
-        proton_args.append(sys.executable)     # Proton
+        python = sys.executable
     wine = run_in_steamrt.copy()
+    run_in_steamrt.append(python)  # helper
+    proton_args.append(python)     # Proton
     proton_args += [proton, "run"]
 
     env = os.environ.copy()
