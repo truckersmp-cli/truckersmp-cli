@@ -68,6 +68,7 @@ def activate_native_d3dcompiler_47(prefix, wine):
     env["WINEPREFIX"] = prefix
     if Args.proton:
         env["WINEESYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_ESYNC") else "1"
+        env["WINEFSYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_FSYNC") else "1"
     exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
     logging.debug("Adding DLL override setting for %s", exename)
     subproc.call(
@@ -478,6 +479,7 @@ def set_wine_desktop_registry(prefix, wine, enable):
     env["WINEPREFIX"] = prefix
     if Args.proton:
         env["WINEESYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_ESYNC") else "1"
+        env["WINEFSYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_FSYNC") else "1"
     regkey_explorer = "HKCU\\Software\\Wine\\Explorer"
     regkey_desktops = "HKCU\\Software\\Wine\\Explorer\\Desktops"
     if enable:
