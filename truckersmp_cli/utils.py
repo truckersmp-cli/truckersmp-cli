@@ -433,6 +433,20 @@ def perform_self_update():
     logging.info("Self update complete")
 
 
+def print_child_output(proc):
+    """
+    Print child process output.
+
+    proc: A subprocess.Popen object
+    """
+    for line in proc.stdout:
+        try:
+            print(line.decode("utf-8"), end="", flush=True)
+        except UnicodeDecodeError:
+            print(
+                "!! NON UNICODE OUTPUT !!", repr(line), sep="  ", end="", flush=True)
+
+
 def setup_wine_discord_ipc_bridge():
     """
     Check and download wine-discord-ipc-bridge.

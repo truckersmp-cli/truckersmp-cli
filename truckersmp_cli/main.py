@@ -16,8 +16,8 @@ from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import (
     activate_native_d3dcompiler_47, check_libsdl2, find_discord_ipc_sockets,
-    get_proton_version, perform_self_update, set_wine_desktop_registry,
-    setup_wine_discord_ipc_bridge, wait_for_steam,
+    get_proton_version, perform_self_update, print_child_output,
+    set_wine_desktop_registry, setup_wine_discord_ipc_bridge, wait_for_steam,
 )
 from .variables import AppId, Args, Dir, File, URL
 
@@ -335,9 +335,8 @@ def start_with_proton():
         with subproc.Popen(
                 argv_helper,
                 env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
-            if Args.verbose and Args.verbose >= 1:
-                for line in proc.stdout:
-                    print(line.decode("utf-8"), end="")
+            if Args.verbose:
+                print_child_output(proc)
     except subproc.CalledProcessError as ex:
         logging.error(
             "Steam Runtime helper exited abnormally:\n%s", ex.output.decode("utf-8"))
@@ -402,8 +401,12 @@ def start_with_wine():
     cmd_str += "\n    ".join(argv)
     logging.info("Running Wine:\n  %s%s", env_str, cmd_str)
     try:
-        output = subproc.check_output(argv, env=env, stderr=subproc.STDOUT)
-        logging.info("Wine output:\n%s", output.decode("utf-8"))
+        with subproc.Popen(
+                argv,
+                env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
+            if Args.verbose:
+                print("Wine output:")
+                print_child_output(proc)
     except subproc.CalledProcessError as ex:
         logging.error("Wine output:\n%s", ex.output.decode("utf-8"))
 

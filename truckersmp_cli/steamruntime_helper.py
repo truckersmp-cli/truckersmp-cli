@@ -49,10 +49,18 @@ def main():
                     env=env_3rdparty, stderr=subproc.STDOUT))
 
     try:
-        output = subproc.check_output(
-            args.game_arguments, env=env, stderr=subproc.STDOUT)
-        if args.verbose is not None:
-            print("Proton output:\n" + output.decode("utf-8"))
+        with subproc.Popen(
+                args.game_arguments,
+                env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
+            if args.verbose:
+                print("Proton output:")
+                for line in proc.stdout:
+                    try:
+                        print(line.decode("utf-8"), end="", flush=True)
+                    except UnicodeDecodeError:
+                        print(
+                            "!! NON UNICODE OUTPUT !!", repr(line),
+                            sep="  ", end="", flush=True)
     except subproc.CalledProcessError as ex:
         print("Proton output:\n" + ex.output.decode("utf-8"), file=sys.stderr)
 
