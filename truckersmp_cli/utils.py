@@ -354,6 +354,48 @@ def get_short_size(size_bytes):
     return "{:.1f}M".format(size_bytes / 1048576)
 
 
+def get_steam_library_dirs(steamdir):
+    """
+    Get Steam library directories.
+
+    steamdir: A Steam installation path
+    """
+    # pylint: disable=consider-using-with
+    #
+    # the 1st Steam library directory is the Steam installation
+    steam_libraries = [steamdir, ]
+    # additional directories are stored in libraryfolders.vdf
+    #
+    # example:
+    #     "LibraryFolders"
+    #     {
+    #         "TimeNextStatsReport"  "xxxx"
+    #         "ContentStatsID"       "xxxx"
+    #         "1"                    "/path/to/steam/library1"
+    #         "2"                    "/path/to/steam/library2"
+    #     }  -> [steamdir, "/path/to/steam/library1", "/path/to/steam/library2"]
+    try:
+        try:
+            f_vdf = open(os.path.join(steamdir, File.steamlibvdf_inner))
+        except OSError:
+            f_vdf = open(os.path.join(steamdir, File.steamlibvdf_inner_legacy))
+        with f_vdf:
+            for line in f_vdf:
+                # if the 1st quoted stuff is a (natural) number,
+                # the 2nd quoted string is a path to Steam library
+                try:
+                    elements = line.split('"')
+                    int(elements[1])
+                except (IndexError, ValueError):
+                    continue
+                # as of May 2021, Steam can't add a Steam library directory
+                # that contains '"' and we can safely use the split element
+                steam_libraries.append(elements[3])
+    except OSError:
+        pass
+    return steam_libraries
+
+
 def is_envar_enabled(envars, name):
     """
     Check whether the specified environment variable is enabled.
