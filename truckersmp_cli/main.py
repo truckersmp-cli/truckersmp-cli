@@ -225,6 +225,8 @@ def start_with_proton():
         # share directories with Steam Runtime container
         shared_paths = [Args.gamedir, Args.protondir, Args.prefixdir]
         if Args.singleplayer:
+            # workshop mods may be loaded from other steam libraries
+            # despite they are also present in our gamedir library
             shared_paths += get_steam_library_dirs(steamdir)
         else:
             shared_paths += [Args.moddir, Dir.truckersmp_cli_data, Dir.scriptdir]
