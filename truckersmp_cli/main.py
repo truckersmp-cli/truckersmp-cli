@@ -16,7 +16,8 @@ from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import (
     activate_native_d3dcompiler_47, check_libsdl2, find_discord_ipc_sockets,
-    get_proton_version, perform_self_update, print_child_output,
+    get_proton_version, get_steam_library_dirs,
+    perform_self_update, print_child_output,
     set_wine_desktop_registry, setup_wine_discord_ipc_bridge, wait_for_steam,
 )
 from .variables import AppId, Args, Dir, File, URL
@@ -223,7 +224,11 @@ def start_with_proton():
         python = "python3"
         # share directories with Steam Runtime container
         shared_paths = [Args.gamedir, Args.protondir, Args.prefixdir]
-        if not Args.singleplayer:
+        if Args.singleplayer:
+            # workshop mods may be loaded from other steam libraries
+            # despite they are also present in our gamedir library
+            shared_paths += get_steam_library_dirs(steamdir)
+        else:
             shared_paths += [Args.moddir, Dir.truckersmp_cli_data, Dir.scriptdir]
         discord_sockets = find_discord_ipc_sockets()
         if len(discord_sockets) > 0:

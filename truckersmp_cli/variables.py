@@ -51,6 +51,8 @@ class File:
     """Files."""
 
     loginvdf_inner = "config/loginusers.vdf"
+    steamlibvdf_inner = "steamapps/libraryfolders.vdf"
+    steamlibvdf_inner_legacy = "SteamApps/libraryfolders.vdf"
     # known paths for [steam installation directory]/config/loginusers.vdf
     loginusers_paths = [
         # Official (Valve) version
