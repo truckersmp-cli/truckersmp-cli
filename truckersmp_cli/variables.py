@@ -45,6 +45,7 @@ class Dir:
     dllsdir = os.path.join(truckersmp_cli_data, "dlls")
     ipcbrdir = os.path.join(truckersmp_cli_data, "wine-discord-ipc-bridge")
     scriptdir = os.path.dirname(os.path.realpath(__file__))
+    system32_inner = "dosdevices/c:/windows/system32"
 
 
 class File:
