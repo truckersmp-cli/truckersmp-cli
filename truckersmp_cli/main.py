@@ -233,21 +233,24 @@ def start_with_proton():
             shared_paths += get_steam_library_dirs(steamdir)
         else:
             shared_paths += [Args.moddir, Dir.truckersmp_cli_data]
-            if Dir.scriptdir.startswith("/usr/"):
-                logging.info("System-wide installation detected: %s", Dir.scriptdir)
-                # when truckersmp-cli is installed system-wide,
-                # the Steam Runtime helper and the inject program need to be
-                # temporarily copied because /usr cannot be shared
-                steamruntime_usr_tempdir = tempfile.TemporaryDirectory(
-                    prefix="truckersmp-cli-steamruntime-sharing-workaround-")
+        if Dir.scriptdir.startswith("/usr/"):
+            logging.info("System-wide installation detected: %s", Dir.scriptdir)
+            # when truckersmp-cli is installed system-wide,
+            # the Steam Runtime helper (singleplayer/multiplayer) and
+            # the inject program (multiplayer) need to be
+            # temporarily copied because /usr cannot be shared
+            steamruntime_usr_tempdir = tempfile.TemporaryDirectory(
+                prefix="truckersmp-cli-steamruntime-sharing-workaround-")
+            logging.debug(
+                "Copying Steam Runtime helper to %s", steamruntime_usr_tempdir.name)
+            shutil.copy(File.steamruntime_helper, steamruntime_usr_tempdir.name)
+            if not Args.singleplayer:
                 logging.debug(
-                    "Copying Steam Runtime helper and inject program to %s",
-                    steamruntime_usr_tempdir.name)
-                shutil.copy(File.steamruntime_helper, steamruntime_usr_tempdir.name)
+                    "Copying inject program to %s", steamruntime_usr_tempdir.name)
                 shutil.copy(File.inject_exe, steamruntime_usr_tempdir.name)
-                shared_paths.append(steamruntime_usr_tempdir.name)
-            else:
-                shared_paths.append(Dir.scriptdir)
+            shared_paths.append(steamruntime_usr_tempdir.name)
+        else:
+            shared_paths.append(Dir.scriptdir)
         discord_sockets = find_discord_ipc_sockets()
         if len(discord_sockets) > 0:
             shared_paths += discord_sockets
