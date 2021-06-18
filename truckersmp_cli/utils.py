@@ -326,7 +326,7 @@ def get_proton_version(protondir):
     Examples:
       "xxxxxxxxxx proton-5.13-6" -> (5, 13)
       "xxxxxxxxxx 6.1-GE-2" -> (6, 1)
-      "xxxxxxxxxx proton-tkg-6.8.r15.gf308782d" -> (6,8)
+      "xxxxxxxxxx proton-tkg-6.8.r15.gf308782d" -> (6, 8)
 
     protondir: Proton top directory that has "version" file
     """
