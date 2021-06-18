@@ -332,9 +332,9 @@ def get_proton_version(protondir):
     """
     with open(os.path.join(protondir, "version")) as f_version:
         ver = f_version.read(128)
-    if ver.find("tkg") > 0:
-        ver = ver.replace("proton-tkg-", "")
-        major, minor = ver[ver.index(" ") + 1:ver.index(".r")].split(".")
+    if "proton-tkg" in ver:
+        # 11 = len("proton-tkg") + 1
+        major, minor = ver[ver.index("proton-tkg") + 11:].split(".")[:2]
     else:
         ver = ver.replace("proton-", "")
         major, minor = ver[ver.index(" ") + 1:ver.index("-")].split(".")
