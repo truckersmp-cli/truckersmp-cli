@@ -7,9 +7,11 @@ Licensed under MIT.
 import json
 import logging
 import os
+import shutil
 import signal
 import subprocess as subproc
 import sys
+import tempfile
 
 from .args import check_args_errors, create_arg_parser
 from .steamcmd import update_game
@@ -218,6 +220,7 @@ def start_with_proton():
     proton_args = []
     run_in_steamrt = []
     discord_sockets = []
+    steamruntime_usr_tempdir = None
     if not Args.without_steam_runtime and (major >= 6 or (major == 5 and minor >= 13)):
         # use Steam Runtime container for Proton 5.13+
         logging.info("Using Steam Runtime container")
@@ -229,7 +232,25 @@ def start_with_proton():
             # despite they are also present in our gamedir library
             shared_paths += get_steam_library_dirs(steamdir)
         else:
-            shared_paths += [Args.moddir, Dir.truckersmp_cli_data, Dir.scriptdir]
+            shared_paths += [Args.moddir, Dir.truckersmp_cli_data]
+        if Dir.scriptdir.startswith("/usr/"):
+            logging.info("System-wide installation detected: %s", Dir.scriptdir)
+            # when truckersmp-cli is installed system-wide,
+            # the Steam Runtime helper (singleplayer/multiplayer) and
+            # the inject program (multiplayer) need to be
+            # temporarily copied because /usr cannot be shared
+            steamruntime_usr_tempdir = tempfile.TemporaryDirectory(
+                prefix="truckersmp-cli-steamruntime-sharing-workaround-")
+            logging.debug(
+                "Copying Steam Runtime helper to %s", steamruntime_usr_tempdir.name)
+            shutil.copy(File.steamruntime_helper, steamruntime_usr_tempdir.name)
+            if not Args.singleplayer:
+                logging.debug(
+                    "Copying inject program to %s", steamruntime_usr_tempdir.name)
+                shutil.copy(File.inject_exe, steamruntime_usr_tempdir.name)
+            shared_paths.append(steamruntime_usr_tempdir.name)
+        else:
+            shared_paths.append(Dir.scriptdir)
         discord_sockets = find_discord_ipc_sockets()
         if len(discord_sockets) > 0:
             shared_paths += discord_sockets
@@ -298,7 +319,12 @@ def start_with_proton():
         gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
         proton_args.append(gamepath)
     else:
-        proton_args += File.inject_exe, Args.gamedir, Args.moddir
+        proton_args.append(
+            File.inject_exe if steamruntime_usr_tempdir is None
+            else os.path.join(
+                steamruntime_usr_tempdir.name, os.path.basename(File.inject_exe))
+        )
+        proton_args += Args.gamedir, Args.moddir
 
     # game options
     for opt in Args.game_options.split(" "):
@@ -318,7 +344,10 @@ def start_with_proton():
     ]
 
     argv_helper = run_in_steamrt
-    argv_helper.append(File.steamruntime_helper)
+    argv_helper.append(
+        File.steamruntime_helper if steamruntime_usr_tempdir is None
+        else os.path.join(
+            steamruntime_usr_tempdir.name, os.path.basename(File.steamruntime_helper)))
     if (not Args.singleplayer
             and not Args.without_wine_discord_ipc_bridge
             # don't start wine-discord-ipc-bridge when no Discord sockets found
