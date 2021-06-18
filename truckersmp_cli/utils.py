@@ -326,7 +326,7 @@ def get_proton_version(protondir):
     Examples:
       "xxxxxxxxxx proton-5.13-6" -> (5, 13)
       "xxxxxxxxxx 6.1-GE-2" -> (6, 1)
-      "xxxxxxxxxx proton-tkg-6.8.r15.gf308782d -> (6,8)"
+      "xxxxxxxxxx proton-tkg-6.8.r15.gf308782d" -> (6,8)
 
     protondir: Proton top directory that has "version" file
     """
@@ -335,7 +335,7 @@ def get_proton_version(protondir):
     if ver.find("tkg") > 0:
         ver = ver.replace("proton-tkg-", "")
         major, minor = ver[ver.index(" ") + 1:ver.index(".r")].split(".")
-    else :
+    else:
         ver = ver.replace("proton-", "")
         major, minor = ver[ver.index(" ") + 1:ver.index("-")].split(".")
     return int(major), int(minor)
