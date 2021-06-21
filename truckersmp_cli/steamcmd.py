@@ -189,7 +189,7 @@ def update_game():
                 logging.debug("Updating Steam Runtime (AppID:%s)", appid_steamruntime)
                 steamcmd.run(
                     [
-                        "+login", Args.account,
+                        "+login", "anonymous",
                         "+force_install_dir", Args.steamruntimedir,
                         "+app_update", str(appid_steamruntime), "validate",
                         "+quit",
@@ -199,7 +199,7 @@ def update_game():
             logging.debug("Updating Proton (AppID:%s)", Args.proton_appid)
             steamcmd.run(
                 [
-                    "+login", Args.account,
+                    "+login", "anonymous",
                     "+force_install_dir", Args.protondir,
                     "+app_update", str(Args.proton_appid), "validate",
                     "+quit",
