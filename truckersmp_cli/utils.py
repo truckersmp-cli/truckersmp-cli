@@ -58,7 +58,7 @@ def activate_native_d3dcompiler_47(prefix, wine):
             sys.exit("Failed to download d3dcompiler_47.dll")
 
     # copy into system32
-    destdir = os.path.join(prefix, "drive_c/windows/system32")
+    destdir = os.path.join(prefix, Dir.system32_inner)
     logging.debug("Copying d3dcompiler_47.dll into %s", destdir)
     shutil.copy(File.d3dcompiler_47, destdir)
 
