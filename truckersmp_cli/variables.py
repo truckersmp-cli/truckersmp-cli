@@ -68,6 +68,7 @@ class File:
     inject_exe = os.path.join(Dir.scriptdir, "truckersmp-cli.exe")
     overlayrenderer_inner = "ubuntu12_64/gameoverlayrenderer.so"
     d3dcompiler_47 = os.path.join(Dir.dllsdir, "d3dcompiler_47.dll")
+    d3dcompiler_47_inner = os.path.join(Dir.system32_inner, "d3dcompiler_47.dll")
     d3dcompiler_47_md5 = "b2cc65e1930e75f563078c6a20221b37"
     ipcbridge = os.path.join(Dir.ipcbrdir, "winediscordipcbridge.exe")
     ipcbridge_md5 = "78fef85810c5bb8e492d3f67f48947a5"

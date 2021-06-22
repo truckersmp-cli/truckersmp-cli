@@ -18,7 +18,7 @@ from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import (
     activate_native_d3dcompiler_47, check_libsdl2, find_discord_ipc_sockets,
-    get_proton_version, get_steam_library_dirs,
+    get_proton_version, get_steam_library_dirs, is_d3dcompiler_setup_skippable,
     perform_self_update, print_child_output,
     set_wine_desktop_registry, setup_wine_discord_ipc_bridge, wait_for_steam,
 )
@@ -283,10 +283,15 @@ def start_with_proton():
         ) else "dist",
         "bin/wine")
     wine.append(wine_command)
+    do_d3dcompiler_setup = (Args.activate_native_d3dcompiler_47
+                            or (not Args.singleplayer
+                                and Args.enable_d3d11
+                                and not is_d3dcompiler_setup_skippable()))
+    logging.debug("Whether to setup native d3dcompiler_47: %s", do_d3dcompiler_setup)
     if (not os.access(wine_command, os.R_OK)
             # native d3dcompiler_47 is removed when the prefix is downgraded
             # make sure the prefix is already upgraded/downgraded
-            or Args.activate_native_d3dcompiler_47):
+            or do_d3dcompiler_setup):
         try:
             subproc.check_output(
                 proton_args + ["wineboot", ], env=env, stderr=subproc.STDOUT)
@@ -296,7 +301,7 @@ def start_with_proton():
             sys.exit("wineboot failed:\n{}".format(ex.output.decode("utf-8")))
 
     # activate native d3dcompiler_47
-    if Args.activate_native_d3dcompiler_47:
+    if do_d3dcompiler_setup:
         activate_native_d3dcompiler_47(prefix, wine)
 
     # enable Wine desktop if requested
@@ -385,7 +390,10 @@ def start_with_wine():
     # pylint: disable=consider-using-with,too-many-branches
     wine = os.environ["WINE"] if "WINE" in os.environ else "wine"
     argv = [wine, ]
-    if Args.activate_native_d3dcompiler_47:
+    if (Args.activate_native_d3dcompiler_47
+            or (not Args.singleplayer
+                and Args.enable_d3d11
+                and not is_d3dcompiler_setup_skippable())):
         activate_native_d3dcompiler_47(Args.prefixdir, argv)
 
     env = os.environ.copy()
