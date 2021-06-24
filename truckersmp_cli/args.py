@@ -11,7 +11,7 @@ import platform
 import sys
 
 from .utils import VDF_IS_AVAILABLE, get_current_steam_user
-from .variables import AppId, Args, Dir
+from .variables import AppId, Args, Dir, File
 
 
 ACTIONS = (
@@ -180,6 +180,7 @@ def create_arg_parser():
     * The 2nd element is a list of _StoreAction objects
       (used only in "gen_completions" program)
     """
+    # pylint: disable=too-many-statements
     desc = """
 A simple launcher for TruckersMP to play ATS or ETS2 in multiplayer.
 
@@ -217,6 +218,11 @@ SteamCMD can use your saved credentials for convenience.
         "-b", "--beta", metavar="VERSION", type=str,
         help="""set game version to VERSION,
                 useful for downgrading (e.g. "temporary_1_35")"""))
+    store_actions.append(parser.add_argument(
+        "-c", "--configfile", metavar="FILE",
+        default=File.default_configfile,
+        help="""use alternative configuration file
+                [Default: $XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf]"""))
     store_actions.append(parser.add_argument(
         "-d", "--enable-d3d11",
         help="use Direct3D 11 instead of OpenGL",

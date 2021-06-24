@@ -27,6 +27,7 @@ class Args:
 class Dir:
     """Directories."""
 
+    XDG_CONFIG_HOME = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
     XDG_DATA_HOME = os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
     truckersmp_cli_data = os.path.join(XDG_DATA_HOME, "truckersmp-cli")
     default_gamedir = dict(
@@ -63,6 +64,8 @@ class File:
         # Debian-based systems, new path
         os.path.join(os.path.expanduser("~/.steam/debian-installation"), loginvdf_inner),
     ]
+    default_configfile = os.path.join(
+        Dir.XDG_CONFIG_HOME, "truckersmp-cli/truckersmp-cli.conf")
     proton_json = os.path.join(Dir.scriptdir, "proton.json")
     steamruntime_json = os.path.join(Dir.scriptdir, "steamruntime.json")
     inject_exe = os.path.join(Dir.scriptdir, "truckersmp-cli.exe")
