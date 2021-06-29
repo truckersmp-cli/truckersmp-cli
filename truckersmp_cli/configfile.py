@@ -17,7 +17,7 @@ class ConfigFile:
 
         configfile: Path to configuration file
         """
-        self._thirdparty_total_wait = 0
+        self._thirdparty_wait = 0
         self._thirdparty_executables = []
         parser = configparser.ConfigParser()
         parser.read(configfile)
@@ -27,9 +27,9 @@ class ConfigFile:
                 continue
             try:
                 wait = int(parser[sect]["wait"])
-                self._thirdparty_total_wait += wait
             except (KeyError, ValueError):
                 wait = 0  # invalid or missing
+            self._thirdparty_wait = max(wait, self._thirdparty_wait)
             self._thirdparty_executables.append(
                 os.path.expanduser(parser[sect]["executable"]))
 
@@ -41,4 +41,4 @@ class ConfigFile:
     @property
     def thirdparty_total_wait(self):
         """Total waiting time for third-party programs."""
-        return self._thirdparty_total_wait
+        return self._thirdparty_wait
