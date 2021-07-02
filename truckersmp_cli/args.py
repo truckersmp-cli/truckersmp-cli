@@ -362,6 +362,10 @@ SteamCMD can use your saved credentials for convenience.
         help="don't use wine-discord-ipc-bridge for Discord Rich Presence",
         action="store_true"))
     store_actions.append(parser.add_argument(
+        "--singleplayer-wine-discord-ipc-bridge",
+        help="starts wine-discord-ipc-bridge when starting game in singleplayer",
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--version",
         help="""print version information and quit""",
         action="store_true"))
