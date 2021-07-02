@@ -115,6 +115,7 @@ Short option|Long option|Description
 (Not available)|`--wine-steam-dir`|Choose a directory for Windows version of Steam [Default: `C:\Program Files (x86)\Steam` in the prefix]
 (Not available)|`--without-steam-runtime`|Don't use Steam Runtime even when using Proton 5.13 or newer
 (Not available)|`--without-wine-discord-ipc-bridge`|Don't use wine-discord-ipc-bridge for Discord Rich Presence
+(Not available)|`--singleplayer-wine-discord-ipc-bridge`|Use wine-discord-ipc-bridge when starting game in singleplayer
 (Not available)|`--version`|Print version information and quit
 
 ### Proton versions and AppIDs
