@@ -351,6 +351,10 @@ def start_with_proton():
     if (not Args.singleplayer
             and not Args.without_wine_discord_ipc_bridge
             # don't start wine-discord-ipc-bridge when no Discord sockets found
+            and len(discord_sockets) > 0
+        or Args.singleplayer
+            and Args.singleplayer_wine_discord_ipc_bridge
+            # don't start wine-discord-ipc-bridge when no Discord sockets found
             and len(discord_sockets) > 0):
         argv_helper += ["--executable", File.ipcbridge]
     if Args.verbose:
