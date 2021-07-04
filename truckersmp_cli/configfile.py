@@ -5,7 +5,6 @@ Licensed under MIT.
 """
 
 import configparser
-import os
 
 
 class ConfigFile:
@@ -30,8 +29,7 @@ class ConfigFile:
             except (KeyError, ValueError):
                 wait = 0  # invalid or missing
             self._thirdparty_wait = max(wait, self._thirdparty_wait)
-            self._thirdparty_executables.append(
-                os.path.expanduser(parser[sect]["executable"]))
+            self._thirdparty_executables.append(parser[sect]["executable"])
 
     @property
     def thirdparty_executables(self):
