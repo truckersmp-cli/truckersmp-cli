@@ -584,7 +584,7 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
     env: A dictionary that contains environment variables
          (can be None if use_proton is True)
     """
-    # pylint: disable=too-many-branches,too-many-statements
+    # pylint: disable=consider-using-with,too-many-branches,too-many-statements
 
     steamdir = None
     loginvdfs_checked = []
