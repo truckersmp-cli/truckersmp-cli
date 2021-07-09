@@ -401,6 +401,80 @@ def get_steam_library_dirs(steamdir):
     return steam_libraries
 
 
+def is_d3dcompiler_setup_skippable():
+    """
+    Check whether native d3dcompiler setup can be skipped.
+
+    It can be skipped when:
+      * Wine is used and the native DLL is present
+      * Proton is used, the native DLL is present, and
+        Proton prefix version <= Proton version
+                                 ("CURRENT_PREFIX_VERSION" in "proton" script)
+
+    This function returns True if it can be skipped, otherwise False.
+
+    Proton prefix version examples:
+      * 6.3-2 (major=6, minor=3)
+      * 6.10-GE-1 (major=6, minor=10)
+    """
+    # first check whether the native DLL is present
+    have_native_dll = False
+    wine_prefix = Args.prefixdir
+    if Args.proton:
+        wine_prefix = os.path.join(wine_prefix, "pfx")
+    installed_dll_path = os.path.join(wine_prefix, File.d3dcompiler_47_inner)
+    try:
+        if check_hash(installed_dll_path, File.d3dcompiler_47_md5, hashlib.md5()):
+            have_native_dll = True
+    except OSError:
+        pass
+    if not have_native_dll:
+        logging.debug("Native d3dcompiler_47.dll is not found")
+        return False
+
+    logging.debug("Native d3dcompiler_47.dll is found")
+    # if Wine is used, nothing else to check
+    if Args.wine:
+        return True
+
+    # if Proton is used, get prefix version from the prefix directory
+    ver_pfx = dict(major=0, minor=0)
+    try:
+        with open(os.path.join(Args.prefixdir, "version")) as f_prefix_ver:
+            ver = f_prefix_ver.readline().replace("-GE-", "-")
+            major, minor = ver[:ver.index("-")].split(".")
+            ver_pfx["major"], ver_pfx["minor"] = int(major), int(minor)
+    except (OSError, ValueError):
+        pass
+    if ver_pfx["major"] == 0 or ver_pfx["minor"] == 0:
+        # failed to get prefix version, unable to compare
+        logging.debug("Failed to get Proton prefix version from version file")
+        return False
+
+    # get CURRENT_PREFIX_VERSION from "proton" script
+    ver_proton = dict(major=0, minor=0)
+    try:
+        with open(os.path.join(Args.protondir, "proton")) as f_proton:
+            for line in f_proton:
+                if line.startswith('CURRENT_PREFIX_VERSION="'):
+                    ver = line[line.index('"') + 1:-1]
+                    major, minor = ver[:ver.index("-")].split(".")
+                    ver_proton["major"], ver_proton["minor"] = int(major), int(minor)
+    except (OSError, ValueError):
+        pass
+    if ver_proton["major"] == 0 or ver_proton["minor"] == 0:
+        # failed to get CURRENT_PREFIX_VERSION, unable to compare
+        logging.debug("Failed to get CURRENT_PREFIX_VERSION from proton script")
+        return False
+
+    logging.debug(
+        "Proton:(%d, %d), Prefix:(%d, %d)",
+        ver_proton["major"], ver_proton["minor"], ver_pfx["major"], ver_pfx["minor"])
+    return (ver_proton["major"] > ver_pfx["major"]
+            or (ver_proton["major"] == ver_pfx["major"]
+                and ver_proton["minor"] >= ver_pfx["minor"]))
+
+
 def is_envar_enabled(envars, name):
     """
     Check whether the specified environment variable is enabled.
