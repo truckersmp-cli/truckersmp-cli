@@ -5,6 +5,10 @@ Licensed under MIT.
 """
 
 import configparser
+import os
+
+from .utils import is_dos_style_abspath
+from .variables import Dir
 
 
 class ConfigFile:
@@ -29,7 +33,18 @@ class ConfigFile:
             except (KeyError, ValueError):
                 wait = 0  # invalid or missing
             self._thirdparty_wait = max(wait, self._thirdparty_wait)
-            self._thirdparty_executables.append(parser[sect]["executable"])
+            exe_path = parser[sect]["executable"]
+            if os.path.isabs(exe_path):
+                # absolute path: use the given path
+                self._thirdparty_executables.append(exe_path)
+            else:
+                if is_dos_style_abspath(exe_path):
+                    # DOS/Windows style absolute path: use the given path
+                    self._thirdparty_executables.append(exe_path)
+                else:
+                    # relative path: assume it's relative to our data directory
+                    self._thirdparty_executables.append(
+                        os.path.join(Dir.truckersmp_cli_data, exe_path))
 
     @property
     def thirdparty_executables(self):
