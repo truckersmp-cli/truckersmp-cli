@@ -15,6 +15,8 @@ import sys
 
 def main():
     """Start truckersmp-cli.exe and optionally 3rd party programs."""
+    # pylint: disable=consider-using-with
+
     # options and arguments
     desc = "Helper script for Steam Runtime."
     arg_parser = argparse.ArgumentParser(description=desc)
