@@ -282,11 +282,9 @@ def find_discord_ipc_sockets():
     When no sockets found, an empty list ([]) is returned.
     """
     # Discord creates sockets in $XDG_RUNTIME_DIR
-    sockets_dir = os.getenv("XDG_RUNTIME_DIR")
-    if sockets_dir is None:
-        # "/tmp/" is used as fallback directory
-        sockets_dir = "/tmp"
-    return glob.glob(os.path.join(sockets_dir, "discord-ipc-*"))
+    # "/tmp/" is used as fallback directory
+    return glob.glob(
+        os.path.join(os.getenv("XDG_RUNTIME_DIR", "/tmp"), "discord-ipc-*"))
 
 
 def get_current_steam_user():
