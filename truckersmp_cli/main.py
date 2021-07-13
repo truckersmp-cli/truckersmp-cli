@@ -362,14 +362,19 @@ def start_with_proton():
         argv_helper.append("-v" if Args.verbose == 1 else "-vv")
     argv_helper += ["--", ] + proton_args
 
-    env_str = ""
-    cmd_str = ""
-    name_value_pairs = []
-    for name in env_print:
-        name_value_pairs.append("{}={}".format(name, env[name]))
-    env_str += "\n  ".join(name_value_pairs) + "\n  "
-    cmd_str += "\n    ".join(proton_args)
-    logging.info("Running Steam Runtime helper:\n  %s%s", env_str, cmd_str)
+    def log_info_formatted_envars():
+        nonlocal env_print
+        nonlocal env
+        nonlocal proton_args
+        env_str = ""
+        cmd_str = ""
+        name_value_pairs = []
+        for name in env_print:
+            name_value_pairs.append("{}={}".format(name, env[name]))
+        env_str += "\n  ".join(name_value_pairs) + "\n  "
+        cmd_str += "\n    ".join(proton_args)
+        logging.info("Running Steam Runtime helper:\n  %s%s", env_str, cmd_str)
+    log_info_formatted_envars()
     try:
         with subproc.Popen(
                 argv_helper,
@@ -434,14 +439,18 @@ def start_with_wine():
         if opt != "":
             argv.append(opt)
 
-    env_str = ""
-    cmd_str = ""
-    name_value_pairs = []
-    for name in ("WINEARCH", "WINEDEBUG", "WINEDLLOVERRIDES", "WINEPREFIX"):
-        name_value_pairs.append("{}={}".format(name, env[name]))
-    env_str += "\n  ".join(name_value_pairs) + "\n  "
-    cmd_str += "\n    ".join(argv)
-    logging.info("Running Wine:\n  %s%s", env_str, cmd_str)
+    def log_info_formatted_envars():
+        nonlocal argv
+        nonlocal env
+        env_str = ""
+        cmd_str = ""
+        name_value_pairs = []
+        for name in ("WINEARCH", "WINEDEBUG", "WINEDLLOVERRIDES", "WINEPREFIX"):
+            name_value_pairs.append("{}={}".format(name, env[name]))
+        env_str += "\n  ".join(name_value_pairs) + "\n  "
+        cmd_str += "\n    ".join(argv)
+        logging.info("Running Wine:\n  %s%s", env_str, cmd_str)
+    log_info_formatted_envars()
     try:
         with subproc.Popen(
                 argv,
