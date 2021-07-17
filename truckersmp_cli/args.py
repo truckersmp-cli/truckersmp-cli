@@ -369,6 +369,8 @@ def process_actions_gamenames():
 
     This function must be called after parse_args(namespace=Args)
     """
+    # pylint: disable=too-many-branches
+
     # warn if using deprecated options
     if Args.ets2:
         logging.warning("'--ets2' ('-e') option is deprecated, use new syntax instead")
