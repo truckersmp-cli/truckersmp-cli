@@ -20,7 +20,6 @@ class ConfigFile:
 
         configfile: Path to configuration file
         """
-        # pylint: disable=too-many-branches
         self._thirdparty_wait = 0
         self._thirdparty_executables = []
         parser = configparser.ConfigParser()
@@ -35,28 +34,9 @@ class ConfigFile:
             #   [thirdparty.ets2.prog1]   -> ETS2
             #   [thirdparty.atsmp.prog1]  -> ATSMP
             #   [thirdparty.ats.prog1]    -> ATS
-            if Args.singleplayer:
-                if Args.ets2:  # ets2
-                    if (sect.startswith("thirdparty.ets2mp.")
-                            or sect.startswith("thirdparty.ats.")
-                            or sect.startswith("thirdparty.atsmp.")):
-                        continue
-                else:          # ats
-                    if (sect.startswith("thirdparty.ets2mp.")
-                            or sect.startswith("thirdparty.ets2.")
-                            or sect.startswith("thirdparty.atsmp.")):
-                        continue
-            else:
-                if Args.ets2:  # ets2mp
-                    if (sect.startswith("thirdparty.ets2.")
-                            or sect.startswith("thirdparty.ats.")
-                            or sect.startswith("thirdparty.atsmp.")):
-                        continue
-                else:          # atsmp
-                    if (sect.startswith("thirdparty.ets2mp.")
-                            or sect.startswith("thirdparty.ets2.")
-                            or sect.startswith("thirdparty.ats.")):
-                        continue
+            if (sect.count(".") == 2
+                    and not sect.startswith("thirdparty." + Args.game + ".")):
+                continue
             try:
                 wait = int(parser[sect]["wait"])
             except (KeyError, ValueError):
