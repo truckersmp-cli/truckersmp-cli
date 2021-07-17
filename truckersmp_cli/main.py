@@ -14,7 +14,7 @@ import sys
 import tempfile
 import time
 
-from .args import check_args_errors, create_arg_parser
+from .args import check_args_errors, create_arg_parser, process_actions_gamenames
 from .configfile import ConfigFile
 from .steamcmd import update_game
 from .truckersmp import update_mod
@@ -97,6 +97,7 @@ def main():
     # parse options
     arg_parser = create_arg_parser()[0]
     arg_parser.parse_args(namespace=Args)
+    process_actions_gamenames()
 
     # load configuration file
     cfg = ConfigFile(Args.configfile)

@@ -50,28 +50,6 @@ def check_args_errors():
     if Args.singleplayer:
         logging.warning("'--singleplayer' option is deprecated, use new syntax instead")
 
-    # check actions in new syntax
-    if Args.action == "start":
-        Args.start = True
-    elif Args.action == "update":
-        Args.update = True
-    elif Args.action == "downgrade":
-        Args.downgrade = True
-    elif Args.action == "updateandstart" or Args.action == "ustart":
-        Args.update = Args.start = True
-    elif Args.action == "downgradeandstart" or Args.action == "dstart":
-        Args.downgrade = Args.start = True
-
-    # check game names in new syntax
-    if Args.game == "ets2mp":
-        Args.ets2 = True
-    elif Args.game == "atsmp":
-        Args.ats = True
-    elif Args.game == "ets2":
-        Args.ets2 = Args.singleplayer = True
-    elif Args.game == "ats":
-        Args.ats = Args.singleplayer = True
-
     # "--downgrade" implies "--update"
     if Args.downgrade:
         Args.update = True
@@ -397,3 +375,32 @@ SteamCMD can use your saved credentials for convenience.
         nargs="?")
 
     return parser, store_actions
+
+
+def process_actions_gamenames():
+    """
+    Process actions/game names in the new syntax.
+
+    This function must be called after parse_args(namespace=Args)
+    """
+    # actions
+    if Args.action == "start":
+        Args.start = True
+    elif Args.action == "update":
+        Args.update = True
+    elif Args.action == "downgrade":
+        Args.downgrade = True
+    elif Args.action == "updateandstart" or Args.action == "ustart":
+        Args.update = Args.start = True
+    elif Args.action == "downgradeandstart" or Args.action == "dstart":
+        Args.downgrade = Args.start = True
+
+    # game names
+    if Args.game == "ets2mp":
+        Args.ets2 = True
+    elif Args.game == "atsmp":
+        Args.ats = True
+    elif Args.game == "ets2":
+        Args.ets2 = Args.singleplayer = True
+    elif Args.game == "ats":
+        Args.ats = Args.singleplayer = True
