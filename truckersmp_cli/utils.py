@@ -490,6 +490,25 @@ def is_envar_enabled(envars, name):
     return len(value) > 0 and value != "0"
 
 
+def log_info_formatted_envars_and_args(runner, env_print, env, args):
+    """
+    Print formatted envars and command line with logging level "info".
+
+    runner: "Steam Runtime helper" or "Wine"
+    env_print: Environment variable names to print
+    env: A dict of environment variables
+    args: Command line
+    """
+    env_str = ""
+    cmd_str = ""
+    name_value_pairs = []
+    for name in env_print:
+        name_value_pairs.append("{}={}".format(name, env[name]))
+    env_str += "\n  ".join(name_value_pairs) + "\n  "
+    cmd_str += "\n    ".join(args)
+    logging.info("Running %s:\n  %s%s", runner, env_str, cmd_str)
+
+
 def perform_self_update():
     """
     Update files to latest release. Do nothing for Python package.

@@ -19,7 +19,7 @@ from .truckersmp import update_mod
 from .utils import (
     activate_native_d3dcompiler_47, check_libsdl2, find_discord_ipc_sockets,
     get_proton_version, get_steam_library_dirs, is_d3dcompiler_setup_skippable,
-    perform_self_update, print_child_output,
+    log_info_formatted_envars_and_args, perform_self_update, print_child_output,
     set_wine_desktop_registry, setup_wine_discord_ipc_bridge, wait_for_steam,
 )
 from .variables import AppId, Args, Dir, File, URL
@@ -362,14 +362,11 @@ def start_with_proton():
         argv_helper.append("-v" if Args.verbose == 1 else "-vv")
     argv_helper += ["--", ] + proton_args
 
-    env_str = ""
-    cmd_str = ""
-    name_value_pairs = []
-    for name in env_print:
-        name_value_pairs.append("{}={}".format(name, env[name]))
-    env_str += "\n  ".join(name_value_pairs) + "\n  "
-    cmd_str += "\n    ".join(proton_args)
-    logging.info("Running Steam Runtime helper:\n  %s%s", env_str, cmd_str)
+    log_info_formatted_envars_and_args(
+        runner="Steam Runtime helper",
+        env_print=env_print,
+        env=env,
+        args=proton_args)
     try:
         with subproc.Popen(
                 argv_helper,
@@ -434,14 +431,11 @@ def start_with_wine():
         if opt != "":
             argv.append(opt)
 
-    env_str = ""
-    cmd_str = ""
-    name_value_pairs = []
-    for name in ("WINEARCH", "WINEDEBUG", "WINEDLLOVERRIDES", "WINEPREFIX"):
-        name_value_pairs.append("{}={}".format(name, env[name]))
-    env_str += "\n  ".join(name_value_pairs) + "\n  "
-    cmd_str += "\n    ".join(argv)
-    logging.info("Running Wine:\n  %s%s", env_str, cmd_str)
+    log_info_formatted_envars_and_args(
+        runner="Wine",
+        env_print=("WINEARCH", "WINEDEBUG", "WINEDLLOVERRIDES", "WINEPREFIX"),
+        env=env,
+        args=argv)
     try:
         with subproc.Popen(
                 argv,
