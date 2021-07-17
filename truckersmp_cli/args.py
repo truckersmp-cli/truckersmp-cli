@@ -372,8 +372,13 @@ def process_actions_gamenames():
     # warn if using deprecated options
     if Args.ets2:
         logging.warning("'--ets2' ('-e') option is deprecated, use new syntax instead")
+        # the game name (Args.game) will be used when parsing configuration file
+        if Args.game == "none":
+            Args.game = "ets2" if Args.singleplayer else "ets2mp"
     if Args.ats:
         logging.warning("'--ats' ('-a') option is deprecated, use new syntax instead")
+        if Args.game == "none":
+            Args.game = "ats" if Args.singleplayer else "atsmp"
     if Args.update:
         logging.warning("'--update' ('-u') option is deprecated, use new syntax instead")
     if Args.downgrade:
