@@ -370,7 +370,7 @@ def start_with_proton(cfg):
         argv_helper += ["--executable", File.ipcbridge]
     for executable in cfg.thirdparty_executables:
         argv_helper += ["--executable", executable]
-    argv_helper += ["--wait-before-start", str(cfg.thirdparty_total_wait)]
+    argv_helper += ["--wait-before-start", str(cfg.thirdparty_wait)]
     if Args.verbose:
         argv_helper.append("-v" if Args.verbose == 1 else "-vv")
     argv_helper += ["--", ] + proton_args
@@ -434,7 +434,7 @@ def start_with_wine(cfg):
         thirdparty_processes.append(
             subproc.Popen([wine, ] + [path, ], env=env, stderr=subproc.STDOUT))
 
-    time.sleep(cfg.thirdparty_total_wait)
+    time.sleep(cfg.thirdparty_wait)
 
     if "WINEDLLOVERRIDES" not in env:
         env["WINEDLLOVERRIDES"] = ""
