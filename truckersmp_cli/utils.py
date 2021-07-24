@@ -473,6 +473,21 @@ def is_d3dcompiler_setup_skippable():
                 and ver_proton["minor"] >= ver_pfx["minor"]))
 
 
+def is_dos_style_abspath(path):
+    """
+    Check whether the given path is a DOS/Windows style absolute path.
+
+    path: A path string
+    """
+    if len(path) < 3:
+        return False
+    drv = path[0]  # drive letter
+    # A:65, B:66, ... Z:90, a:97, b:98, ... z:122
+    if ord(drv) < 65 or (ord(drv) > 90 and ord(drv) < 97) or ord(drv) > 122:
+        return False
+    return path[1:3] == ":\\"
+
+
 def is_envar_enabled(envars, name):
     """
     Check whether the specified environment variable is enabled.

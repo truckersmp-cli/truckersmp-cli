@@ -11,6 +11,7 @@ import argparse
 import os
 import subprocess as subproc
 import sys
+import time
 
 
 def main():
@@ -28,6 +29,10 @@ def main():
         help="""3rd party executable to start in Steam Runtime container
                 (can be specified multiple times for multiple files)""")
     arg_parser.add_argument(
+        "--wait-before-start", metavar="SECS", type=int,
+        default=0,
+        help="wait SECS seconds before starting the game [Default: 0]")
+    arg_parser.add_argument(
         "game_arguments", nargs="+",
         help="argv for starting game (ATS/ETS2 executable or truckersmp-cli.exe)")
     args = arg_parser.parse_args()
@@ -35,20 +40,23 @@ def main():
     if args.verbose is not None and args.verbose > 1:
         print("Executables:", args.executable)
         print("Game Arguments:", args.game_arguments)
+        print("Waiting time:", args.wait_before_start)
 
     env = os.environ.copy()
 
-    third_party_processes = []
+    thirdparty_processes = []
     if args.executable is not None:
         env_3rdparty = env.copy()
         if "LD_PRELOAD" in env_3rdparty:
             del env_3rdparty["LD_PRELOAD"]
         for path in args.executable:
-            third_party_processes.append(
+            thirdparty_processes.append(
                 subproc.Popen(
                     # ["python3", "/path/to/proton", "run"] + ["/path/to/program.exe"]
                     args.game_arguments[0:3] + [path, ],
                     env=env_3rdparty, stderr=subproc.STDOUT))
+
+    time.sleep(args.wait_before_start)
 
     try:
         with subproc.Popen(
@@ -66,7 +74,7 @@ def main():
     except subproc.CalledProcessError as ex:
         print("Proton output:\n" + ex.output.decode("utf-8"), file=sys.stderr)
 
-    for proc in third_party_processes:
+    for proc in thirdparty_processes:
         # make sure 3rd party programs is exited
         if proc.poll() is None:
             proc.kill()

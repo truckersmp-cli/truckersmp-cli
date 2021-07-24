@@ -11,7 +11,7 @@ import platform
 import sys
 
 from .utils import VDF_IS_AVAILABLE, get_current_steam_user
-from .variables import AppId, Args, Dir
+from .variables import AppId, Args, Dir, File
 
 
 ACTIONS = (
@@ -35,42 +35,6 @@ GAMES = (
 def check_args_errors():
     """Check command-line arguments."""
     # pylint: disable=too-many-branches,too-many-statements
-
-    # warn if using deprecated options
-    if Args.ets2:
-        logging.warning("'--ets2' ('-e') option is deprecated, use new syntax instead")
-    if Args.ats:
-        logging.warning("'--ats' ('-a') option is deprecated, use new syntax instead")
-    if Args.update:
-        logging.warning("'--update' ('-u') option is deprecated, use new syntax instead")
-    if Args.downgrade:
-        logging.warning("'--downgrade' option is deprecated, use new syntax instead")
-    if Args.start:
-        logging.warning("'--start' ('-s') option is deprecated, use new syntax instead")
-    if Args.singleplayer:
-        logging.warning("'--singleplayer' option is deprecated, use new syntax instead")
-
-    # check actions in new syntax
-    if Args.action == "start":
-        Args.start = True
-    elif Args.action == "update":
-        Args.update = True
-    elif Args.action == "downgrade":
-        Args.downgrade = True
-    elif Args.action == "updateandstart" or Args.action == "ustart":
-        Args.update = Args.start = True
-    elif Args.action == "downgradeandstart" or Args.action == "dstart":
-        Args.downgrade = Args.start = True
-
-    # check game names in new syntax
-    if Args.game == "ets2mp":
-        Args.ets2 = True
-    elif Args.game == "atsmp":
-        Args.ats = True
-    elif Args.game == "ets2":
-        Args.ets2 = Args.singleplayer = True
-    elif Args.game == "ats":
-        Args.ats = Args.singleplayer = True
 
     # "--downgrade" implies "--update"
     if Args.downgrade:
@@ -180,6 +144,7 @@ def create_arg_parser():
     * The 2nd element is a list of _StoreAction objects
       (used only in "gen_completions" program)
     """
+    # pylint: disable=too-many-statements
     desc = """
 A simple launcher for TruckersMP to play ATS or ETS2 in multiplayer.
 
@@ -217,6 +182,11 @@ SteamCMD can use your saved credentials for convenience.
         "-b", "--beta", metavar="VERSION", type=str,
         help="""set game version to VERSION,
                 useful for downgrading (e.g. "temporary_1_35")"""))
+    store_actions.append(parser.add_argument(
+        "-c", "--configfile", metavar="FILE",
+        default=File.default_configfile,
+        help="""use alternative configuration file
+                [Default: $XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf]"""))
     store_actions.append(parser.add_argument(
         "-d", "--enable-d3d11",
         help="use Direct3D 11 instead of OpenGL",
@@ -391,3 +361,53 @@ SteamCMD can use your saved credentials for convenience.
         nargs="?")
 
     return parser, store_actions
+
+
+def process_actions_gamenames():
+    """
+    Process actions/game names in the new syntax.
+
+    This function must be called after parse_args(namespace=Args)
+    """
+    # pylint: disable=too-many-branches
+
+    # warn if using deprecated options
+    if Args.ets2:
+        logging.warning("'--ets2' ('-e') option is deprecated, use new syntax instead")
+        # the game name (Args.game) will be used when parsing configuration file
+        if Args.game == "none":
+            Args.game = "ets2" if Args.singleplayer else "ets2mp"
+    if Args.ats:
+        logging.warning("'--ats' ('-a') option is deprecated, use new syntax instead")
+        if Args.game == "none":
+            Args.game = "ats" if Args.singleplayer else "atsmp"
+    if Args.update:
+        logging.warning("'--update' ('-u') option is deprecated, use new syntax instead")
+    if Args.downgrade:
+        logging.warning("'--downgrade' option is deprecated, use new syntax instead")
+    if Args.start:
+        logging.warning("'--start' ('-s') option is deprecated, use new syntax instead")
+    if Args.singleplayer:
+        logging.warning("'--singleplayer' option is deprecated, use new syntax instead")
+
+    # actions
+    if Args.action == "start":
+        Args.start = True
+    elif Args.action == "update":
+        Args.update = True
+    elif Args.action == "downgrade":
+        Args.downgrade = True
+    elif Args.action == "updateandstart" or Args.action == "ustart":
+        Args.update = Args.start = True
+    elif Args.action == "downgradeandstart" or Args.action == "dstart":
+        Args.downgrade = Args.start = True
+
+    # game names
+    if Args.game == "ets2mp":
+        Args.ets2 = True
+    elif Args.game == "atsmp":
+        Args.ats = True
+    elif Args.game == "ets2":
+        Args.ets2 = Args.singleplayer = True
+    elif Args.game == "ats":
+        Args.ats = Args.singleplayer = True

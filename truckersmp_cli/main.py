@@ -12,8 +12,10 @@ import signal
 import subprocess as subproc
 import sys
 import tempfile
+import time
 
-from .args import check_args_errors, create_arg_parser
+from .args import check_args_errors, create_arg_parser, process_actions_gamenames
+from .configfile import ConfigFile
 from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import (
@@ -95,6 +97,10 @@ def main():
     # parse options
     arg_parser = create_arg_parser()[0]
     arg_parser.parse_args(namespace=Args)
+    process_actions_gamenames()
+
+    # load configuration file
+    cfg = ConfigFile(Args.configfile)
 
     # print version
     if Args.version:
@@ -179,7 +185,7 @@ the "var" subdirectory must be writable""".format(Args.steamruntimedir))
         i = 0 if Args.proton else 1
         compat_tool, start_game = start_functions[i]
         logging.debug("Starting game with %s", compat_tool)
-        start_game()
+        start_game(cfg)
 
     sys.exit()
 
@@ -203,8 +209,12 @@ def setup_logging():
         logger.addHandler(file_handler)
 
 
-def start_with_proton():
-    """Start game with Proton."""
+def start_with_proton(cfg):
+    """
+    Start game with Proton.
+
+    cfg: A ConfigFile object
+    """
     # pylint: disable=consider-using-with,too-many-branches
     # pylint: disable=too-many-locals,too-many-statements
     steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
@@ -358,6 +368,9 @@ def start_with_proton():
             # don't start wine-discord-ipc-bridge when no Discord sockets found
             and len(discord_sockets) > 0):
         argv_helper += ["--executable", File.ipcbridge]
+    for executable in cfg.thirdparty_executables:
+        argv_helper += ["--executable", executable]
+    argv_helper += ["--wait-before-start", str(cfg.thirdparty_wait)]
     if Args.verbose:
         argv_helper.append("-v" if Args.verbose == 1 else "-vv")
     argv_helper += ["--", ] + proton_args
@@ -382,9 +395,13 @@ def start_with_proton():
         set_wine_desktop_registry(prefix, wine, False)
 
 
-def start_with_wine():
-    """Start game with Wine."""
-    # pylint: disable=consider-using-with,too-many-branches
+def start_with_wine(cfg):
+    """
+    Start game with Wine.
+
+    cfg: A ConfigFile object
+    """
+    # pylint: disable=consider-using-with,too-many-branches,too-many-locals
     wine = os.environ["WINE"] if "WINE" in os.environ else "wine"
     argv = [wine, ]
     if (Args.activate_native_d3dcompiler_47
@@ -405,13 +422,16 @@ def start_with_wine():
         env=env,
     )
 
-    ipcbr_proc = None
+    executables = cfg.thirdparty_executables.copy()
     if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:
-        ipcbr_path = setup_wine_discord_ipc_bridge()
-        logging.info("Starting wine-discord-ipc-bridge")
-        ipcbr_proc = subproc.Popen(
-            argv + [ipcbr_path, ],
-            env=env, stdout=subproc.DEVNULL, stderr=subproc.DEVNULL)
+        executables.append(setup_wine_discord_ipc_bridge())
+
+    thirdparty_processes = []
+    for path in executables:
+        thirdparty_processes.append(
+            subproc.Popen([wine, ] + [path, ], env=env, stderr=subproc.STDOUT))
+
+    time.sleep(cfg.thirdparty_wait)
 
     if "WINEDLLOVERRIDES" not in env:
         env["WINEDLLOVERRIDES"] = ""
@@ -446,7 +466,7 @@ def start_with_wine():
     except subproc.CalledProcessError as ex:
         logging.error("Wine output:\n%s", ex.output.decode("utf-8"))
 
-    if ipcbr_proc:
-        if ipcbr_proc.poll() is None:
-            ipcbr_proc.kill()
-        ipcbr_proc.wait()
+    for proc in thirdparty_processes:
+        if proc.poll() is None:
+            proc.kill()
+        proc.wait()
