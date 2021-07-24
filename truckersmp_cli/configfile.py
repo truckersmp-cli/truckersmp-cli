@@ -57,10 +57,10 @@ class ConfigFile:
 
     @property
     def thirdparty_executables(self):
-        """Rerurn third-party programs paths."""
+        """Return third-party program paths."""
         return self._thirdparty_executables
 
     @property
     def thirdparty_wait(self):
-        """Rerurn waiting time for third-party programs."""
+        """Return waiting time for third-party programs."""
         return self._thirdparty_wait
