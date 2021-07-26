@@ -202,8 +202,10 @@ class StarterProton(GameStarterInterface):
         logging.debug("Creating directory %s if it doesn't exist", Args.prefixdir)
         os.makedirs(Args.prefixdir, exist_ok=True)
 
-        env["STEAM_COMPAT_DATA_PATH"] = Args.prefixdir
-        env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steamdir
+        env.update(
+            STEAM_COMPAT_DATA_PATH=Args.prefixdir,
+            STEAM_COMPAT_CLIENT_INSTALL_PATH=steamdir,
+        )
 
         self._init_args(args, steamdir)
 
@@ -301,9 +303,7 @@ class StarterWine(GameStarterInterface):
         # pylint: disable=consider-using-with
 
         env = os.environ.copy()
-        env["WINEDEBUG"] = "-all"
-        env["WINEARCH"] = "win64"
-        env["WINEPREFIX"] = Args.prefixdir
+        env.update(WINEDEBUG="-all", WINEARCH="win64", WINEPREFIX=Args.prefixdir)
         wine_command = os.getenv("WINE", "wine")
         wine_args = [wine_command, ]
 
