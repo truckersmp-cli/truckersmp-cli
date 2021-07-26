@@ -551,9 +551,12 @@ def setup_game_env(env, steamdir):
             env["LD_PRELOAD"] += ":" + overlayrenderer
         else:
             env["LD_PRELOAD"] = overlayrenderer
-    env["SteamGameId"] = env["SteamAppId"] = Args.steamid
-    env["PROTON_USE_WINED3D"] = "1" if Args.use_wined3d else "0"
-    env["PROTON_NO_D3D11"] = "1" if not Args.enable_d3d11 else "0"
+    env.update(
+        SteamAppId=Args.steamid,
+        SteamGameId=Args.steamid,
+        PROTON_USE_WINED3D="1" if Args.use_wined3d else "0",
+        PROTON_NO_D3D11="1" if not Args.enable_d3d11 else "0",
+    )
 
 
 def setup_logging():
