@@ -64,11 +64,12 @@ def activate_native_d3dcompiler_47(prefix, wine):
 
     # add DLL override setting
     env = os.environ.copy()
-    env["WINEDEBUG"] = "-all"
-    env["WINEPREFIX"] = prefix
+    env.update(WINEDEBUG="-all", WINEPREFIX=prefix)
     if Args.proton:
-        env["WINEESYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_ESYNC") else "1"
-        env["WINEFSYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_FSYNC") else "1"
+        env.update(
+            WINEESYNC="0" if is_envar_enabled(env, "PROTON_NO_ESYNC") else "1",
+            WINEFSYNC="0" if is_envar_enabled(env, "PROTON_NO_FSYNC") else "1",
+        )
     exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
     logging.debug("Adding DLL override setting for %s", exename)
     subproc.call(
@@ -642,11 +643,12 @@ def set_wine_desktop_registry(prefix, wine, enable):
     enable: Whether to enable Wine desktop
     """
     env = os.environ.copy()
-    env["WINEDEBUG"] = "-all"
-    env["WINEPREFIX"] = prefix
+    env.update(WINEDEBUG="-all", WINEPREFIX=prefix)
     if Args.proton:
-        env["WINEESYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_ESYNC") else "1"
-        env["WINEFSYNC"] = "0" if is_envar_enabled(env, "PROTON_NO_FSYNC") else "1"
+        env.update(
+            WINEESYNC="0" if is_envar_enabled(env, "PROTON_NO_ESYNC") else "1",
+            WINEFSYNC="0" if is_envar_enabled(env, "PROTON_NO_FSYNC") else "1",
+        )
     regkey_explorer = "HKCU\\Software\\Wine\\Explorer"
     regkey_desktops = "HKCU\\Software\\Wine\\Explorer\\Desktops"
     if enable:
