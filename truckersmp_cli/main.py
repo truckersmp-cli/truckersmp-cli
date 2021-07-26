@@ -71,13 +71,12 @@ class StarterProton(GameStarterInterface):
             # don't use Steam Runtime container for older Proton
             else "Not using Steam Runtime container")
 
-    def __enter__(self):
-        """Return "self" for "with" statement."""
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Call cleanup function for "with" statement."""
-        self.cleanup()
+    def _cleanup(self):
+        """Do cleanup tasks."""
+        # cleanup temporary directory when used
+        if self._steamruntime_usr_tempdir is not None:
+            with self._steamruntime_usr_tempdir:
+                pass
 
     def _determine_steamruntime_shared_paths(self, steamdir):
         """
@@ -269,12 +268,7 @@ class StarterProton(GameStarterInterface):
         if Args.wine_desktop:
             set_wine_desktop_registry(prefix, args["wine"], False)
 
-    def cleanup(self):
-        """Do cleanup tasks."""
-        # cleanup temporary directory when used
-        if self._steamruntime_usr_tempdir is not None:
-            with self._steamruntime_usr_tempdir:
-                pass
+        self._cleanup()
 
     @property
     def runner_name(self):
@@ -294,13 +288,13 @@ class StarterWine(GameStarterInterface):
         self._cfg = cfg
         self._thirdparty_processes = []
 
-    def __enter__(self):
-        """Return "self" for "with" statement."""
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Call cleanup function for "with" statement."""
-        self.cleanup()
+    def _cleanup(self):
+        """Do cleanup tasks."""
+        for proc in self._thirdparty_processes:
+            with proc:
+                if proc.poll() is None:
+                    proc.kill()
+                proc.wait()
 
     def run(self):
         """Start the specified game with Wine."""
@@ -371,12 +365,7 @@ class StarterWine(GameStarterInterface):
         except subproc.CalledProcessError as ex:
             logging.error("Wine output:\n%s", ex.output.decode("utf-8"))
 
-    def cleanup(self):
-        """Do cleanup tasks."""
-        for proc in self._thirdparty_processes:
-            if proc.poll() is None:
-                proc.kill()
-            proc.wait()
+        self._cleanup()
 
     @property
     def runner_name(self):
@@ -549,9 +538,9 @@ the "var" subdirectory must be writable""".format(Args.steamruntimedir))
 
         if not check_libsdl2():
             sys.exit("SDL2 was not found on your system.")
-        with StarterProton(cfg) if Args.proton else StarterWine(cfg) as starter:
-            logging.debug("Starting game with %s", starter.runner_name)
-            starter.run()
+        starter = StarterProton(cfg) if Args.proton else StarterWine(cfg)
+        logging.debug("Starting game with %s", starter.runner_name)
+        starter.run()
 
     sys.exit()
 
