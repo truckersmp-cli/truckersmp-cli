@@ -336,15 +336,7 @@ class StarterWine(GameStarterInterface):
         if not Args.enable_d3d11:
             env["WINEDLLOVERRIDES"] += ";d3d11=;dxgi="
 
-        if Args.wine_desktop:
-            wine_args += "explorer", "/desktop=TruckersMP,{}".format(
-                Args.wine_desktop)
-        if Args.singleplayer:
-            exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
-            gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
-            wine_args.append(gamepath)
-        else:
-            wine_args += File.inject_exe, Args.gamedir, Args.moddir
+        wine_args = setup_wine_args(wine_args)
 
         for opt in Args.game_options.split(" "):
             if opt != "":
@@ -581,3 +573,20 @@ def setup_logging():
         file_handler = logging.FileHandler(Args.logfile, mode="w")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
+
+def setup_wine_args(args):
+    """
+    Set up command line for running the game with Wine.
+
+    args: A list of command line for Wine
+    """
+    if Args.wine_desktop:
+        args += "explorer", "/desktop=TruckersMP,{}".format(Args.wine_desktop)
+    if Args.singleplayer:
+        exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
+        gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
+        args.append(gamepath)
+    else:
+        args += File.inject_exe, Args.gamedir, Args.moddir
+    return args
