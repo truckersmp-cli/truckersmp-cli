@@ -88,8 +88,7 @@ def update_game():
     # pylint: disable=too-many-branches,too-many-locals,too-many-statements
 
     env = os.environ.copy()
-    env["WINEDEBUG"] = "-all"
-    env["WINEARCH"] = "win64"
+    env.update(WINEDEBUG="-all", WINEARCH="win64")
     env_steam = env.copy()
     if Args.proton:
         # Proton's "prefix" is for STEAM_COMPAT_DATA_PATH that contains
@@ -97,11 +96,13 @@ def update_game():
         env_steam["WINEPREFIX"] = os.path.join(Args.prefixdir, "pfx")
     else:
         env_steam["WINEPREFIX"] = Args.prefixdir
-    # use a prefix only for SteamCMD to avoid every-time authentication
-    env["WINEPREFIX"] = Dir.steamcmdpfx
-    # don't show "The Wine configuration is being updated" dialog
-    # or install Gecko/Mono
-    env["WINEDLLOVERRIDES"] = "winex11.drv="
+    env.update(
+        # use a prefix only for SteamCMD to avoid every-time authentication
+        WINEPREFIX=Dir.steamcmdpfx,
+        # don't show "The Wine configuration is being updated" dialog
+        # or install Gecko/Mono
+        WINEDLLOVERRIDES="winex11.drv=",
+    )
 
     wine = env["WINE"] if "WINE" in env else "wine"
     os.makedirs(Dir.steamcmdpfx, exist_ok=True)
