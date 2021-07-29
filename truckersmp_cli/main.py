@@ -191,6 +191,24 @@ class StarterProton(GameStarterInterface):
             if opt != "":
                 proton_args.append(opt)
 
+    @staticmethod
+    def determine_env_print(env):
+        """
+        Determine environment variable names to print.
+
+        env: A dict of environment variables
+        """
+        env_print = ["SteamAppId", "SteamGameId"]
+        if "LD_PRELOAD" in env:
+            env_print.append("LD_PRELOAD")
+        env_print += [
+            "PROTON_NO_D3D11",
+            "PROTON_USE_WINED3D",
+            "STEAM_COMPAT_CLIENT_INSTALL_PATH",
+            "STEAM_COMPAT_DATA_PATH",
+        ]
+        return env_print
+
     def run(self):
         """Start the specified game with Proton."""
         args = dict(wine=[], proton=[], steamrt=[])
@@ -252,7 +270,7 @@ class StarterProton(GameStarterInterface):
 
         log_info_formatted_envars_and_args(
             runner="Steam Runtime helper",
-            env_print=determine_env_print(env),
+            env_print=StarterProton.determine_env_print(env),
             env=env,
             args=args["proton"])
         try:
@@ -363,24 +381,6 @@ class StarterWine(GameStarterInterface):
     def runner_name(self):
         """Return the name of runner (Wine)."""
         return "Wine"
-
-
-def determine_env_print(env):
-    """
-    Determine environment variable names to print.
-
-    env: A dict of environment variables
-    """
-    env_print = ["SteamAppId", "SteamGameId"]
-    if "LD_PRELOAD" in env:
-        env_print.append("LD_PRELOAD")
-    env_print += [
-        "PROTON_NO_D3D11",
-        "PROTON_USE_WINED3D",
-        "STEAM_COMPAT_CLIENT_INSTALL_PATH",
-        "STEAM_COMPAT_DATA_PATH",
-    ]
-    return env_print
 
 
 def get_version_string():
