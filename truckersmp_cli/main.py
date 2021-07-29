@@ -265,7 +265,7 @@ class StarterProton(GameStarterInterface):
         if Args.wine_desktop:
             set_wine_desktop_registry(prefix, args["wine"], True)
 
-        setup_game_env(env, steamdir)
+        StarterProton.setup_game_env(env, steamdir)
         self._setup_proton_args(args["proton"])
 
         log_info_formatted_envars_and_args(
@@ -289,6 +289,28 @@ class StarterProton(GameStarterInterface):
             set_wine_desktop_registry(prefix, args["wine"], False)
 
         self._cleanup()
+
+    @staticmethod
+    def setup_game_env(env, steamdir):
+        """
+        Set up environment variables for running the game with Proton.
+
+        env: A dict of environment variables
+        steamdir: Path to Steam installation
+        """
+        # enable Steam Overlay by default
+        if not Args.disable_proton_overlay:
+            overlayrenderer = os.path.join(steamdir, File.overlayrenderer_inner)
+            if "LD_PRELOAD" in env:
+                env["LD_PRELOAD"] += ":" + overlayrenderer
+            else:
+                env["LD_PRELOAD"] = overlayrenderer
+        env.update(
+            SteamAppId=Args.steamid,
+            SteamGameId=Args.steamid,
+            PROTON_USE_WINED3D="1" if Args.use_wined3d else "0",
+            PROTON_NO_D3D11="1" if not Args.enable_d3d11 else "0",
+        )
 
     @property
     def runner_name(self):
@@ -535,28 +557,6 @@ the "var" subdirectory must be writable""".format(Args.steamruntimedir))
         starter.run()
 
     sys.exit()
-
-
-def setup_game_env(env, steamdir):
-    """
-    Set up environment variables for running the game with Proton.
-
-    env: A dict of environment variables
-    steamdir: Path to Steam installation
-    """
-    # enable Steam Overlay by default
-    if not Args.disable_proton_overlay:
-        overlayrenderer = os.path.join(steamdir, File.overlayrenderer_inner)
-        if "LD_PRELOAD" in env:
-            env["LD_PRELOAD"] += ":" + overlayrenderer
-        else:
-            env["LD_PRELOAD"] = overlayrenderer
-    env.update(
-        SteamAppId=Args.steamid,
-        SteamGameId=Args.steamid,
-        PROTON_USE_WINED3D="1" if Args.use_wined3d else "0",
-        PROTON_NO_D3D11="1" if not Args.enable_d3d11 else "0",
-    )
 
 
 def setup_logging():
