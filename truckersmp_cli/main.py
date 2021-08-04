@@ -7,23 +7,16 @@ Licensed under MIT.
 import json
 import logging
 import os
-import shutil
 import signal
 import subprocess as subproc
 import sys
-import tempfile
-import time
 
 from .args import check_args_errors, create_arg_parser, process_actions_gamenames
 from .configfile import ConfigFile
+from .gamestarter import StarterProton, StarterWine
 from .steamcmd import update_game
 from .truckersmp import update_mod
-from .utils import (
-    activate_native_d3dcompiler_47, check_libsdl2, find_discord_ipc_sockets,
-    get_proton_version, get_steam_library_dirs, is_d3dcompiler_setup_skippable,
-    log_info_formatted_envars_and_args, perform_self_update, print_child_output,
-    set_wine_desktop_registry, setup_wine_discord_ipc_bridge, wait_for_steam,
-)
+from .utils import check_libsdl2, perform_self_update
 from .variables import AppId, Args, Dir, File, URL
 
 PKG_RESOURCES_IS_AVAILABLE = False
@@ -181,11 +174,9 @@ the "var" subdirectory must be writable""".format(Args.steamruntimedir))
 
         if not check_libsdl2():
             sys.exit("SDL2 was not found on your system.")
-        start_functions = (("Proton", start_with_proton), ("Wine", start_with_wine))
-        i = 0 if Args.proton else 1
-        compat_tool, start_game = start_functions[i]
-        logging.debug("Starting game with %s", compat_tool)
-        start_game(cfg)
+        starter = StarterProton(cfg) if Args.proton else StarterWine(cfg)
+        logging.debug("Starting game with %s", starter.runner_name)
+        starter.run()
 
     sys.exit()
 
@@ -207,266 +198,3 @@ def setup_logging():
         file_handler = logging.FileHandler(Args.logfile, mode="w")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-
-
-def start_with_proton(cfg):
-    """
-    Start game with Proton.
-
-    cfg: A ConfigFile object
-    """
-    # pylint: disable=consider-using-with,too-many-branches
-    # pylint: disable=too-many-locals,too-many-statements
-    steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
-    logging.info("Steam installation directory: %s", steamdir)
-
-    logging.debug("Creating directory %s if it doesn't exist", Args.prefixdir)
-    os.makedirs(Args.prefixdir, exist_ok=True)
-
-    prefix = os.path.join(Args.prefixdir, "pfx")
-    proton = os.path.join(Args.protondir, "proton")
-    major, minor = get_proton_version(Args.protondir)
-    logging.info("Proton version is (major=%d, minor=%d)", major, minor)
-    proton_args = []
-    run_in_steamrt = []
-    discord_sockets = []
-    steamruntime_usr_tempdir = None
-    if not Args.without_steam_runtime and (major >= 6 or (major == 5 and minor >= 13)):
-        # use Steam Runtime container for Proton 5.13+
-        logging.info("Using Steam Runtime container")
-        python = "python3"
-        # share directories with Steam Runtime container
-        shared_paths = [Args.gamedir, Args.protondir, Args.prefixdir]
-        if Args.singleplayer:
-            # workshop mods may be loaded from other steam libraries
-            # despite they are also present in our gamedir library
-            shared_paths += get_steam_library_dirs(steamdir)
-        else:
-            shared_paths += [Args.moddir, Dir.truckersmp_cli_data]
-        if Dir.scriptdir.startswith("/usr/"):
-            logging.info("System-wide installation detected: %s", Dir.scriptdir)
-            # when truckersmp-cli is installed system-wide,
-            # the Steam Runtime helper (singleplayer/multiplayer) and
-            # the inject program (multiplayer) need to be
-            # temporarily copied because /usr cannot be shared
-            steamruntime_usr_tempdir = tempfile.TemporaryDirectory(
-                prefix="truckersmp-cli-steamruntime-sharing-workaround-")
-            logging.debug(
-                "Copying Steam Runtime helper to %s", steamruntime_usr_tempdir.name)
-            shutil.copy(File.steamruntime_helper, steamruntime_usr_tempdir.name)
-            if not Args.singleplayer:
-                logging.debug(
-                    "Copying inject program to %s", steamruntime_usr_tempdir.name)
-                shutil.copy(File.inject_exe, steamruntime_usr_tempdir.name)
-            shared_paths.append(steamruntime_usr_tempdir.name)
-        else:
-            shared_paths.append(Dir.scriptdir)
-        discord_sockets = find_discord_ipc_sockets()
-        if len(discord_sockets) > 0:
-            shared_paths += discord_sockets
-        logging.debug("Shared paths: %s", shared_paths)
-        run_in_steamrt.append(os.path.join(Args.steamruntimedir, "run"))
-        for shared_path in shared_paths:
-            run_in_steamrt += ["--filesystem", shared_path]
-        run_in_steamrt.append("--")
-    else:
-        # don't use Steam Runtime container for older Proton
-        logging.info("Not using Steam Runtime container")
-        python = sys.executable
-    wine = run_in_steamrt.copy()
-    run_in_steamrt.append(python)  # helper
-    proton_args.append(python)     # Proton
-    proton_args += [proton, "run"]
-
-    env = os.environ.copy()
-    env["STEAM_COMPAT_DATA_PATH"] = Args.prefixdir
-    env["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = steamdir
-
-    # Proton's "dist" directory tree is missing until first run
-    # make sure it's present for using "dist/bin/wine" directly
-    wine_command = os.path.join(
-        Args.protondir,
-        # if proton-tkg (files/bin/wine) is installed, use it
-        "files" if os.access(
-            os.path.join(Args.protondir, "files/bin/wine"),
-            os.R_OK | os.X_OK,
-        ) else "dist",
-        "bin/wine")
-    wine.append(wine_command)
-    do_d3dcompiler_setup = (Args.activate_native_d3dcompiler_47
-                            or (not Args.singleplayer
-                                and Args.enable_d3d11
-                                and not is_d3dcompiler_setup_skippable()))
-    logging.debug("Whether to setup native d3dcompiler_47: %s", do_d3dcompiler_setup)
-    if (not os.access(wine_command, os.R_OK)
-            # native d3dcompiler_47 is removed when the prefix is downgraded
-            # make sure the prefix is already upgraded/downgraded
-            or do_d3dcompiler_setup):
-        try:
-            subproc.check_output(
-                proton_args + ["wineboot", ], env=env, stderr=subproc.STDOUT)
-        except OSError as ex:
-            sys.exit("Failed to run wineboot: {}".format(ex))
-        except subproc.CalledProcessError as ex:
-            sys.exit("wineboot failed:\n{}".format(ex.output.decode("utf-8")))
-
-    # activate native d3dcompiler_47
-    if do_d3dcompiler_setup:
-        activate_native_d3dcompiler_47(prefix, wine)
-
-    # enable Wine desktop if requested
-    if Args.wine_desktop:
-        set_wine_desktop_registry(prefix, wine, True)
-
-    env["PROTON_USE_WINED3D"] = "1" if Args.use_wined3d else "0"
-    env["PROTON_NO_D3D11"] = "1" if not Args.enable_d3d11 else "0"
-    # enable Steam Overlay unless "--disable-proton-overlay" is specified
-    if not Args.disable_proton_overlay:
-        overlayrenderer = os.path.join(steamdir, File.overlayrenderer_inner)
-        if "LD_PRELOAD" in env:
-            env["LD_PRELOAD"] += ":" + overlayrenderer
-        else:
-            env["LD_PRELOAD"] = overlayrenderer
-
-    # check whether singleplayer or multiplayer
-    if Args.singleplayer:
-        exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
-        gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
-        proton_args.append(gamepath)
-    else:
-        proton_args.append(
-            File.inject_exe if steamruntime_usr_tempdir is None
-            else os.path.join(
-                steamruntime_usr_tempdir.name, os.path.basename(File.inject_exe))
-        )
-        proton_args += Args.gamedir, Args.moddir
-
-    # game options
-    for opt in Args.game_options.split(" "):
-        if opt != "":
-            proton_args.append(opt)
-
-    env["SteamGameId"] = Args.steamid
-    env["SteamAppId"] = Args.steamid
-    env_print = ["SteamAppId", "SteamGameId"]
-    if "LD_PRELOAD" in env:
-        env_print.append("LD_PRELOAD")
-    env_print += [
-        "PROTON_NO_D3D11",
-        "PROTON_USE_WINED3D",
-        "STEAM_COMPAT_CLIENT_INSTALL_PATH",
-        "STEAM_COMPAT_DATA_PATH",
-    ]
-
-    argv_helper = run_in_steamrt
-    argv_helper.append(
-        File.steamruntime_helper if steamruntime_usr_tempdir is None
-        else os.path.join(
-            steamruntime_usr_tempdir.name, os.path.basename(File.steamruntime_helper)))
-    if (not Args.singleplayer
-            and not Args.without_wine_discord_ipc_bridge
-            # don't start wine-discord-ipc-bridge when no Discord sockets found
-            and len(discord_sockets) > 0):
-        argv_helper += ["--executable", File.ipcbridge]
-    for executable in cfg.thirdparty_executables:
-        argv_helper += ["--executable", executable]
-    argv_helper += ["--wait-before-start", str(cfg.thirdparty_wait)]
-    if Args.verbose:
-        argv_helper.append("-v" if Args.verbose == 1 else "-vv")
-    argv_helper += ["--", ] + proton_args
-
-    log_info_formatted_envars_and_args(
-        runner="Steam Runtime helper",
-        env_print=env_print,
-        env=env,
-        args=proton_args)
-    try:
-        with subproc.Popen(
-                argv_helper,
-                env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
-            if Args.verbose:
-                print_child_output(proc)
-    except subproc.CalledProcessError as ex:
-        logging.error(
-            "Steam Runtime helper exited abnormally:\n%s", ex.output.decode("utf-8"))
-
-    # disable Wine desktop if enabled
-    if Args.wine_desktop:
-        set_wine_desktop_registry(prefix, wine, False)
-
-
-def start_with_wine(cfg):
-    """
-    Start game with Wine.
-
-    cfg: A ConfigFile object
-    """
-    # pylint: disable=consider-using-with,too-many-branches,too-many-locals
-    wine = os.environ["WINE"] if "WINE" in os.environ else "wine"
-    argv = [wine, ]
-    if (Args.activate_native_d3dcompiler_47
-            or (not Args.singleplayer
-                and Args.enable_d3d11
-                and not is_d3dcompiler_setup_skippable())):
-        activate_native_d3dcompiler_47(Args.prefixdir, argv)
-
-    env = os.environ.copy()
-    env["WINEDEBUG"] = "-all"
-    env["WINEARCH"] = "win64"
-    env["WINEPREFIX"] = Args.prefixdir
-
-    wait_for_steam(
-        use_proton=False,
-        loginvdf_paths=(os.path.join(Args.wine_steam_dir, File.loginvdf_inner), ),
-        wine=wine,
-        env=env,
-    )
-
-    executables = cfg.thirdparty_executables.copy()
-    if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:
-        executables.append(setup_wine_discord_ipc_bridge())
-
-    thirdparty_processes = []
-    for path in executables:
-        thirdparty_processes.append(
-            subproc.Popen([wine, ] + [path, ], env=env, stderr=subproc.STDOUT))
-
-    time.sleep(cfg.thirdparty_wait)
-
-    if "WINEDLLOVERRIDES" not in env:
-        env["WINEDLLOVERRIDES"] = ""
-    if not Args.enable_d3d11:
-        env["WINEDLLOVERRIDES"] += ";d3d11=;dxgi="
-
-    if Args.wine_desktop:
-        argv += "explorer", "/desktop=TruckersMP,{}".format(Args.wine_desktop)
-    if Args.singleplayer:
-        exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
-        gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
-        argv.append(gamepath)
-    else:
-        argv += File.inject_exe, Args.gamedir, Args.moddir
-
-    for opt in Args.game_options.split(" "):
-        if opt != "":
-            argv.append(opt)
-
-    log_info_formatted_envars_and_args(
-        runner="Wine",
-        env_print=("WINEARCH", "WINEDEBUG", "WINEDLLOVERRIDES", "WINEPREFIX"),
-        env=env,
-        args=argv)
-    try:
-        with subproc.Popen(
-                argv,
-                env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
-            if Args.verbose:
-                print("Wine output:")
-                print_child_output(proc)
-    except subproc.CalledProcessError as ex:
-        logging.error("Wine output:\n%s", ex.output.decode("utf-8"))
-
-    for proc in thirdparty_processes:
-        if proc.poll() is None:
-            proc.kill()
-        proc.wait()
