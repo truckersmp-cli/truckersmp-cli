@@ -370,7 +370,7 @@ def get_steam_library_dirs(steamdir):
     steam_libraries = [steamdir, ]
     # additional directories are stored in libraryfolders.vdf
     #
-    # example:
+    # old format example:
     #     "LibraryFolders"
     #     {
     #         "TimeNextStatsReport"  "xxxx"
@@ -378,6 +378,28 @@ def get_steam_library_dirs(steamdir):
     #         "1"                    "/path/to/steam/library1"
     #         "2"                    "/path/to/steam/library2"
     #     }  -> [steamdir, "/path/to/steam/library1", "/path/to/steam/library2"]
+    #
+    # new format example:
+    #    "libraryfolders"
+    #    {
+    #        "contentstatsid"        "xxx"
+    #        "1"
+    #        {
+    #            "path"        "/path/to/steam/library1"
+    #            ...
+    #            "apps"
+    #            {
+    #                "AppId1"        "xxx"
+    #                "AppId2"        "xxx"
+    #                ...
+    #            }
+    #        }
+    #        "2"
+    #        {
+    #            "path"        "/path/to/steam/library2"
+    #            ...
+    #        }
+    #    }  -> [steamdir, "/path/to/steam/library1", "/path/to/steam/library2"]
     try:
         try:
             f_vdf = open(os.path.join(steamdir, File.steamlibvdf_inner))
@@ -385,12 +407,21 @@ def get_steam_library_dirs(steamdir):
             f_vdf = open(os.path.join(steamdir, File.steamlibvdf_inner_legacy))
         with f_vdf:
             for line in f_vdf:
+                # skip lines that don't have 4 quotes
+                if line.count('"') != 4:
+                    continue
                 # if the 1st quoted stuff is a (natural) number,
                 # the 2nd quoted string is a path to Steam library
                 try:
                     elements = line.split('"')
                     int(elements[1])
                 except (IndexError, ValueError):
+                    # in the new format (introduced in summer 2021),
+                    # Steam library directory is the value of "path"
+                    if elements[1] != "path":
+                        continue
+                # exclude AppId items in the new format
+                if os.path.sep not in elements[3]:
                     continue
                 # as of May 2021, Steam can't add a Steam library directory
                 # that contains '"' and we can safely use the split element
