@@ -5,6 +5,7 @@ Licensed under MIT.
 """
 
 import configparser
+import logging
 import os
 
 from .utils import is_dos_style_abspath
@@ -22,6 +23,7 @@ class ConfigFile:
         """
         self._thirdparty_wait = 0
         self._thirdparty_executables = []
+        wants_rich_presence_cnt = 0
         parser = configparser.ConfigParser()
         parser.read(configfile)
         for sect in parser.sections():
@@ -54,6 +56,42 @@ class ConfigFile:
                     # relative path: assume it's relative to our data directory
                     self._thirdparty_executables.append(
                         os.path.join(Dir.truckersmp_cli_data, exe_path))
+            # does it want Rich Presence?
+            try:
+                if parser[sect].getboolean("wants-rich-presence", fallback=False):
+                    wants_rich_presence_cnt += 1
+            except ValueError as ex:
+                raise ValueError(
+                    ConfigFile.format_error("wants-rich-presence", ex)) from ex
+
+        # Rich Presense is enabled when
+        # 1. "without-rich-presence = yes" is not specified
+        # AND
+        # 2. start multiplayer game or at least one
+        #    thirdparty section has "wants-rich-presence = yes"
+        try:
+            if (not Args.without_wine_discord_ipc_bridge
+                    and (
+                        parser[Args.game].getboolean(
+                            "without-rich-presence", fallback=False)
+                        or ("mp" not in Args.game and wants_rich_presence_cnt == 0)
+                    )):
+                logging.debug("Disabling Rich Presence because the game is"
+                              " singleplayer and no third-party programs want it")
+                Args.without_wine_discord_ipc_bridge = True
+        except ValueError as ex:
+            raise ValueError(
+                ConfigFile.format_error("without-rich-presence", ex)) from ex
+
+    @staticmethod
+    def format_error(name, ex):
+        """
+        Get a formatted output string for ValueError.
+
+        name: configuration name
+        ex: A ValueError object
+        """
+        return "  Name: {}\n  Error: {}".format(name, ex)
 
     @property
     def thirdparty_executables(self):
