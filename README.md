@@ -252,7 +252,7 @@ Additionally a `wait = seconds` key-value-pair can set a minimal waiting time be
 # Start Trucky together with all game modes (ats, atsmp, ets2, ets2mp)
 # and wait at least 45 seconds before starting the game
 [thirdparty.trucky]
-executable = trucky/trucky.exe
+executable = /home/user/Downloads/trucky/trucky.exe
 wait = 45
 
 # Start TrucksBook together with ets2mp while waiting at least 30 seconds
