@@ -116,13 +116,6 @@ Short option|Long option|Description
 (Not available)|`--without-wine-discord-ipc-bridge`|Don't use wine-discord-ipc-bridge for Discord Rich Presence
 (Not available)|`--version`|Print version information and quit
 
-### Proton versions and AppIDs
-
-Version|AppID
----|---
-5.0 (Default)|[1245040](https://steamdb.info/app/1245040/)
-4.11|[1113280](https://steamdb.info/app/1113280/)
-
 ## Build
 
 1. Clone or download this repository
