@@ -14,9 +14,7 @@ On Linux it's possible to start TruckersMP through [Proton][github:proton]. A wo
 * If (default) OpenGL rendering backend is used, game crashes due to a bug in Multiplayer DLL when trying to choose a color for "Player tag" or "Players on the world map" ([issue #91][github:issue91])
     * A workaround is to use D3D11 rendering backend by specifying `-d` (`--enable-d3d11`)
 * If D3D11 rendering backend is used, TruckersMP login screen is not shown without Windows native 64-bit `d3dcompiler_47.dll`
-    * `truckersmp-cli` provides `--activate-native-d3dcompiler-47` option as a workaround: When this is specified with `-s` (`--start`), `truckersmp-cli` downloads/activates the DLL
-        * Once the DLL is activated, there's basically no need to specify the option again
-        * When downgrading Proton, the native DLL is removed: Then `--activate-native-d3dcompiler-47` is needed again
+    * `truckersmp-cli` will download and set up the Windows dll when D3D11 is used
 * If Steam is running while SteamCMD is being used the Steam client looses all connections and maybe asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
 
 ## Install
