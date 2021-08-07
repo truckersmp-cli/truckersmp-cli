@@ -66,8 +66,8 @@ Name|Description
 `start`|Start game
 `update`|Update/install latest game
 `downgrade`|Downgrade game (install game from `temporary_X_Y` branch)
-`updateandstart`(or `ustart`)|`update` + `start` (Default)
-`downgradeandstart`(or `dstart`)|`downgrade` + `start`
+`updateandstart` (or `ustart`)|`update` + `start` (Default)
+`downgradeandstart` (or `dstart`)|`downgrade` + `start`
 
 ### Game names
 
