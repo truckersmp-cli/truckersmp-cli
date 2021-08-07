@@ -86,6 +86,7 @@ Short option|Long option|Description
 `-h`|`--help`|Show help
 `-a`|`--ats`|**DEPRECATED** Use American Truck Simulator
 `-b VERSION`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
+`-c FILE`|`--configfile FILE`|Use alternative configuration file [Default: `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`]
 `-d`|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
 `-e`|`--ets2`|**DEPRECATED** Use Euro Truck Simulator 2 [Default if neither ATS or ETS2 are specified]
 `-g DIR`|`--gamedir DIR`|Choose a different directory for the game files [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`]
