@@ -11,7 +11,6 @@ On Linux it's possible to start TruckersMP through [Proton][github:proton]. A wo
 
 ## Known issues
 
-* It was reported that "ProMods + ETS2MP" crashes with Proton 5.13 but Proton 5.0 works ([issue #147][github:issue147])
 * If (default) OpenGL rendering backend is used, game crashes due to a bug in Multiplayer DLL when trying to choose a color for "Player tag" or "Players on the world map" ([issue #91][github:issue91])
     * A workaround is to use D3D11 rendering backend by specifying `-d` (`--enable-d3d11`)
 * If D3D11 rendering backend is used, TruckersMP login screen is not shown without Windows native 64-bit `d3dcompiler_47.dll`
