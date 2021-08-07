@@ -238,6 +238,36 @@ $ truckersmp-cli --wine --prefixdir "/path/to/prefix/pfx" start ets2mp
     * When using Proton, wined3d can be used by specifying `--use-wined3d`, but it's not recommended because this is slower than OpenGL.
 * Used only when `-d` or `--enable-d3d11` is specified.
 
+## Configuration file
+
+It's possible to set third party programs in the configuration file that will get started together with the game. The format is similar to the INI format known from Windows.
+
+The file should contain sections following the format `[thirdparty.gamemode.programname]` (one game mode) or `[thirdparty.programname]` (all game modes).
+
+Each section requires one key-value-pair namely `executable = /path/to/my.exe` where the path is either an absolute unix path (`/path/to/my.exe`), a relative unix path (`program/my.exe`) to `$XDG_DATA_HOME/truckersmp-cli/` or an absolute windows path (`C:\Program Files (x86)\program\my.exe`).
+
+Additionally a `wait = seconds` key-value-pair can set a minimal waiting time before the game will be started so third party programs have enough time to fully start up and log in.
+
+### Example configuration file
+
+~~~ ini
+# Start Trucky together with all game modes (ats, atsmp, ets2, ets2mp)
+# and wait at least 45 seconds before starting the game
+[thirdparty.trucky]
+executable = trucky/trucky.exe
+wait = 45
+
+# Start TrucksBook together with ets2mp while waiting at least 30 seconds
+# before starting the game
+[thirdparty.ets2mp.trucksbook]
+executable = C:\Program Files (x86)\TrucksBook Client\TB Client.exe
+wait = 30
+
+# Allow using discord rich presence in singleplayer of ets2
+[thirdparty.ets2.richpresence]
+executable = wine-discord-ipc-bridge/winediscordipcbridge.exe
+~~~
+
 ## Default directories
 
 ### Game data
