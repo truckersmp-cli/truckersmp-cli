@@ -84,11 +84,9 @@ Name|Game
 Short option|Long option|Description
 ---|---|---
 `-h`|`--help`|Show help
-`-a`|`--ats`|**DEPRECATED** Use American Truck Simulator
 `-b VERSION`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
 `-c FILE`|`--configfile FILE`|Use alternative configuration file [Default: `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`]
 `-d`|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
-`-e`|`--ets2`|**DEPRECATED** Use Euro Truck Simulator 2 [Default if neither ATS or ETS2 are specified]
 `-g DIR`|`--gamedir DIR`|Choose a different directory for the game files [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`]
 `-i APPID`|`--proton-appid APPID`|Choose a different AppID for Proton (Needs an update for changes)
 `-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended [Default: Empty string (only stderr)] Note: Messages from Steam/SteamCMD won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
@@ -96,19 +94,15 @@ Short option|Long option|Description
 `-n NAME`|`--account NAME`|Steam account name to use
 `-o DIR`|`--protondir DIR`|Choose a different Proton directory [Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`]
 `-p`|`--proton`|Start the game with Proton [Default on Linux if neither Proton or Wine are specified]
-`-s`|`--start`|**DEPRECATED** Start the game [Default if neither start or update are specified]
-`-u`|`--update`|**DEPRECATED** Update the game [Default if neither start or update are specified]
 `-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
 `-w`|`--wine`|Start the game with Wine [Default on other systems if neither Proton or Wine are specified]
 `-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]
 (Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
 (Not available)|`--check-windows-steam`|Check for the Windows Steam version on updating when using Proton
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
-(Not available)|`--downgrade`|**DEPRECATED** Downgrade to the latest version that is supported by TruckersMP. Note: This option implies "--update" option and is ignored if "--beta" ("-b") option is specified
 (Not available)|`--game-options OPTIONS`|Specify ATS/ETS2 options Note: If specifying one option, use `--game-options=-option` format [Default: `-nointro -64bit`]
 (Not available)|`--native-steam-dir`|Choose native Steam installation, useful only if your Steam directory is not detected automatically [Default: `auto`]
 (Not available)|`--self-update`|Update files to the latest release and quit
-(Not available)|`--singleplayer`|**DEPRECATED** Start singleplayer game, useful for save editing, using/testing DXVK in singleplayer, etc.
 (Not available)|`--skip-update-proton`|Skip updating already-installed Proton when updating game with Proton enabled
 (Not available)|`--steamruntimedir`|Choose a different Steam Runtime directory for Proton 5.13 or newer
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
