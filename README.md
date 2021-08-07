@@ -17,6 +17,7 @@ On Linux it's possible to start TruckersMP through [Proton][github:proton]. A wo
     * `truckersmp-cli` provides `--activate-native-d3dcompiler-47` option as a workaround: When this is specified with `-s` (`--start`), `truckersmp-cli` downloads/activates the DLL
         * Once the DLL is activated, there's basically no need to specify the option again
         * When downgrading Proton, the native DLL is removed: Then `--activate-native-d3dcompiler-47` is needed again
+* If Steam is running while SteamCMD is being used the Steam client looses all connections and maybe asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
 
 ## Install
 
@@ -289,10 +290,6 @@ ATS|`$XDG_DATA_HOME/truckersmp-cli/American Truck Simulator/prefix/pfx/drive_c/u
 ETS2|`$XDG_DATA_HOME/truckersmp-cli/Euro Truck Simulator 2/prefix/pfx/drive_c/users/steamuser/My Documents/ETS2MP/mod/`|`$XDG_DATA_HOME/truckersmp-cli/Euro Truck Simulator 2/prefix/pfx/drive_c/users/(os_login_name)/My Documents/ETS2MP/mod/`
 
 See [TruckersMP Knowledge Base][truckersmp:knowledge-base].
-
-## Additional information
-
-* If Steam is running while SteamCMD is being used the Steam client looses all connections and maybe asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
 
 ## Credits
 
