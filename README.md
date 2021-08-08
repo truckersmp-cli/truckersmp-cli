@@ -14,7 +14,7 @@ On Linux it's possible to start TruckersMP through [Proton][github:proton]. A wo
 * If (default) OpenGL rendering backend is used, game crashes due to a bug in Multiplayer DLL when trying to choose a color for "Player tag" or "Players on the world map" ([issue #91][github:issue91])
     * A workaround is to use D3D11 rendering backend by specifying `-d` (`--enable-d3d11`)
 * If D3D11 rendering backend is used, TruckersMP login screen is not shown without Windows native 64-bit `d3dcompiler_47.dll`
-    * `truckersmp-cli` will download and set up the Windows dll when D3D11 is used
+    * `truckersmp-cli` will automatically download and set up the Windows native dll when D3D11 is used
 * If Steam is running while SteamCMD is being used the Steam client looses all connections and maybe asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
 
 ## Install
@@ -242,7 +242,7 @@ It's possible to set third party programs in the configuration file that will ge
 
 The file should contain sections following the format `[thirdparty.gamemode.programname]` (one game mode) or `[thirdparty.programname]` (all game modes).
 
-Each section requires one key-value-pair namely `executable = /path/to/my.exe` where the path is either an absolute unix path (`/path/to/my.exe`), a relative unix path (`program/my.exe`) to `$XDG_DATA_HOME/truckersmp-cli/` or an absolute windows path (`C:\Program Files (x86)\program\my.exe`).
+Each section requires one key-value-pair namely `executable = /path/to/my.exe` where the path is either an absolute unix path (`/path/to/my.exe`), a relative unix path (`program/my.exe`) to `$XDG_DATA_HOME/truckersmp-cli/` or an absolute windows path (`C:\Program Files (x86)\program\my.exe`) within the prefix.
 
 Additionally a `wait = seconds` key-value-pair can set a minimal waiting time before the game will be started so third party programs have enough time to fully start up and log in.
 
