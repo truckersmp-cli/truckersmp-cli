@@ -238,7 +238,7 @@ $ truckersmp-cli --wine --prefixdir "/path/to/prefix/pfx" start ets2mp
 
 ## Configuration file
 
-It's possible to set various game settings and third party programs in a configurations file. The default search path for the file is `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`.
+It's possible to set various game settings and third party programs in a configuration file. The default search path for the file is `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`.
 
 The configuration file format is similar to the INI format known from Windows with several sections `[section]` containing key-value-pairs `key = value`.
 
