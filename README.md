@@ -238,17 +238,36 @@ $ truckersmp-cli --wine --prefixdir "/path/to/prefix/pfx" start ets2mp
 
 ## Configuration file
 
-It's possible to set third party programs in the configuration file that will get started together with the game. The format is similar to the INI format known from Windows.
+It's possible to set various game settings and third party programs in a configurations file. The default search path for the file is `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`.
 
-The file should contain sections following the format `[thirdparty.gamemode.programname]` (one game mode) or `[thirdparty.programname]` (all game modes).
+The configuration file format is similar to the INI format known from Windows with several sections `[section]` containing key-value-pairs `key = value`.
 
-Each section requires one key-value-pair namely `executable = /path/to/my.exe` where the path is either an absolute unix path (`/path/to/my.exe`), a relative unix path (`program/my.exe`) to `$XDG_DATA_HOME/truckersmp-cli/` or an absolute windows path (`C:\Program Files (x86)\program\my.exe`) within the prefix.
+### Sections targeting game modes
 
-Additionally a `wait = seconds` key-value-pair can set a minimal waiting time before the game will be started so third party programs have enough time to fully start up and log in.
+Supported sections are `[ats]`, `[astmp]`, `[ets2]` and `[ets2mp]`.
+#### Optional game mode settings
+
+* `without-rich-presence = true|false` will disable discord rich presence for the game mode - overriding what is set in third party sections.
+
+### Sections for third party programs
+
+Third party programs in the configuration file will get started together with the game.
+Sections should follow the format `[thirdparty.gamemode.programname]` (one game mode) or `[thirdparty.programname]` (all game modes).
+
+#### Required third party settings
+* `executable = /path/to/my.exe`: Path to the executable where the path is either an absolute unix path (`/path/to/my.exe`), a relative unix path (`program/my.exe`) to `$XDG_DATA_HOME/truckersmp-cli/` or an absolute windows path (`C:\Program Files (x86)\program\my.exe`) within the prefix.
+
+#### Optional third party settings
+* `wait = seconds`: set a minimal waiting time before the game will be started so third party programs have enough time to fully start up and log in.
+* `wants-rich-presence = true|false`: set that a program supports discords rich presence.
 
 ### Example configuration file
 
 ~~~ ini
+# Forbid discord rich presence in single player of ETS2
+[ets2]
+without-rich-presence = true
+
 # Start Trucky together with all game modes (ats, atsmp, ets2, ets2mp)
 # and wait at least 45 seconds before starting the game
 [thirdparty.trucky]
@@ -261,9 +280,11 @@ wait = 45
 executable = C:\Program Files (x86)\TrucksBook Client\TB Client.exe
 wait = 30
 
-# Allow using discord rich presence in singleplayer of ets2
-[thirdparty.ets2.richpresence]
-executable = wine-discord-ipc-bridge/winediscordipcbridge.exe
+# Start a program from "$XDG_DATA_HOME/truckersmp-cli/my program/" and
+# set that discord rich presence is supported for this program
+[thirdparty.ets2.program]
+executable = my program/executable.exe
+wants-rich-presence = true
 ~~~
 
 ## Default directories
