@@ -242,7 +242,7 @@ It's possible to set various game settings and third party programs in a configu
 
 The configuration file format is similar to the INI format known from Windows with several sections `[section]` containing key-value-pairs `key = value`.
 
-### Sections targeting game modes
+### Sections for game modes
 
 Supported sections are `[ats]`, `[astmp]`, `[ets2]` and `[ets2mp]`.
 #### Optional game mode settings
