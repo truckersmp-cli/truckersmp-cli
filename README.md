@@ -248,7 +248,9 @@ All sections are optional and a key-value-pair has to be in a section.
 Supported sections are `[ats]`, `[astmp]`, `[ets2]` and `[ets2mp]`.
 #### Optional game mode settings
 
-* `without-rich-presence = true|false` will disable discord rich presence for the game mode - overriding what is set in third party sections.
+Key-Value-Pair|Description
+---|---
+`without-rich-presence = true/false`|Disable discord rich presence for the game mode - overriding what is set in third party sections.
 
 ### Sections for third party programs
 
@@ -256,11 +258,17 @@ Third party programs in the configuration file will get started together with th
 Sections should follow the format `[thirdparty.gamemode.programname]` (one game mode) or `[thirdparty.programname]` (all game modes).
 
 #### Required third party settings
-* `executable = /path/to/my.exe`: Path to the executable where the path is either an absolute unix path (`/path/to/my.exe`), a relative unix path (`program/my.exe`) to `$XDG_DATA_HOME/truckersmp-cli/` or an absolute windows path (`C:\Program Files (x86)\program\my.exe`) within the prefix.
+
+Key-Value-Pair|Description
+---|---
+`executable = /path/to/my.exe`|Path to the executable where the path is either an absolute unix path (`/path/to/my.exe`), a relative unix path (`program/my.exe`) to `$XDG_DATA_HOME/truckersmp-cli/` or an absolute windows path (`C:\Program Files (x86)\program\my.exe`) within the prefix.
 
 #### Optional third party settings
-* `wait = seconds`: set a minimal waiting time before the game will be started so third party programs have enough time to fully start up and log in.
-* `wants-rich-presence = true|false`: set that a program supports discords rich presence.
+
+Key-Value-Pair|Description
+---|---
+`wait = seconds`|Set a minimal waiting time before the game will be started so third party programs have enough time to fully start up and log in.
+`wants-rich-presence = true/false`|Set that a program supports discords rich presence.
 
 ### Example configuration file
 
