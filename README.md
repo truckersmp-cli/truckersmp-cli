@@ -246,11 +246,12 @@ All sections are optional and a key-value-pair has to be in a section.
 ### Sections for game modes
 
 Supported sections are `[ats]`, `[astmp]`, `[ets2]` and `[ets2mp]`.
+ 
 #### Optional game mode settings
 
 Key-Value-Pair|Description
 ---|---
-`without-rich-presence = true/false`|Disable discord rich presence for the game mode - overriding what is set in third party sections.
+`without-rich-presence = {true|false}`|Disable Discord Rich Presence for the game mode - overriding what is set in third party sections.
 
 ### Sections for third party programs
 
@@ -267,14 +268,14 @@ Key-Value-Pair|Description
 
 Key-Value-Pair|Description
 ---|---
-`wait = seconds`|Set a minimal waiting time before the game will be started so third party programs have enough time to fully start up and log in.
-`wants-rich-presence = true/false`|Set that a program supports discords rich presence.
+`wait = [seconds]`|Set a minimal waiting time before the game will be started so third party programs have enough time to fully start up and log in.
+`wants-rich-presence = {true|false}`|Set that a program supports Discord Rich Presence.
 
 ### Example configuration file
 
 ~~~ ini
-# Forbid discord rich presence in single player of ETS2
-[ets2]
+# Forbid Discord Rich Presence in multiplayer of ETS2
+[ets2mp]
 without-rich-presence = true
 
 # Start Trucky together with all game modes (ats, atsmp, ets2, ets2mp)
@@ -290,7 +291,7 @@ executable = C:\Program Files (x86)\TrucksBook Client\TB Client.exe
 wait = 30
 
 # Start a program from "$XDG_DATA_HOME/truckersmp-cli/my program/" and
-# set that discord rich presence is supported for this program
+# set that Discord Rich Presence is supported for this program
 [thirdparty.ets2.program]
 executable = my program/executable.exe
 wants-rich-presence = true
