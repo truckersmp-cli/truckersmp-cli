@@ -251,7 +251,7 @@ Supported sections are `[ats]`, `[astmp]`, `[ets2]` and `[ets2mp]`.
 
 Key-Value-Pair|Description
 ---|---
-`without-rich-presence = {true|false}`|Disable Discord Rich Presence for the game mode - overriding what is set in third party sections.
+`without-rich-presence = {true/false}`|Disable Discord Rich Presence for the game mode - overriding what is set in third party sections.
 
 ### Sections for third party programs
 
@@ -269,7 +269,7 @@ Key-Value-Pair|Description
 Key-Value-Pair|Description
 ---|---
 `wait = [seconds]`|Set a minimal waiting time before the game will be started so third party programs have enough time to fully start up and log in.
-`wants-rich-presence = {true|false}`|Set that a program supports Discord Rich Presence.
+`wants-rich-presence = {true/false}`|Set that a program supports Discord Rich Presence.
 
 ### Example configuration file
 
