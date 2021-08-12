@@ -92,8 +92,14 @@ def main():
     arg_parser.parse_args(namespace=Args)
     process_actions_gamenames()
 
+    # set up logging
+    setup_logging()
+
     # load configuration file
-    cfg = ConfigFile(Args.configfile)
+    try:
+        cfg = ConfigFile(Args.configfile)
+    except ValueError as ex:
+        sys.exit("Invalid configuration found in {}:\n{}".format(Args.configfile, ex))
 
     # print version
     if Args.version:
@@ -115,9 +121,6 @@ Try one of the following:
 
 See {} for additional information.""".format(
             File.inject_exe, URL.project_releases, Dir.scriptdir, URL.project_doc_inst))
-
-    # set up logging
-    setup_logging()
 
     # self update
     if Args.self_update:

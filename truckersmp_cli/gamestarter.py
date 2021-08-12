@@ -141,11 +141,11 @@ class StarterProton(GameStarterInterface):
             else os.path.join(
                 self._steamruntime_usr_tempdir.name,
                 os.path.basename(File.steamruntime_helper)))
-        if (not Args.singleplayer
-                and not Args.without_wine_discord_ipc_bridge
+        if (not Args.without_wine_discord_ipc_bridge
                 # don't start wine-discord-ipc-bridge when no Discord sockets found
                 and len(self._discord_sockets) > 0):
-            args += "--executable", File.ipcbridge
+            args += "--early-executable", File.ipcbridge, \
+                "--early-wait-before-start", "5"
         for executable in self._cfg.thirdparty_executables:
             args += "--executable", executable
         args += "--wait-before-start", str(self._cfg.thirdparty_wait)
@@ -348,8 +348,15 @@ class StarterWine(GameStarterInterface):
         )
 
         executables = self._cfg.thirdparty_executables.copy()
-        if not Args.singleplayer and not Args.without_wine_discord_ipc_bridge:
-            executables.append(setup_wine_discord_ipc_bridge())
+        if not Args.without_wine_discord_ipc_bridge:
+            discord_bridge = setup_wine_discord_ipc_bridge()
+            # start wine-discord-ipc-bridge before other third-party programs
+            # and wait
+            self._thirdparty_processes.append(
+                subproc.Popen(
+                    [wine_command, ] + [discord_bridge, ],
+                    env=env, stderr=subproc.STDOUT))
+            time.sleep(5)
 
         for path in executables:
             self._thirdparty_processes.append(
