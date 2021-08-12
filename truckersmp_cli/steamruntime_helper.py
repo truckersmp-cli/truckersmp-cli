@@ -22,14 +22,18 @@ def start_thirdparty_programs(executables, proton_run):
     and returns a list of subprocess.Popen objects.
 
     executables: A list of executables
+                 from "--early-executable" or "--executable",
+                 or None when it's omitted
     proton_run: ["python3" command, Path to "proton" command, "run"]
     """
     # pylint: disable=consider-using-with
+    if executables is None:  # nothing to do in this function
+        return []
     thirdparty_processes = []
     env = os.environ.copy()
     if "LD_PRELOAD" in env:
         del env["LD_PRELOAD"]
-    for path in executables:
+    for path in executables:  # assume that "executables" is iterable
         thirdparty_processes.append(
             subproc.Popen(proton_run + [path, ], env=env, stderr=subproc.STDOUT))
     return thirdparty_processes
@@ -74,13 +78,13 @@ def main():
         print("Waiting time (early):", args.early_wait_before_start)
         print("Waiting time:", args.wait_before_start)
 
-    early_thirdparty_processes = [] if args.early_executable is None \
-        else start_thirdparty_programs(args.early_executable, args.game_arguments[0:3])
+    early_thirdparty_processes = start_thirdparty_programs(
+        args.early_executable, args.game_arguments[0:3])
 
     time.sleep(args.early_wait_before_start)
 
-    thirdparty_processes = [] if args.executable is None \
-        else start_thirdparty_programs(args.executable, args.game_arguments[0:3])
+    thirdparty_processes = start_thirdparty_programs(
+        args.executable, args.game_arguments[0:3])
 
     time.sleep(args.wait_before_start)
 
