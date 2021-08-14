@@ -26,7 +26,8 @@ class ConfigFile:
         wants_rich_presence_cnt = 0
         parser = configparser.ConfigParser()
         parser.read(configfile)
-        for sect in parser.sections():
+        sections = parser.sections()
+        for sect in sections:
             # get data from valid thirdparty.* sections
             if not sect.startswith("thirdparty.") or "executable" not in parser[sect]:
                 continue
@@ -64,6 +65,28 @@ class ConfigFile:
                 raise ValueError(
                     ConfigFile.format_error("wants-rich-presence", ex)) from ex
 
+        if Args.game in sections:
+            ConfigFile.handle_game_specific_settings(parser, wants_rich_presence_cnt)
+
+    @staticmethod
+    def format_error(name, ex):
+        """
+        Get a formatted output string for ValueError.
+
+        name: configuration name
+        ex: A ValueError object
+        """
+        return "  Name: {}\n  Error: {}".format(name, ex)
+
+    @staticmethod
+    def handle_game_specific_settings(parser, wants_rich_presence_cnt):
+        """
+        Handle game specific settings.
+
+        parser: A ConfigParser object
+        wants_rich_presence_cnt: The number of third-party program sections
+                                 that have "wants-rich-presence = [true]"
+        """
         # Rich Presense is enabled when
         # 1. "without-rich-presence = yes" is not specified
         # AND
@@ -82,16 +105,6 @@ class ConfigFile:
         except ValueError as ex:
             raise ValueError(
                 ConfigFile.format_error("without-rich-presence", ex)) from ex
-
-    @staticmethod
-    def format_error(name, ex):
-        """
-        Get a formatted output string for ValueError.
-
-        name: configuration name
-        ex: A ValueError object
-        """
-        return "  Name: {}\n  Error: {}".format(name, ex)
 
     @property
     def thirdparty_executables(self):
