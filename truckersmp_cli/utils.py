@@ -164,38 +164,33 @@ def check_steam_process(use_proton, wine=None, env=None):
 
 def download_files(host, files_to_download, progress_count=None):
     """Download files."""
-    # pylint: disable=too-many-branches,too-many-locals,too-many-statements
-
     file_count = progress_count[0] if progress_count else 1
     num_of_files = progress_count[1] if progress_count else len(files_to_download)
     conn = http.client.HTTPSConnection(host)
     try:
         while len(files_to_download) > 0:
-            path, dest, md5 = files_to_download[0]
             md5hash = hashlib.md5()
-            bufsize = md5hash.block_size * 256
-            name = os.path.basename(dest)
-            destdir = os.path.dirname(dest)
-            name_getting = "[{}/{}] Get: {}".format(file_count, num_of_files, name)
-            if len(name) >= 67:
-                name = name[:63] + "..."
+            dest = {}
+            path, dest["abspath"], md5 = files_to_download[0]
+            dest["name"] = os.path.basename(dest["abspath"])
+            dest["dir"] = os.path.dirname(dest["abspath"])
+            name_getting = "[{}/{}] Get: {}".format(
+                file_count, num_of_files, dest["name"])
+            if len(dest["name"]) >= 67:
+                dest["name"] = dest["name"][:63] + "..."
             if len(name_getting) >= 49:
                 name_getting = name_getting[:45] + "..."
             logging.debug(
-                "Downloading file https://%s%s to %s", host, path, destdir)
+                "Downloading file https://%s%s to %s", host, path, dest["dir"])
 
             # make file hierarchy
-            os.makedirs(destdir, exist_ok=True)
+            os.makedirs(dest["dir"], exist_ok=True)
 
             # download file
             conn.request("GET", path, headers={"Connection": "keep-alive"})
             res = conn.getresponse()
 
-            if (res.status == 301
-                    or res.status == 302
-                    or res.status == 303
-                    or res.status == 307
-                    or res.status == 308):
+            if res.status in (301, 302, 303, 307, 308):
                 # HTTP redirection
                 newloc = urllib.parse.urlparse(res.getheader("Location"))
                 newpath = newloc.path
@@ -216,50 +211,15 @@ def download_files(host, files_to_download, progress_count=None):
                     "Server %s responded with status code %s.", host, res.status)
                 return False
 
-            lastmod = res.getheader("Last-Modified")
-            content_len = res.getheader("Content-Length")
-
-            with open(dest, "wb") as f_out:
-                downloaded = 0
-                while True:
-                    buf = res.read(bufsize)
-                    if not buf:
-                        break
-                    downloaded += len(buf)
-                    f_out.write(buf)
-                    md5hash.update(buf)
-                    if content_len:
-                        int_content_len = int(content_len)
-                        ten_percent_count = int(downloaded * 10 / int_content_len)
-                        # downloaded / length [progressbar]
-                        # e.g. 555.5K / 777.7K [=======>  ]
-                        progress = "{} / {} [{}{}{}]".format(
-                            get_short_size(downloaded),
-                            get_short_size(int_content_len),
-                            "=" * ten_percent_count,
-                            ">" if ten_percent_count < 10 else "",
-                            " " * max(9 - ten_percent_count, 0),
-                        )
-                    else:
-                        progress = get_short_size(downloaded)
-                    print("\r{:49}{:>30}".format(name_getting, progress), end="")
+            write_downloaded_file(dest["abspath"], res, md5hash, name_getting)
 
             if md5hash.hexdigest() != md5:
-                print("\r{:67}{:>12}".format(name, "MD5 MISMATCH"))
+                print("\r{:67}{:>12}".format(dest["name"], "MD5 MISMATCH"))
                 logging.error("MD5 mismatch for %s", dest)
                 return False
 
-            # wget-like timestamping for downloaded files
-            if lastmod:
-                timestamp = time.mktime(
-                    time.strptime(lastmod, "%a, %d %b %Y %H:%M:%S GMT")) - time.timezone
-                try:
-                    os.utime(dest, (timestamp, timestamp))
-                except OSError:
-                    pass
-
             # downloaded successfully
-            print("\r{:67}{:>12}".format(name, "[    OK    ]"))
+            print("\r{:67}{:>12}".format(dest["name"], "[    OK    ]"))
 
             # skip already downloaded files
             # when trying to download from URL.dlurlalt
@@ -798,3 +758,50 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
             else:
                 steamdir = Args.native_steam_dir
     return steamdir
+
+
+def write_downloaded_file(outfile, res, md5hash, name_getting):
+    """
+    Write downloaded file.
+
+    outfile: A path to destination file
+    res: A response from getresponse()
+    md5hash: An md5 object
+    name_getting: The "[X/Y] Get:" string
+    """
+    bufsize = md5hash.block_size * 256
+    with open(outfile, "wb") as f_out:
+        downloaded = 0
+        while True:
+            buf = res.read(bufsize)
+            if not buf:
+                break
+            downloaded += len(buf)
+            f_out.write(buf)
+            md5hash.update(buf)
+            content_len = res.getheader("Content-Length")
+            if content_len:
+                int_content_len = int(content_len)
+                ten_percent_count = int(downloaded * 10 / int_content_len)
+                # downloaded / length [progressbar]
+                # e.g. 555.5K / 777.7K [=======>  ]
+                progress = "{} / {} [{}{}{}]".format(
+                    get_short_size(downloaded),
+                    get_short_size(int_content_len),
+                    "=" * ten_percent_count,
+                    ">" if ten_percent_count < 10 else "",
+                    " " * max(9 - ten_percent_count, 0),
+                )
+            else:
+                progress = get_short_size(downloaded)
+            print("\r{:49}{:>30}".format(name_getting, progress), end="")
+
+            # wget-like timestamping for downloaded files
+            lastmod = res.getheader("Last-Modified")
+            if lastmod:
+                timestamp = time.mktime(
+                    time.strptime(lastmod, "%a, %d %b %Y %H:%M:%S GMT")) - time.timezone
+                try:
+                    os.utime(outfile, (timestamp, timestamp))
+                except OSError:
+                    pass
