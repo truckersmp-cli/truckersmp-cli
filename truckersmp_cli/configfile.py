@@ -122,7 +122,7 @@ class ConfigFile:
                 else:
                     if rendering_backend not in ("dx11", "gl"):
                         raise ValueError(
-                            "Invalid value '{}' (Valid values are 'dx11' or 'gl')."
+                            "Invalid value '{}' (Valid values are 'dx11' or 'gl')"
                             "".format(rendering_backend))
                     Args.rendering_backend = rendering_backend
                     config_src = ConfigSource.FILE
