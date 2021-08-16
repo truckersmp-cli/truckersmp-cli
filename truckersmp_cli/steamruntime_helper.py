@@ -92,9 +92,12 @@ def main():
     try:
         with subproc.Popen(
                 args.game_arguments,
-                env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
+                env=env,
+                stdout=subproc.PIPE if args.verbose else subproc.DEVNULL,
+                stderr=subproc.STDOUT) as proc:
             if args.verbose:
                 print("Proton output:")
+            if proc.stdout is not None:
                 for line in proc.stdout:
                     try:
                         print(line.decode("utf-8"), end="", flush=True)
