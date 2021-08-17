@@ -242,7 +242,7 @@ It's possible to set various game settings and third party programs in a configu
 
 The configuration file format is similar to the INI format known from Windows with several sections `[section]` containing key-value-pairs `key = value`.
 All sections are optional and a key-value-pair has to be in a section.
-Boolean values can be `{yes,no}`, `{true,false}` and `{1,0}`.
+Boolean values can be `{yes,no}`, `{true,false}`, `{on,off}` and `{1,0}`.
 
 ### Sections for game modes
 
