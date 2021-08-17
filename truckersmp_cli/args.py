@@ -144,7 +144,6 @@ def create_arg_parser():
     * The 2nd element is a list of _StoreAction objects
       (used only in "gen_completions" program)
     """
-    # pylint: disable=too-many-statements
     desc = """
 A simple launcher for TruckersMP to play ATS or ETS2 in multiplayer.
 
@@ -164,15 +163,9 @@ the desired game installed or with an update pending.
 SteamCMD can use your saved credentials for convenience.
 """
     store_actions = []
-    epilog = "Proton AppID list:\n"
-    for key, val in AppId.proton.items():
-        default_mark = ""
-        if key == AppId.proton["default"]:
-            default_mark += " (Default)"
-        if key != "default":
-            epilog += "    Proton {:13}: {:>10}{}\n".format(key, val, default_mark)
     parser = argparse.ArgumentParser(
-        description=desc, epilog=epilog,
+        description=desc,
+        epilog=gen_proton_appid_list(),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     store_actions.append(parser.add_argument(
         "-a", "--ats",
@@ -361,6 +354,19 @@ SteamCMD can use your saved credentials for convenience.
         nargs="?")
 
     return parser, store_actions
+
+
+def gen_proton_appid_list():
+    """Generate and return Proton AppID list (a string)."""
+    appid_list = "Proton AppID list:\n"
+    for key, val in AppId.proton.items():
+        default_mark = ""
+        if key == AppId.proton["default"]:
+            default_mark += " (Default)"
+        if key != "default":
+            appid_list += "    Proton {:13}: {:>10}{}\n".format(key, val, default_mark)
+
+    return appid_list
 
 
 def process_actions_gamenames():
