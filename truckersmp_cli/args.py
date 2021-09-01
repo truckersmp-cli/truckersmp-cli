@@ -182,7 +182,7 @@ SteamCMD can use your saved credentials for convenience.
                 [Default: $XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf]"""))
     store_actions.append(parser.add_argument(
         "-d", "--enable-d3d11",
-        help="use Direct3D 11 instead of OpenGL",
+        help="**DEPRECATED** use Direct3D 11 instead of OpenGL",
         action="store_true"))
     store_actions.append(parser.add_argument(
         "-e", "--ets2",
@@ -228,6 +228,14 @@ SteamCMD can use your saved credentials for convenience.
         help="""start the game with Proton
                 [Default on Linux if neither Proton or Wine are specified] """,
         action="store_true"))
+    store_actions.append(parser.add_argument(
+        "-r", "--rendering-backend",
+        # "dx12" and "vk" / "vulkan" may be added in the future
+        choices=("auto", "dx11", "gl"),
+        default="auto",
+        help="""choose a rendering backend
+                [Default: auto (OpenGL is used when "rendering-backend = " is
+                          not specified for the game in the configuration file)]"""))
     store_actions.append(parser.add_argument(
         "-s", "--start",
         help="""**DEPRECATED** start the game

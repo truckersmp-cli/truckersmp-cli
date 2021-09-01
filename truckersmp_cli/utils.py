@@ -512,7 +512,16 @@ def log_info_formatted_envars_and_args(runner, env_print, env, args):
     for name in env_print:
         name_value_pairs.append("{}={}".format(name, env[name]))
     env_str += "\n  ".join(name_value_pairs) + "\n  "
-    cmd_str += "\n    ".join(args)
+    # don't add newline after the first "-rdevice"
+    args_print = args.copy()
+    for i, arg in enumerate(args_print):
+        if arg == "-rdevice":
+            try:
+                args_print[i:i + 2] = ("{} {}".format(arg, args_print[i + 1]), )
+            except IndexError:
+                pass
+            break
+    cmd_str += "\n    ".join(args_print)
     logging.info("Running %s:\n  %s%s", runner, env_str, cmd_str)
 
 

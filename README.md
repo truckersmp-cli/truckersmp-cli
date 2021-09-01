@@ -84,7 +84,7 @@ Short option|Long option|Description
 `-h`|`--help`|Show help
 `-b VERSION`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
 `-c FILE`|`--configfile FILE`|Use alternative configuration file [Default: `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`]
-`-d`|`--enable-d3d11`|Use Direct3D 11 instead of OpenGL
+`-d`|`--enable-d3d11`|**DEPRECATED** Use Direct3D 11 instead of OpenGL
 `-g DIR`|`--gamedir DIR`|Choose a different directory for the game files [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`]
 `-i APPID`|`--proton-appid APPID`|Choose a different AppID for Proton (Needs an update for changes)
 `-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended [Default: Empty string (only stderr)] Note: Messages from Steam/SteamCMD won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
@@ -92,6 +92,7 @@ Short option|Long option|Description
 `-n NAME`|`--account NAME`|Steam account name to use
 `-o DIR`|`--protondir DIR`|Choose a different Proton directory [Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`]
 `-p`|`--proton`|Start the game with Proton [Default on Linux if neither Proton or Wine are specified]
+`-r {auto,dx11,gl}`|`--rendering-backend {auto,dx11,gl}`|Choose a rendering backend [Default: `auto` (OpenGL is used when `rendering-backend = ` is not specified for the game in the configuration file)]
 `-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
 `-w`|`--wine`|Start the game with Wine [Default on other systems if neither Proton or Wine are specified]
 `-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]

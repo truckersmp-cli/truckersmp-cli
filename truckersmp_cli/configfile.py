@@ -7,6 +7,7 @@ Licensed under MIT.
 import configparser
 import logging
 import os
+from enum import Enum
 
 from .utils import is_dos_style_abspath
 from .variables import Args, Dir
@@ -69,19 +70,9 @@ class ConfigFile:
             ConfigFile.handle_game_specific_settings(parser, wants_rich_presence_cnt)
 
     @staticmethod
-    def format_error(name, ex):
+    def configure_rich_presence(parser, wants_rich_presence_cnt):
         """
-        Get a formatted output string for ValueError.
-
-        name: configuration name
-        ex: A ValueError object
-        """
-        return "  Name: {}\n  Error: {}".format(name, ex)
-
-    @staticmethod
-    def handle_game_specific_settings(parser, wants_rich_presence_cnt):
-        """
-        Handle game specific settings.
+        Determine whether to use wine-discord-ipc-bridge.
 
         parser: A ConfigParser object
         wants_rich_presence_cnt: The number of third-party program sections
@@ -106,6 +97,66 @@ class ConfigFile:
             raise ValueError(
                 ConfigFile.format_error("without-rich-presence", ex)) from ex
 
+    @staticmethod
+    def determine_rendering_backend(parser):
+        """
+        Determine rendering backend.
+
+        parser: A ConfigParser object
+        """
+        config_src = ConfigSource.OPTION
+
+        if Args.enable_d3d11:
+            logging.warning("'--enable-d3d11' ('-d') option is deprecated,"
+                            " use '--rendering-backend dx11 (-r dx11)' instead")
+            Args.rendering_backend = "dx11"
+
+        if Args.rendering_backend == "auto":
+            try:
+                rendering_backend = parser[Args.game].get("rendering-backend")
+                # use OpenGL when "rendering-backend" is not specified
+                # in the game specific section
+                if rendering_backend is None:
+                    Args.rendering_backend = "gl"
+                    config_src = ConfigSource.DEFAULT
+                else:
+                    if rendering_backend not in ("dx11", "gl"):
+                        raise ValueError(
+                            "Invalid value '{}' (Valid values are 'dx11' or 'gl')"
+                            "".format(rendering_backend))
+                    Args.rendering_backend = rendering_backend
+                    config_src = ConfigSource.FILE
+            except ValueError as ex:
+                raise ValueError(
+                    ConfigFile.format_error("rendering-backend", ex)) from ex
+        logging.info(
+            "Rendering backend: %s (%s)", Args.rendering_backend, config_src.value)
+
+    @staticmethod
+    def format_error(name, ex):
+        """
+        Get a formatted output string for ValueError.
+
+        name: configuration name
+        ex: A ValueError object
+        """
+        return "  Name: {}\n  Error: {}".format(name, ex)
+
+    @staticmethod
+    def handle_game_specific_settings(parser, wants_rich_presence_cnt):
+        """
+        Handle game specific settings.
+
+        parser: A ConfigParser object
+        wants_rich_presence_cnt: The number of third-party program sections
+                                 that have "wants-rich-presence = [true]"
+        """
+        # Discord Rich Presence
+        ConfigFile.configure_rich_presence(parser, wants_rich_presence_cnt)
+
+        # rendering backend
+        ConfigFile.determine_rendering_backend(parser)
+
     @property
     def thirdparty_executables(self):
         """Return third-party program paths."""
@@ -115,3 +166,11 @@ class ConfigFile:
     def thirdparty_wait(self):
         """Return waiting time for third-party programs."""
         return self._thirdparty_wait
+
+
+class ConfigSource(Enum):
+    """Source of the configuration."""
+
+    DEFAULT = "Default"
+    OPTION = "Command line option"
+    FILE = "Configuration file"

@@ -174,7 +174,8 @@ class StarterProton(GameStarterInterface):
             proton_args += Args.gamedir, Args.moddir
 
         # game options
-        for opt in Args.game_options.split(" "):
+        for opt in "-rdevice {} {}".format(
+                Args.rendering_backend, Args.game_options).split(" "):
             if opt != "":
                 proton_args.append(opt)
 
@@ -189,7 +190,6 @@ class StarterProton(GameStarterInterface):
         if "LD_PRELOAD" in env:
             env_print.append("LD_PRELOAD")
         env_print += [
-            "PROTON_NO_D3D11",
             "PROTON_USE_WINED3D",
             "STEAM_COMPAT_CLIENT_INSTALL_PATH",
             "STEAM_COMPAT_DATA_PATH",
@@ -216,7 +216,7 @@ class StarterProton(GameStarterInterface):
 
         do_d3dcompiler_setup = (Args.activate_native_d3dcompiler_47
                                 or (not Args.singleplayer
-                                    and Args.enable_d3d11
+                                    and Args.rendering_backend == "dx11"
                                     and not is_d3dcompiler_setup_skippable()))
         logging.debug("Whether to setup native d3dcompiler_47: %s", do_d3dcompiler_setup)
 
@@ -296,7 +296,6 @@ class StarterProton(GameStarterInterface):
             SteamAppId=Args.steamid,
             SteamGameId=Args.steamid,
             PROTON_USE_WINED3D="1" if Args.use_wined3d else "0",
-            PROTON_NO_D3D11="1" if not Args.enable_d3d11 else "0",
         )
 
     @property
@@ -336,7 +335,7 @@ class StarterWine(GameStarterInterface):
 
         if (Args.activate_native_d3dcompiler_47
                 or (not Args.singleplayer
-                    and Args.enable_d3d11
+                    and Args.rendering_backend == "dx11"
                     and not is_d3dcompiler_setup_skippable())):
             activate_native_d3dcompiler_47(Args.prefixdir, wine_args)
 
@@ -367,12 +366,11 @@ class StarterWine(GameStarterInterface):
 
         if "WINEDLLOVERRIDES" not in env:
             env["WINEDLLOVERRIDES"] = ""
-        if not Args.enable_d3d11:
-            env["WINEDLLOVERRIDES"] += ";d3d11=;dxgi="
 
         wine_args = StarterWine.setup_wine_args(wine_args)
 
-        for opt in Args.game_options.split(" "):
+        for opt in "-rdevice {} {}".format(
+                Args.rendering_backend, Args.game_options).split(" "):
             if opt != "":
                 wine_args.append(opt)
 
