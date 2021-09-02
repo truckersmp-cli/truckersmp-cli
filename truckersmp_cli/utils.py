@@ -263,7 +263,7 @@ def get_current_steam_user():
         loginvdf_paths.insert(0, os.path.join(Args.wine_steam_dir, File.loginvdf_inner))
     for path in loginvdf_paths:
         try:
-            with open(path) as f_in:
+            with open(path, encoding="utf-8") as f_in:
                 login_vdf = vdf.parse(f_in)
 
             for info in login_vdf["users"].values():
@@ -289,7 +289,7 @@ def get_proton_version(protondir):
 
     protondir: Proton top directory that has "version" file
     """
-    with open(os.path.join(protondir, "version")) as f_version:
+    with open(os.path.join(protondir, "version"), encoding="utf-8") as f_version:
         ver = f_version.read(128)
     if "proton-tkg" in ver:
         # 11 = len("proton-tkg") + 1
@@ -362,9 +362,11 @@ def get_steam_library_dirs(steamdir):
     #    }  -> [steamdir, "/path/to/steam/library1", "/path/to/steam/library2"]
     try:
         try:
-            f_vdf = open(os.path.join(steamdir, File.steamlibvdf_inner))
+            f_vdf = open(
+                os.path.join(steamdir, File.steamlibvdf_inner), encoding="utf-8")
         except OSError:
-            f_vdf = open(os.path.join(steamdir, File.steamlibvdf_inner_legacy))
+            f_vdf = open(
+                os.path.join(steamdir, File.steamlibvdf_inner_legacy), encoding="utf-8")
         with f_vdf:
             for line in f_vdf:
                 # skip lines that don't have 4 quotes
@@ -430,7 +432,9 @@ def is_d3dcompiler_setup_skippable():
     # if Proton is used, get prefix version from the prefix directory
     ver_pfx = dict(major=0, minor=0)
     try:
-        with open(os.path.join(Args.prefixdir, "version")) as f_prefix_ver:
+        with open(
+                os.path.join(Args.prefixdir, "version"),
+                encoding="utf-8") as f_prefix_ver:
             ver = f_prefix_ver.readline().replace("-GE-", "-")
             major, minor = ver[:ver.index("-")].split(".")
             ver_pfx["major"], ver_pfx["minor"] = int(major), int(minor)
@@ -444,7 +448,7 @@ def is_d3dcompiler_setup_skippable():
     # get CURRENT_PREFIX_VERSION from "proton" script
     ver_proton = dict(major=0, minor=0)
     try:
-        with open(os.path.join(Args.protondir, "proton")) as f_proton:
+        with open(os.path.join(Args.protondir, "proton"), encoding="utf-8") as f_proton:
             for line in f_proton:
                 if line.startswith('CURRENT_PREFIX_VERSION="'):
                     ver = line[line.index('"') + 1:-1]
@@ -543,7 +547,9 @@ def perform_self_update():
 
     # we don't update when Python package is used
     try:
-        with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
+        with open(
+                os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE"),
+                encoding="utf-8") as f_in:
             # do nothing if the installed version is latest
             if release == f_in.readline().rstrip():
                 logging.info("Already up-to-date.")

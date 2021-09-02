@@ -41,7 +41,9 @@ def get_version_string():
     version = ""
     try:
         # try to load "RELEASE" file for release assets or cloned git directory
-        with open(os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE")) as f_in:
+        with open(
+                os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE"),
+                encoding="utf-8") as f_in:
             version += f_in.readline().rstrip()
     except OSError:
         pass
@@ -72,7 +74,7 @@ def main():
     # example:
     #     {"5.0": 1245040, "4.11": 1113280, "default": "5.0"}
     try:
-        with open(File.proton_json) as f_in:
+        with open(File.proton_json, encoding="utf-8") as f_in:
             AppId.proton = json.load(f_in)
     except (OSError, ValueError) as ex:
         sys.exit("Failed to load proton.json: {}".format(ex))
@@ -82,7 +84,7 @@ def main():
     # example:
     #     {"Linux": 1391110}
     try:
-        with open(File.steamruntime_json) as f_in:
+        with open(File.steamruntime_json, encoding="utf-8") as f_in:
             AppId.steamruntime = json.load(f_in)
     except (OSError, ValueError) as ex:
         sys.exit("Failed to load steamruntime.json: {}".format(ex))
