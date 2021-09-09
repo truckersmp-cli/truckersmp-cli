@@ -98,6 +98,29 @@ class ConfigFile:
                 ConfigFile.format_error("without-rich-presence", ex)) from ex
 
     @staticmethod
+    def determine_disable_steamruntime(parser):
+        """
+        Determine whether to disable Steam Runtime.
+
+        parser: A ConfigParser object
+        """
+        config_src = ConfigSource.OPTION
+
+        if not Args.without_steam_runtime:
+            config_name = "without-steamruntime"
+            config_src = ConfigSource.FILE if config_name in parser[Args.game] \
+                else ConfigSource.DEFAULT
+            try:
+                if parser[Args.game].getboolean(config_name, fallback=False):
+                    Args.without_steam_runtime = True
+            except ValueError as ex:
+                raise ValueError(
+                    ConfigFile.format_error(config_name, ex)) from ex
+        logging.info(
+            "Whether to disable Steam Runtime: %s (%s)",
+            Args.without_steam_runtime, config_src.value)
+
+    @staticmethod
     def determine_rendering_backend(parser):
         """
         Determine rendering backend.
@@ -153,6 +176,9 @@ class ConfigFile:
         """
         # Discord Rich Presence
         ConfigFile.configure_rich_presence(parser, wants_rich_presence_cnt)
+
+        # whether to disable Steam Runtime
+        ConfigFile.determine_disable_steamruntime(parser)
 
         # rendering backend
         ConfigFile.determine_rendering_backend(parser)
