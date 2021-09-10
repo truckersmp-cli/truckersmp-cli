@@ -172,7 +172,7 @@ SteamCMD can use your saved credentials for convenience.
         help="**DEPRECATED** use American Truck Simulator",
         action="store_true"))
     store_actions.append(parser.add_argument(
-        "-b", "--beta", metavar="VERSION", type=str,
+        "-b", "--beta", metavar="VERSION",
         help="""set game version to VERSION,
                 useful for downgrading (e.g. "temporary_1_35")"""))
     store_actions.append(parser.add_argument(
@@ -190,7 +190,7 @@ SteamCMD can use your saved credentials for convenience.
                 [Default if neither ATS or ETS2 are specified] """,
         action="store_true"))
     store_actions.append(parser.add_argument(
-        "-g", "--gamedir", metavar="DIR", type=str,
+        "-g", "--gamedir", metavar="DIR",
         help="""choose a different directory for the game files
                 [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/data]"""))
     store_actions.append(parser.add_argument(
@@ -199,7 +199,7 @@ SteamCMD can use your saved credentials for convenience.
         help="""choose a different AppID for Proton (Needs an update for changes)
                 [Default: {}]""".format(AppId.proton[AppId.proton["default"]])))
     store_actions.append(parser.add_argument(
-        "-l", "--logfile", metavar="LOG", type=str,
+        "-l", "--logfile", metavar="LOG",
         default="",
         help="""write log into LOG, "-vv" option is recommended
                 [Default: Empty string (only stderr)]
@@ -207,17 +207,17 @@ SteamCMD can use your saved credentials for convenience.
                 only from this script (Game logs are written into
                 "My Documents/{ETS2,ATS}MP/logs/client_*.log")"""))
     store_actions.append(parser.add_argument(
-        "-m", "--moddir", metavar="DIR", type=str,
+        "-m", "--moddir", metavar="DIR",
         help="""choose a different directory for the mod files
                 [Default: $XDG_DATA_HOME/truckersmp-cli/TruckersMP,
                 Fallback: ./truckersmp]"""))
     store_actions.append(parser.add_argument(
-        "-n", "--account", metavar="NAME", type=str,
+        "-n", "--account", metavar="NAME",
         help="""steam account name to use
                 (This account should own the game and ideally is logged in
                 with saved credentials)"""))
     store_actions.append(parser.add_argument(
-        "-o", "--protondir", metavar="DIR", type=str,
+        "-o", "--protondir", metavar="DIR",
         default=Dir.default_protondir,
         help="""choose a different Proton directory
                 [Default: $XDG_DATA_HOME/truckersmp-cli/Proton]
@@ -261,7 +261,7 @@ SteamCMD can use your saved credentials for convenience.
                 [Default on other systems if neither Proton or Wine are specified]""",
         action="store_true"))
     store_actions.append(parser.add_argument(
-        "-x", "--prefixdir", metavar="DIR", type=str,
+        "-x", "--prefixdir", metavar="DIR",
         help="""choose a different directory for the prefix
                 [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix]"""))
     store_actions.append(parser.add_argument(
@@ -284,13 +284,13 @@ SteamCMD can use your saved credentials for convenience.
                 is ignored if "--beta" ("-b") option is specified""",
         action="store_true"))
     store_actions.append(parser.add_argument(
-        "--game-options", metavar="OPTIONS", type=str,
+        "--game-options", metavar="OPTIONS",
         default="-nointro -64bit",
         help="""specify ATS/ETS2 options
                 Note: If specifying one option, use "--game-options=-option" format
                 [Default: "-nointro -64bit"]"""))
     store_actions.append(parser.add_argument(
-        "--native-steam-dir", metavar="DIR", type=str,
+        "--native-steam-dir", metavar="DIR",
         default="auto",
         help="""choose native Steam installation,
                 useful only if your Steam directory is not detected automatically
@@ -315,13 +315,13 @@ SteamCMD can use your saved credentials for convenience.
         help="use OpenGL-based D3D11 instead of DXVK when using Proton",
         action="store_true"))
     store_actions.append(parser.add_argument(
-        "--wine-desktop", metavar="SIZE", type=str,
+        "--wine-desktop", metavar="SIZE",
         help="""use Wine desktop, work around missing TruckerMP overlay
                 after tabbing out using DXVK, mouse clicking won't work
                 in other GUI apps while the game is running, SIZE must be
                 'WIDTHxHEIGHT' format (e.g. 1920x1080)"""))
     store_actions.append(parser.add_argument(
-        "--wine-steam-dir", metavar="DIR", type=str,
+        "--wine-steam-dir", metavar="DIR",
         help="""choose a directory for Windows version of Steam
                 [Default: "C:\\Program Files (x86)\\Steam" in the prefix]"""))
     store_actions.append(parser.add_argument(
