@@ -70,6 +70,29 @@ class ConfigFile:
             ConfigFile.handle_game_specific_settings(parser, wants_rich_presence_cnt)
 
     @staticmethod
+    def configure_game_options(parser):
+        """
+        Determine custom game options.
+
+        If no options are specified, "-nointro -64bit" will be used.
+        Note that game starters will prepend "-rdevice" to the given options.
+
+        parser: A ConfigParser object
+        """
+        config_src = ConfigSource.OPTION
+
+        if Args.game_options is None:
+            config_name = "game-options"
+            if config_name in parser[Args.game]:
+                config_src = ConfigSource.FILE
+                Args.game_options = parser[Args.game][config_name]
+            else:
+                config_src = ConfigSource.DEFAULT
+                Args.game_options = "-nointro -64bit"
+        logging.info(
+            "Game options: %s (%s)", Args.game_options, config_src.value)
+
+    @staticmethod
     def configure_rich_presence(parser, wants_rich_presence_cnt):
         """
         Determine whether to use wine-discord-ipc-bridge.
@@ -174,6 +197,9 @@ class ConfigFile:
         wants_rich_presence_cnt: The number of third-party program sections
                                  that have "wants-rich-presence = [true]"
         """
+        # game options
+        ConfigFile.configure_game_options(parser)
+
         # Discord Rich Presence
         ConfigFile.configure_rich_presence(parser, wants_rich_presence_cnt)
 
