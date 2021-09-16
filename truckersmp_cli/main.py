@@ -129,16 +129,10 @@ See {} for additional information.""".format(
         perform_self_update()
         sys.exit()
 
-    # fallback to old local folder
+    # TruckersMP MOD directory
     if not Args.moddir:
-        old_local_moddir = os.path.join(Dir.scriptdir, "truckersmp")
-        if (os.path.isdir(old_local_moddir)
-                and os.access(old_local_moddir, os.R_OK | os.W_OK | os.X_OK)):
-            logging.debug("No moddir set and fallback found")
-            Args.moddir = old_local_moddir
-        else:
-            logging.debug("No moddir set, setting to default")
-            Args.moddir = Dir.default_moddir
+        logging.debug("No moddir set, setting to default")
+        Args.moddir = Dir.default_moddir
     logging.info("Mod directory: %s", Args.moddir)
 
     # check for errors
