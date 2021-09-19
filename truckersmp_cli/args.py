@@ -73,8 +73,8 @@ def check_args_errors():
 
     # make sure proton and wine are using the same default
     if Args.wine:
-        if (Args.prefixdir == Dir.default_prefixdir["ats"]
-                or Args.prefixdir == Dir.default_prefixdir["ets2"]):
+        if Args.prefixdir in (
+                Dir.default_prefixdir["ats"], Dir.default_prefixdir["ets2"]):
             logging.debug("""Prefix directory is the default while using Wine,
 making sure it's the same directory as Proton""")
             Args.prefixdir = os.path.join(Args.prefixdir, "pfx")
@@ -410,9 +410,9 @@ def process_actions_gamenames():
         Args.update = True
     elif Args.action == "downgrade":
         Args.downgrade = True
-    elif Args.action == "updateandstart" or Args.action == "ustart":
+    elif Args.action in ("updateandstart", "ustart"):
         Args.update = Args.start = True
-    elif Args.action == "downgradeandstart" or Args.action == "dstart":
+    elif Args.action in ("downgradeandstart", "dstart"):
         Args.downgrade = Args.start = True
 
     # game names
