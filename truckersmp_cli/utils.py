@@ -198,7 +198,7 @@ def download_files(host, files_to_download, progress_count=None):
                     newpath += "?" + newloc.query
                 if not download_files(
                         newloc.netloc,
-                        [(newpath, dest, md5), ],
+                        [(newpath, dest["abspath"], md5), ],
                         (file_count, num_of_files)):
                     return False
                 # downloaded successfully from redirected URL
