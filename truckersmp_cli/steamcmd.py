@@ -54,7 +54,7 @@ class SteamCMD:
             env_print = ("WINEDEBUG", "WINEARCH", "WINEPREFIX", "WINEDLLOVERRIDES")
             name_value_pairs = []
             for name in env_print:
-                name_value_pairs.append("{}={}".format(name, self._env[name]))
+                name_value_pairs.append(f"{name}={self._env[name]}")
             env_str += "\n  ".join(name_value_pairs) + "\n  "
         cmd_str = ""
         for i, arg in enumerate(cmdline):
@@ -121,15 +121,14 @@ def update_game():
         gamedir = Args.gamedir
     else:
         if not wine:
-            sys.exit("Wine ({}) is not available.".format(wine))
+            sys.exit(f"Wine ({wine}) is not available.")
 
         # steamcmd.exe uses Windows path, not UNIX path
         try:
             gamedir = subproc.check_output(
                 (wine, "winepath", "-w", Args.gamedir), env=env).decode("utf-8").rstrip()
         except (OSError, subproc.CalledProcessError) as ex:
-            sys.exit(
-                "Failed to convert game directory to Windows path: {}".format(ex))
+            sys.exit(f"Failed to convert game directory to Windows path: {ex}")
 
         steamcmd_path = os.path.join(Dir.steamcmddir, "steamcmd.exe")
         steamcmd_url = URL.steamcmdwin
@@ -142,7 +141,7 @@ def update_game():
             with urllib.request.urlopen(steamcmd_url) as f_in:
                 steamcmd_archive = f_in.read()
         except OSError as ex:
-            sys.exit("Failed to retrieve SteamCMD: {}".format(ex))
+            sys.exit(f"Failed to retrieve SteamCMD: {ex}")
         logging.debug("Extracting SteamCMD")
         try:
             if Args.proton:
@@ -155,7 +154,7 @@ def update_game():
                         with open(steamcmd_path, "wb") as f_out:
                             f_out.write(f_exe.read())
         except (OSError, tarfile.TarError) as ex:
-            sys.exit("Failed to extract SteamCMD: {}".format(ex))
+            sys.exit(f"Failed to extract SteamCMD: {ex}")
 
     logging.info("SteamCMD: %s", steamcmd_path)
 

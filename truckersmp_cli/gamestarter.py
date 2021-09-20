@@ -174,8 +174,7 @@ class StarterProton(GameStarterInterface):
             proton_args += Args.gamedir, Args.moddir
 
         # game options
-        for opt in "-rdevice {} {}".format(
-                Args.rendering_backend, Args.game_options).split(" "):
+        for opt in f"-rdevice {Args.rendering_backend} {Args.game_options}".split(" "):
             if opt != "":
                 proton_args.append(opt)
 
@@ -240,9 +239,9 @@ class StarterProton(GameStarterInterface):
                 subproc.check_output(
                     args["proton"] + ["wineboot", ], env=env, stderr=subproc.STDOUT)
             except OSError as ex:
-                sys.exit("Failed to run wineboot: {}".format(ex))
+                sys.exit(f"Failed to run wineboot: {ex}")
             except subproc.CalledProcessError as ex:
-                sys.exit("wineboot failed:\n{}".format(ex.output.decode("utf-8")))
+                sys.exit(f"wineboot failed:\n{ex.output.decode('utf-8')}")
 
         # activate native d3dcompiler_47
         if do_d3dcompiler_setup:
@@ -369,8 +368,7 @@ class StarterWine(GameStarterInterface):
 
         wine_args = StarterWine.setup_wine_args(wine_args)
 
-        for opt in "-rdevice {} {}".format(
-                Args.rendering_backend, Args.game_options).split(" "):
+        for opt in f"-rdevice {Args.rendering_backend} {Args.game_options}".split(" "):
             if opt != "":
                 wine_args.append(opt)
 
@@ -404,7 +402,7 @@ class StarterWine(GameStarterInterface):
         args: A list of command line for Wine
         """
         if Args.wine_desktop:
-            args += "explorer", "/desktop=TruckersMP,{}".format(Args.wine_desktop)
+            args += "explorer", f"/desktop=TruckersMP,{Args.wine_desktop}"
         if Args.singleplayer:
             exename = "eurotrucks2.exe" if Args.ets2 else "amtrucks.exe"
             gamepath = os.path.join(Args.gamedir, "bin/win_x64", exename)
