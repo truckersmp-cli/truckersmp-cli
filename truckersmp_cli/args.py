@@ -73,8 +73,8 @@ def check_args_errors():
 
     # make sure proton and wine are using the same default
     if Args.wine:
-        if (Args.prefixdir == Dir.default_prefixdir["ats"]
-                or Args.prefixdir == Dir.default_prefixdir["ets2"]):
+        if Args.prefixdir in (
+                Dir.default_prefixdir["ats"], Dir.default_prefixdir["ets2"]):
             logging.debug("""Prefix directory is the default while using Wine,
 making sure it's the same directory as Proton""")
             Args.prefixdir = os.path.join(Args.prefixdir, "pfx")
@@ -96,8 +96,8 @@ making sure it's the same directory as Proton""")
                 os.path.join(Args.gamedir, "bin/win_x64/eurotrucks2.exe"))
                 and not os.path.isfile(
                     os.path.join(Args.gamedir, "bin/win_x64/amtrucks.exe"))):
-            sys.exit("""Game not found in {}
-Need to download (-u) the game?""".format(Args.gamedir))
+            sys.exit(f"Game not found in {Args.gamedir}\n"
+                     "Need to download (-u) the game?")
 
     # checks for updating
     if Args.update and not Args.account:
@@ -111,8 +111,7 @@ Need to download (-u) the game?""".format(Args.gamedir))
     if Args.wine_desktop:
         split_size = Args.wine_desktop.split("x")
         if len(split_size) != 2:
-            sys.exit("Desktop size ({}) must be 'WIDTHxHEIGHT' format".format(
-                Args.wine_desktop))
+            sys.exit(f'Desktop size ({Args.wine_desktop}) must be "WIDTHxHEIGHT" format')
         try:
             # if given desktop size is too small,
             # set to 1024x768 (the lowest resolution in ETS2/ATS)
@@ -123,7 +122,7 @@ Need to download (-u) the game?""".format(Args.gamedir))
                 )
                 Args.wine_desktop = "1024x768"
         except ValueError:
-            sys.exit("Invalid desktop width or height ({})".format(Args.wine_desktop))
+            sys.exit(f"Invalid desktop width or height ({Args.wine_desktop})")
 
     # info
     logging.info("AppID/GameID: %s (%s)", Args.steamid, game)
@@ -196,8 +195,8 @@ SteamCMD can use your saved credentials for convenience.
     store_actions.append(parser.add_argument(
         "-i", "--proton-appid", metavar="APPID", type=int,
         default=AppId.proton[AppId.proton["default"]],
-        help="""choose a different AppID for Proton (Needs an update for changes)
-                [Default: {}]""".format(AppId.proton[AppId.proton["default"]])))
+        help=f"""choose a different AppID for Proton (Needs an update for changes)
+                 [Default: {AppId.proton[AppId.proton["default"]]}]"""))
     store_actions.append(parser.add_argument(
         "-l", "--logfile", metavar="LOG",
         default="",
@@ -337,7 +336,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true"))
     group_action_desc = "choose an action"
     for name, desc in ACTIONS:
-        group_action_desc += "\n  {:17} : {}".format(name, desc)
+        group_action_desc += f"\n  {name:17} : {desc}"
     group_action = parser.add_argument_group("action", group_action_desc)
     group_action.add_argument(
         "action",
@@ -350,7 +349,7 @@ SteamCMD can use your saved credentials for convenience.
         nargs="?")
     group_game_desc = "choose a game"
     for name, desc in GAMES:
-        group_game_desc += "\n  {:6} : {}".format(name, desc)
+        group_game_desc += f"\n  {name:6} : {desc}"
     group_game = parser.add_argument_group("game", group_game_desc)
     group_game.add_argument(
         "game",
@@ -371,7 +370,7 @@ def gen_proton_appid_list():
         if key == AppId.proton["default"]:
             default_mark += " (Default)"
         if key != "default":
-            appid_list += "    Proton {:13}: {:>10}{}\n".format(key, val, default_mark)
+            appid_list += f"    Proton {key:13}: {val:>10}{default_mark}\n"
 
     return appid_list
 
@@ -410,9 +409,9 @@ def process_actions_gamenames():
         Args.update = True
     elif Args.action == "downgrade":
         Args.downgrade = True
-    elif Args.action == "updateandstart" or Args.action == "ustart":
+    elif Args.action in ("updateandstart", "ustart"):
         Args.update = Args.start = True
-    elif Args.action == "downgradeandstart" or Args.action == "dstart":
+    elif Args.action in ("downgradeandstart", "dstart"):
         Args.downgrade = Args.start = True
 
     # game names

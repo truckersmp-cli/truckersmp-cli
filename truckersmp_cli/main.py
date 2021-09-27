@@ -77,7 +77,7 @@ def main():
         with open(File.proton_json, encoding="utf-8") as f_in:
             AppId.proton = json.load(f_in)
     except (OSError, ValueError) as ex:
-        sys.exit("Failed to load proton.json: {}".format(ex))
+        sys.exit(f"Failed to load proton.json: {ex}")
 
     # load Steam Runtime AppID info from "steamruntime.json":
     #     {"platform": AppID, ... }
@@ -87,7 +87,7 @@ def main():
         with open(File.steamruntime_json, encoding="utf-8") as f_in:
             AppId.steamruntime = json.load(f_in)
     except (OSError, ValueError) as ex:
-        sys.exit("Failed to load steamruntime.json: {}".format(ex))
+        sys.exit(f"Failed to load steamruntime.json: {ex}")
 
     # parse options
     arg_parser = create_arg_parser()[0]
@@ -101,7 +101,7 @@ def main():
     try:
         cfg = ConfigFile(Args.configfile)
     except ValueError as ex:
-        sys.exit("Invalid configuration found in {}:\n{}".format(Args.configfile, ex))
+        sys.exit(f"Invalid configuration found in {Args.configfile}:\n{ex}")
 
     # print version
     if Args.version:
@@ -110,19 +110,18 @@ def main():
 
     # check whether the executable of our inject program is present
     if not os.access(File.inject_exe, os.R_OK):
-        sys.exit("""DLL inject program ("{}") is missing.
+        sys.exit(f"""DLL inject program ("{File.inject_exe}") is missing.
 
 Try one of the following:
 * Install truckersmp-cli via pip [RECOMMENDED]
   (e.g. "python3 -m pip install --user truckersmp-cli[optional]")
   and run it (e.g. "~/.local/bin/truckersmp-cli [ARGUMENTS...]")
-* Download GitHub release file from "{}", unpack it, and run
+* Download GitHub release file from "{URL.project_releases}", unpack it, and run
   the "truckersmp-cli" script in the unpacked directory
-* Build "truckersmp-cli.exe" with mingw-w64, put it into "{}",
+* Build "truckersmp-cli.exe" with mingw-w64, put it into "{Dir.scriptdir}",
   and run this script again
 
-See {} for additional information.""".format(
-            File.inject_exe, URL.project_releases, Dir.scriptdir, URL.project_doc_inst))
+See {URL.project_doc_inst} for additional information.""")
 
     # self update
     if Args.self_update:
@@ -153,23 +152,24 @@ See {} for additional information.""".format(
         if Args.proton:
             # check for Proton availability when starting with Proton
             if not os.access(os.path.join(Args.protondir, "proton"), os.R_OK):
-                sys.exit("""Proton is not found in {}
-Run with '--update' option to install Proton""".format(Args.protondir))
+                sys.exit(f"Proton is not found in {Args.protondir}\n"
+                         "Run with '--update' option to install Proton")
             # check for Steam Runtime availability and the permission of "var"
             # when starting with Proton + Steam Runtime
             run = os.path.join(Args.steamruntimedir, "run")
             var = os.path.join(Args.steamruntimedir, "var")
             if not Args.without_steam_runtime:
                 if not os.access(run, os.R_OK | os.X_OK):
-                    sys.exit("""Steam Runtime is not found in {}
-Update the game or start with "--without-steam-runtime" option
-to disable the Steam Runtime""".format(
-                             Args.steamruntimedir))
+                    sys.exit(
+                        f'Steam Runtime is not found in {Args.steamruntimedir}\n'
+                        'Update the game or start with "--without-steam-runtime" option\n'
+                        'to disable the Steam Runtime')
                 if (not os.access(Args.steamruntimedir, os.R_OK | os.W_OK | os.X_OK)
                         or (os.path.isdir(var)
                             and not os.access(var, os.R_OK | os.W_OK | os.X_OK))):
-                    sys.exit("""The Steam Runtime directory ({}) and
-the "var" subdirectory must be writable""".format(Args.steamruntimedir))
+                    sys.exit(
+                        f'The Steam Runtime directory ({Args.steamruntimedir}) and\n'
+                        'the "var" subdirectory must be writable')
 
         if not check_libsdl2():
             sys.exit("SDL2 was not found on your system.")

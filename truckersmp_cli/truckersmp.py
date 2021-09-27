@@ -36,7 +36,7 @@ def determine_game_branch():
     try:
         if Args.downgrade:
             version = get_supported_game_versions()[game_name].split(".")
-            branch = "temporary_{}_{}".format(version[0], version[1])
+            branch = f"temporary_{version[0]}_{version[1]}"
     except (OSError, TypeError):
         pass
 
@@ -85,7 +85,7 @@ def update_mod():
         with urllib.request.urlopen(URL.listurl) as f_in:
             files_json = f_in.read()
     except OSError as ex:
-        sys.exit("Failed to download files.json: {}".format(ex))
+        sys.exit(f"Failed to download files.json: {ex}")
 
     # extract md5sums and filenames
     modfiles = []
@@ -95,8 +95,8 @@ def update_mod():
         if len(modfiles) == 0:
             raise ValueError("File list is empty")
     except ValueError as ex:
-        sys.exit("""Failed to parse files.json: {}
-Please report an issue: {}""".format(ex, URL.issueurl))
+        sys.exit(f"Failed to parse files.json: {ex}\n"
+                 f"Please report an issue: {URL.issueurl}")
 
     # compare existing local files with md5sums
     # and remember missing/wrong files
@@ -110,11 +110,11 @@ Please report an issue: {}""".format(ex, URL.issueurl))
             if not check_hash(modfilepath, md5, hashlib.md5()):
                 dlfiles.append(("/files" + jsonfilepath, modfilepath, md5))
         except OSError as ex:
-            sys.exit("Failed to read {}: {}".format(modfilepath, ex))
+            sys.exit(f"Failed to read {modfilepath}: {ex}")
     if len(dlfiles) > 0:
         message_dlfiles = "Files to download:\n"
         for path, _, _ in dlfiles:
-            message_dlfiles += "  {}\n".format(path)
+            message_dlfiles += f"  {path}\n"
         logging.info(message_dlfiles.rstrip())
     else:
         logging.debug("No files to download")

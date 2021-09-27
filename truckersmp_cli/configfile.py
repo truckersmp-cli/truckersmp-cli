@@ -168,8 +168,8 @@ class ConfigFile:
                 else:
                     if rendering_backend not in ("dx11", "gl"):
                         raise ValueError(
-                            "Invalid value '{}' (Valid values are 'dx11' or 'gl')"
-                            "".format(rendering_backend))
+                            f'Invalid value "{rendering_backend}" '
+                            '(Valid values are "dx11" or "gl")')
                     Args.rendering_backend = rendering_backend
                     config_src = ConfigSource.FILE
             except ValueError as ex:
@@ -186,7 +186,7 @@ class ConfigFile:
         name: configuration name
         ex: A ValueError object
         """
-        return "  Name: {}\n  Error: {}".format(name, ex)
+        return f"  Name: {name}\n  Error: {ex}"
 
     @staticmethod
     def handle_game_specific_settings(parser, wants_rich_presence_cnt):

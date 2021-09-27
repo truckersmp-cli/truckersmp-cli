@@ -75,7 +75,7 @@ def activate_native_d3dcompiler_47(prefix, wine):
     subproc.call(
         wine + [
             "reg", "add",
-            "HKCU\\Software\\Wine\\AppDefaults\\{}\\DllOverrides".format(exename),
+            f"HKCU\\Software\\Wine\\AppDefaults\\{exename}\\DllOverrides",
             "/v", "d3dcompiler_47", "/t", "REG_SZ", "/d", "native", "/f"],
         env=env)
 
@@ -174,8 +174,7 @@ def download_files(host, files_to_download, progress_count=None):
             path, dest["abspath"], md5 = files_to_download[0]
             dest["name"] = os.path.basename(dest["abspath"])
             dest["dir"] = os.path.dirname(dest["abspath"])
-            name_getting = "[{}/{}] Get: {}".format(
-                file_count, num_of_files, dest["name"])
+            name_getting = f"[{file_count}/{num_of_files}] Get: {dest['name']}"
             if len(dest["name"]) >= 67:
                 dest["name"] = dest["name"][:63] + "..."
             if len(name_getting) >= 49:
@@ -214,12 +213,12 @@ def download_files(host, files_to_download, progress_count=None):
             write_downloaded_file(dest["abspath"], res, md5hash, name_getting)
 
             if md5hash.hexdigest() != md5:
-                print("\r{:67}{:>12}".format(dest["name"], "MD5 MISMATCH"))
+                print(f"\r{dest['name']:67}{'MD5 MISMATCH':>12}")
                 logging.error("MD5 mismatch for %s", dest)
                 return False
 
             # downloaded successfully
-            print("\r{:67}{:>12}".format(dest["name"], "[    OK    ]"))
+            print(f"\r{dest['name']:67}{'[    OK    ]':>12}")
 
             # skip already downloaded files
             # when trying to download from URL.dlurlalt
@@ -314,8 +313,8 @@ def get_short_size(size_bytes):
     if size_bytes < 1024:
         return str(size_bytes)
     if size_bytes < 1048576:
-        return "{:.1f}K".format(size_bytes / 1024)
-    return "{:.1f}M".format(size_bytes / 1048576)
+        return f"{size_bytes / 1024:.1f}K"
+    return f"{size_bytes / 1048576:.1f}M"
 
 
 def get_steam_library_dirs(steamdir):
@@ -514,14 +513,14 @@ def log_info_formatted_envars_and_args(runner, env_print, env, args):
     cmd_str = ""
     name_value_pairs = []
     for name in env_print:
-        name_value_pairs.append("{}={}".format(name, env[name]))
+        name_value_pairs.append(f"{name}={env[name]}")
     env_str += "\n  ".join(name_value_pairs) + "\n  "
     # don't add newline after the first "-rdevice"
     args_print = args.copy()
     for i, arg in enumerate(args_print):
         if arg == "-rdevice":
             try:
-                args_print[i:i + 2] = ("{} {}".format(arg, args_print[i + 1]), )
+                args_print[i:i + 2] = (f"{arg} {args_print[i + 1]}", )
             except IndexError:
                 pass
             break
@@ -543,7 +542,7 @@ def perform_self_update():
         with urllib.request.urlopen(URL.release) as f_in:
             release = f_in.readline().rstrip().decode("ascii")
     except OSError as ex:
-        sys.exit("Failed to retrieve RELEASE file: {}".format(ex))
+        sys.exit(f"Failed to retrieve RELEASE file: {ex}")
 
     # we don't update when Python package is used
     try:
@@ -564,7 +563,7 @@ def perform_self_update():
         with urllib.request.urlopen(archive_url) as f_in:
             asset_archive = f_in.read()
     except OSError as ex:
-        sys.exit("Failed to retrieve release asset file: {}".format(ex))
+        sys.exit(f"Failed to retrieve release asset file: {ex}")
 
     # unpack the archive
     logging.info("Unpacking archive %s", archive_url)
@@ -573,7 +572,7 @@ def perform_self_update():
         with tarfile.open(fileobj=io.BytesIO(asset_archive), mode="r:xz") as f_in:
             f_in.extractall(topdir)
     except (OSError, tarfile.TarError) as ex:
-        sys.exit("Failed to unpack release asset file: {}".format(ex))
+        sys.exit(f"Failed to unpack release asset file: {ex}")
 
     # update files
     archive_dir = os.path.join(topdir, "truckersmp-cli-" + release)
@@ -737,7 +736,7 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
                 try:
                     stat = os.stat(path)
                     if stat.st_mtime > loginusers_timestamps[i]:
-                        print("\r{}".format(" " * 70))  # clear "Waiting..." line
+                        print(f"\r{' ' * 70}")  # clear "Waiting..." line
                         logging.debug(
                             "Steam should now be up and running and the user logged in.")
                         steamdir = os.path.dirname(os.path.dirname(loginvdfs_checked[i]))
@@ -749,7 +748,7 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
             break
         else:
             # waited 99 seconds without detecting timestamp change
-            print("\r{}".format(" " * 70))
+            print(f"\r{' ' * 70}")
             logging.debug("Steam should be up now.")
             if use_proton:
                 if Args.native_steam_dir == "auto":
@@ -800,16 +799,14 @@ def write_downloaded_file(outfile, res, md5hash, name_getting):
                 ten_percent_count = int(downloaded * 10 / int_content_len)
                 # downloaded / length [progressbar]
                 # e.g. 555.5K / 777.7K [=======>  ]
-                progress = "{} / {} [{}{}{}]".format(
-                    get_short_size(downloaded),
-                    get_short_size(int_content_len),
-                    "=" * ten_percent_count,
-                    ">" if ten_percent_count < 10 else "",
-                    " " * max(9 - ten_percent_count, 0),
-                )
+                progress = f"{get_short_size(downloaded)} / " \
+                           f"{get_short_size(int_content_len)} " \
+                           f"[{'=' * ten_percent_count}" \
+                           f"{'>' if ten_percent_count < 10 else ''}" \
+                           f"{' ' * max(9 - ten_percent_count, 0)}]"
             else:
                 progress = get_short_size(downloaded)
-            print("\r{:49}{:>30}".format(name_getting, progress), end="")
+            print(f"\r{name_getting:49}{progress:>30}", end="")
 
             # wget-like timestamping for downloaded files
             lastmod = res.getheader("Last-Modified")
