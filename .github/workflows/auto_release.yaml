@@ -3,7 +3,7 @@ name: Automatic release
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - RELEASE
 
@@ -25,7 +25,7 @@ jobs:
              tag="$(cat RELEASE)"
              git tag "$tag"
              echo "::set-output name=tag::$tag"
-      - name: Push new tag to master
+      - name: Push new tag
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
