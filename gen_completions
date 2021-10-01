@@ -122,26 +122,25 @@ def write_shell_completion_file(shellname, path, content):
         return True
 
     try:
-        with open(path, "w") as f_out:
+        with open(path, "w", encoding="utf-8") as f_out:
             f_out.write(content)
     except OSError as ex:
         print(
-            "Failed to write {} completion file {}: {}".format(
-                shellname, path, ex),
+            f"Failed to write {shellname} completion file {path}: {ex}",
             file=sys.stderr)
         return False
 
-    print("Wrote {} completion file {}".format(shellname, path))
+    print(f"Wrote {shellname} completion file {path}")
     return True
 
 
 def main():
     """Generate completions for bash and zsh."""
     try:
-        with open(File.proton_json) as f_in:
+        with open(File.proton_json, encoding="utf-8") as f_in:
             AppId.proton = json.load(f_in)
     except (OSError, ValueError) as ex:
-        sys.exit("Failed to load proton.json: {}".format(ex))
+        sys.exit(f"Failed to load proton.json: {ex}")
 
     parser = argparse.ArgumentParser(
         description="Shell completions generator")
@@ -181,11 +180,11 @@ def main():
                 comp_data["file_options"].append(opt)
         desc = act.help.replace("[", "\\[").replace("]", "\\]").replace('"', '\\"')
         comp_data["zsh_options"].append(
-            '{}"[{}]"'.format(zsh_arg_optnames, " ".join(desc.split())))
+            f'{zsh_arg_optnames}"[{" ".join(desc.split())}]"')
     for name, desc in ACTIONS:
-        comp_data["zsh_actions"].append("{}[{}]".format(name, desc))
+        comp_data["zsh_actions"].append(f"{name}[{desc}]")
     for name, desc in GAMES:
-        comp_data["zsh_games"].append("{}[{}]".format(name, desc))
+        comp_data["zsh_games"].append(f"{name}[{desc}]")
 
     return (
         write_shell_completion_file(
