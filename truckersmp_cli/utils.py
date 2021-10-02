@@ -276,6 +276,25 @@ def get_current_steam_user():
     return None
 
 
+def get_mtime(files):
+    """
+    Get and return st_mtime from given files.
+
+    If os.stat() fails, the result for the file will be 0.
+
+    files: A list of file paths
+    """
+    results = []
+    for path in files:
+        try:
+            stat = os.stat(path)
+            results.append(stat.st_mtime)
+        except OSError:
+            results.append(0)
+
+    return results
+
+
 def get_proton_version(protondir):
     """
     Get Proton version from "version" file.
@@ -678,6 +697,58 @@ def set_wine_desktop_registry(prefix, wine, enable):
                 "reg", "delete", regkey_desktops, "/v", "Default", "/f"], env=env)
 
 
+def wait_for_loginvdf_update(
+        use_proton, loginvdfs_checked, loginvdfs_timestamps, timeout=99):
+    """
+    Wait until loginusers.vdf (one of loginvdfs_checked) is updated.
+
+    This function tries to guess Steam installation path and
+    returns it if detected (otherwise None).
+
+    use_proton: Whether to use Proton
+    loginvdfs_checked: loginusers.vdf paths
+    loginvdfs_timestamps: loginusers.vdf timestamps
+    timeout: timeout in seconds
+    """
+    steamdir = None
+    waittime = timeout
+    while waittime > 0:
+        print(ngettext(
+            "\rWaiting {} second for steam to start up. ",
+            "\rWaiting {} seconds for steam to start up. ",
+            waittime).format(waittime), end="")
+        time.sleep(1)
+        waittime -= 1
+        for i, path in enumerate(loginvdfs_checked):
+            try:
+                stat = os.stat(path)
+                if stat.st_mtime > loginvdfs_timestamps[i]:
+                    print(f"\r{' ' * 70}")  # clear "Waiting..." line
+                    logging.debug(
+                        "Steam should now be up and running and the user logged in.")
+                    steamdir = os.path.dirname(os.path.dirname(path))
+                    break
+            except OSError:
+                pass
+        else:
+            continue
+        break
+    else:
+        # timed out (did not detect timestamp change)
+        print(f"\r{' ' * 70}")
+        logging.debug("Steam should be up now.")
+        if use_proton:
+            if Args.native_steam_dir == "auto":
+                # could not detect steam installation directory
+                # fallback to $XDG_DATA_HOME/Steam
+                steamdir = os.path.join(Dir.XDG_DATA_HOME, "Steam")
+            else:
+                # use specified path
+                steamdir = Args.native_steam_dir
+
+    return steamdir
+
+
 def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
     """
     Wait for Steam to be running.
@@ -697,23 +768,17 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
     env: A dictionary that contains environment variables
          (can be None if use_proton is True)
     """
-    # pylint: disable=consider-using-with,too-many-branches,too-many-statements
+    # pylint: disable=consider-using-with
 
     steamdir = None
     loginvdfs_checked = []
-    loginusers_timestamps = []
     if use_proton and Args.native_steam_dir != "auto":
         # only check the specified vdf path
         loginvdfs_checked.append(os.path.join(Args.native_steam_dir, File.loginvdf_inner))
     else:
         # check all known vdf paths
         loginvdfs_checked += loginvdf_paths
-    for path in loginvdfs_checked:
-        try:
-            stat = os.stat(path)
-            loginusers_timestamps.append(stat.st_mtime)
-        except OSError:
-            loginusers_timestamps.append(0)
+    loginvdfs_timestamps = get_mtime(loginvdfs_checked)
     if not check_steam_process(use_proton=use_proton, wine=wine, env=env):
         logging.debug("Starting Steam...")
         if use_proton:
@@ -724,53 +789,26 @@ def wait_for_steam(use_proton, loginvdf_paths, wine=None, env=None):
                 ("nohup",
                  wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-no-cef-sandbox"),
                 env=env, stdout=subproc.DEVNULL, stderr=subproc.STDOUT)
-        waittime = 99
-        while waittime > 0:
-            print(ngettext(
-                "\rWaiting {} second for steam to start up. ",
-                "\rWaiting {} seconds for steam to start up. ",
-                waittime).format(waittime), end="")
-            time.sleep(1)
-            waittime -= 1
-            for i, path in enumerate(loginvdfs_checked):
-                try:
-                    stat = os.stat(path)
-                    if stat.st_mtime > loginusers_timestamps[i]:
-                        print(f"\r{' ' * 70}")  # clear "Waiting..." line
-                        logging.debug(
-                            "Steam should now be up and running and the user logged in.")
-                        steamdir = os.path.dirname(os.path.dirname(loginvdfs_checked[i]))
-                        break
-                except OSError:
-                    pass
-            else:
-                continue
-            break
-        else:
-            # waited 99 seconds without detecting timestamp change
-            print(f"\r{' ' * 70}")
-            logging.debug("Steam should be up now.")
-            if use_proton:
-                if Args.native_steam_dir == "auto":
-                    # could not detect steam installation directory
-                    # fallback to $XDG_DATA_HOME/Steam
-                    steamdir = os.path.join(Dir.XDG_DATA_HOME, "Steam")
-                else:
-                    # use specified path
-                    steamdir = Args.native_steam_dir
+        # use Assignment Expressions when we require Python 3.8 or newer
+        # if (guessed_steamdir := wait_for_loginvdf_update(...)) is not None:
+        guessed_steamdir = wait_for_loginvdf_update(
+            use_proton, loginvdfs_checked, loginvdfs_timestamps)
+        if guessed_steamdir is not None:
+            steamdir = guessed_steamdir
     else:
         # Steam is running
         logging.debug("Steam is running")
         if use_proton:
             if Args.native_steam_dir == "auto":
                 # detect most recently updated "loginusers.vdf" file
-                max_mtime = max(loginusers_timestamps)
+                max_mtime = max(loginvdfs_timestamps)
                 for i, path in enumerate(loginvdfs_checked):
-                    if loginusers_timestamps[i] == max_mtime:
-                        steamdir = os.path.dirname(os.path.dirname(loginvdfs_checked[i]))
+                    if loginvdfs_timestamps[i] == max_mtime:
+                        steamdir = os.path.dirname(os.path.dirname(path))
                         break
             else:
                 steamdir = Args.native_steam_dir
+
     return steamdir
 
 
