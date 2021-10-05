@@ -128,12 +128,6 @@ See {URL.project_doc_inst} for additional information.""")
         perform_self_update()
         sys.exit()
 
-    # TruckersMP MOD directory
-    if not Args.moddir:
-        logging.debug("No moddir set, setting to default")
-        Args.moddir = Dir.default_moddir
-    logging.info("Mod directory: %s", Args.moddir)
-
     # check for errors
     check_args_errors()
 

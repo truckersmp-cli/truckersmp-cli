@@ -179,6 +179,26 @@ class ConfigFile:
             "Rendering backend: %s (%s)", Args.rendering_backend, config_src.value)
 
     @staticmethod
+    def determine_truckersmp_directory(parser):
+        """
+        Determine TruckersMP MOD directory.
+
+        parser: A ConfigParser object
+        """
+        config_src = ConfigSource.OPTION
+
+        if Args.moddir is None:
+            config_name = "truckersmp-directory"
+            if config_name in parser[Args.game]:
+                config_src = ConfigSource.FILE
+                Args.moddir = parser[Args.game][config_name]
+            else:
+                config_src = ConfigSource.DEFAULT
+                Args.moddir = Dir.default_moddir
+        logging.info(
+            "TruckersMP MOD directory: %s (%s)", Args.moddir, config_src.value)
+
+    @staticmethod
     def format_error(name, ex):
         """
         Get a formatted output string for ValueError.
@@ -208,6 +228,9 @@ class ConfigFile:
 
         # rendering backend
         ConfigFile.determine_rendering_backend(parser)
+
+        # TruckersMP MOD directory
+        ConfigFile.determine_truckersmp_directory(parser)
 
     @property
     def thirdparty_executables(self):
