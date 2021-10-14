@@ -48,6 +48,8 @@ class SteamCMD:
         if self._wine is not None:
             cmdline.append(self._wine)
         cmdline.append(self._path)
+        if Args.download_throttle > 0:
+            cmdline += ["+set_download_throttle", str(Args.download_throttle)]
         cmdline += args
         env_str = ""
         if self._env is not None:
