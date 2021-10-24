@@ -247,7 +247,7 @@ Boolean values can be `{yes,no}`, `{true,false}`, `{on,off}` and `{1,0}`.
 
 ### Sections for game modes
 
-Supported sections are `[ats]`, `[astmp]`, `[ets2]` and `[ets2mp]`.
+Supported sections are `[ats]`, `[atsmp]`, `[ets2]` and `[ets2mp]`.
  
 #### Optional game mode settings
 
