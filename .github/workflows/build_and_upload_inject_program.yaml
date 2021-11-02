@@ -3,14 +3,14 @@ name: Inject program
 on:
   push:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/build_and_upload_inject_program.yaml
       - truckersmp-cli.c
   pull_request:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/build_and_upload_inject_program.yaml
