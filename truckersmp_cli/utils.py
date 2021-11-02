@@ -825,9 +825,16 @@ def write_downloaded_file(outfile, res, md5hash, name_getting):
     with open(outfile, "wb") as f_out:
         downloaded = 0
         while True:
+            if Args.download_throttle > 0:
+                time_before_download = time.time()
             buf = res.read(bufsize)
             if not buf:
                 break
+            if Args.download_throttle > 0:
+                # wait if the speed is too fast
+                while (time.time() - time_before_download < bufsize / (
+                        1024 * Args.download_throttle)):
+                    time.sleep(0.001)
             downloaded += len(buf)
             f_out.write(buf)
             md5hash.update(buf)

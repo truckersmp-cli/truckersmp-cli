@@ -180,6 +180,11 @@ SteamCMD can use your saved credentials for convenience.
         help="""use alternative configuration file
                 [Default: $XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf]"""))
     store_actions.append(parser.add_argument(
+        "--download-throttle", metavar="SPEED", type=int,
+        default=-1,
+        help="""limit download speed to SPEED (KiB/s),
+                disabled if negative value is specified [Default: -1]"""))
+    store_actions.append(parser.add_argument(
         "-d", "--enable-d3d11",
         help="**DEPRECATED** use Direct3D 11 instead of OpenGL",
         action="store_true"))
