@@ -3,7 +3,7 @@ name: Main scripts
 on:
   push:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/check_main_script.yaml
@@ -11,7 +11,7 @@ on:
       - truckersmp_cli/*.py
   pull_request:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/check_main_script.yaml

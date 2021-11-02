@@ -3,14 +3,14 @@ name: Completions generator
 on:
   push:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/check_gen_completions.yaml
       - gen_completions
   pull_request:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/check_gen_completions.yaml
