@@ -53,9 +53,7 @@ jobs:
         id: generate_changelog
         run: |
              import subprocess as subproc
-             args = ("git", "tag", "-l",
-               "--merged", "${{ steps.set_release_tag.outputs.tag }}",
-               "--sort=-v:refname")
+             args = ("git", "tag", "-l", "--sort=-v:refname", "--merged")
              basetag = subproc.check_output(args).decode("utf-8").splitlines()[1]
              args = (
                "git", "log",
