@@ -2,6 +2,9 @@ name: Automatic release
 
 on:
   push:
+    branches:
+      - main
+      - stable_*
     paths:
       - RELEASE
 
