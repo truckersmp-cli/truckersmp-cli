@@ -28,7 +28,7 @@ jobs:
       - name: Install flake8, flake8-docstrings, and flake8-import-order
         run: pip install flake8 flake8-docstrings flake8-import-order
       - name: Check Python script by flake8
-        run: flake8 --max-line-length=90 --show-source --statistics gen_completions
+        run: flake8 --show-source --statistics gen_completions
   check_by_pylint:
     name: Check main scripts by pylint
     runs-on: ubuntu-latest
