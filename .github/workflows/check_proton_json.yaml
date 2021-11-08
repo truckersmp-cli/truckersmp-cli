@@ -3,14 +3,14 @@ name: proton.json
 on:
   push:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/check_proton_json.yaml
       - truckersmp_cli/proton.json
   pull_request:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/check_proton_json.yaml
