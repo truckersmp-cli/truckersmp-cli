@@ -70,6 +70,46 @@ class ConfigFile:
             ConfigFile.handle_game_specific_settings(parser, wants_rich_presence_cnt)
 
     @staticmethod
+    def configure_game_and_prefix_directories(parser):
+        """
+        Determine game and prefix directories.
+
+        parser: A ConfigParser object
+        """
+        config_src = dict(game=ConfigSource.OPTION, prefix=ConfigSource.OPTION)
+
+        game = Args.game.replace("mp", "")  # {ats,ets2} for default_{game,prefix}dir
+
+        if Args.gamedir is None:
+            config_name = "game-directory"
+            if config_name in parser[Args.game]:
+                config_src["game"] = ConfigSource.FILE
+                path = parser[Args.game][config_name]
+                if not os.path.isabs(path):
+                    # assume it's relative to our data directory
+                    path = os.path.join(Dir.truckersmp_cli_data, path)
+                Args.gamedir = path
+            else:
+                config_src["game"] = ConfigSource.DEFAULT
+                Args.gamedir = Dir.default_gamedir[game]
+        logging.info(
+            "Game directory: %s (%s)", Args.gamedir, config_src["game"].value)
+
+        if Args.prefixdir is None:
+            config_name = "prefix-directory"
+            if config_name in parser[Args.game]:
+                config_src["prefix"] = ConfigSource.FILE
+                path = parser[Args.game][config_name]
+                if not os.path.isabs(path):
+                    path = os.path.join(Dir.truckersmp_cli_data, path)
+                Args.prefixdir = path
+            else:
+                config_src["prefix"] = ConfigSource.DEFAULT
+                Args.prefixdir = Dir.default_prefixdir[game]
+        logging.info(
+            "Prefix directory: %s (%s)", Args.prefixdir, config_src["prefix"].value)
+
+    @staticmethod
     def configure_game_options(parser):
         """
         Determine custom game options.
@@ -217,6 +257,9 @@ class ConfigFile:
         wants_rich_presence_cnt: The number of third-party program sections
                                  that have "wants-rich-presence = [true]"
         """
+        # game/prefix directories
+        ConfigFile.configure_game_and_prefix_directories(parser)
+
         # game options
         ConfigFile.configure_game_options(parser)
 
