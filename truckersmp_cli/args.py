@@ -55,10 +55,6 @@ def check_args_errors():
 
     game = "ats" if Args.ats else "ets2"
     Args.steamid = str(AppId.game[game])
-    if not Args.prefixdir:
-        Args.prefixdir = Dir.default_prefixdir[game]
-    if not Args.gamedir:
-        Args.gamedir = Dir.default_gamedir[game]
 
     # make sure proton and wine aren't chosen at the same time
     if Args.proton and Args.wine:
@@ -126,8 +122,6 @@ making sure it's the same directory as Proton""")
 
     # info
     logging.info("AppID/GameID: %s (%s)", Args.steamid, game)
-    logging.info("Game directory: %s", Args.gamedir)
-    logging.info("Prefix: %s", Args.prefixdir)
     if Args.proton:
         logging.info("Proton directory: %s", Args.protondir)
         logging.info("Steam Runtime directory: %s", Args.steamruntimedir)
