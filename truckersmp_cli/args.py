@@ -313,10 +313,9 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true"))
     store_actions.append(parser.add_argument(
         "--wine-desktop", metavar="SIZE",
-        help="""use Wine desktop, work around missing TruckerMP overlay
-                after tabbing out using DXVK, mouse clicking won't work
-                in other GUI apps while the game is running, SIZE must be
-                'WIDTHxHEIGHT' format (e.g. 1920x1080)"""))
+        help="""use Wine desktop, work around resolution issue, mouse clicking
+                won't work in other GUI apps while the game is running,
+                SIZE must be 'WIDTHxHEIGHT' format (e.g. 1920x1080)"""))
     store_actions.append(parser.add_argument(
         "--wine-steam-dir", metavar="DIR",
         help="""choose a directory for Windows version of Steam
