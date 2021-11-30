@@ -11,7 +11,10 @@ import signal
 import subprocess as subproc
 import sys
 
-from .args import check_args_errors, create_arg_parser, process_actions_gamenames
+from .args import (
+    check_args_errors, check_args_errors_early,
+    create_arg_parser, process_actions_gamenames,
+)
 from .configfile import ConfigFile
 from .gamestarter import StarterProton, StarterWine
 from .steamcmd import update_game
@@ -96,6 +99,9 @@ def main():
 
     # set up logging
     setup_logging()
+
+    # check for errors before configuring
+    check_args_errors_early()
 
     # load configuration file
     try:
