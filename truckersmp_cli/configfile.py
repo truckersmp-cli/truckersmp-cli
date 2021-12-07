@@ -66,8 +66,7 @@ class ConfigFile:
                 raise ValueError(
                     ConfigFile.format_error("wants-rich-presence", ex)) from ex
 
-        if Args.game in sections:
-            ConfigFile.handle_game_specific_settings(parser, wants_rich_presence_cnt)
+        ConfigFile.handle_game_specific_settings(parser, wants_rich_presence_cnt)
 
     @staticmethod
     def configure_game_and_prefix_directories(parser):
@@ -82,7 +81,7 @@ class ConfigFile:
 
         if Args.gamedir is None:
             config_name = "game-directory"
-            if config_name in parser[Args.game]:
+            if Args.game in parser and config_name in parser[Args.game]:
                 config_src["game"] = ConfigSource.FILE
                 path = parser[Args.game][config_name]
                 if not os.path.isabs(path):
@@ -97,7 +96,7 @@ class ConfigFile:
 
         if Args.prefixdir is None:
             config_name = "prefix-directory"
-            if config_name in parser[Args.game]:
+            if Args.game in parser and config_name in parser[Args.game]:
                 config_src["prefix"] = ConfigSource.FILE
                 path = parser[Args.game][config_name]
                 if not os.path.isabs(path):
@@ -123,7 +122,7 @@ class ConfigFile:
 
         if Args.game_options is None:
             config_name = "game-options"
-            if config_name in parser[Args.game]:
+            if Args.game in parser and config_name in parser[Args.game]:
                 config_src = ConfigSource.FILE
                 Args.game_options = parser[Args.game][config_name]
             else:
@@ -149,7 +148,7 @@ class ConfigFile:
         try:
             if (not Args.without_wine_discord_ipc_bridge
                     and (
-                        parser[Args.game].getboolean(
+                        Args.game in parser and parser[Args.game].getboolean(
                             "without-rich-presence", fallback=False)
                         or ("mp" not in Args.game and wants_rich_presence_cnt == 0)
                     )):
@@ -171,14 +170,17 @@ class ConfigFile:
 
         if not Args.without_steam_runtime:
             config_name = "without-steamruntime"
-            config_src = ConfigSource.FILE if config_name in parser[Args.game] \
-                else ConfigSource.DEFAULT
-            try:
-                if parser[Args.game].getboolean(config_name, fallback=False):
-                    Args.without_steam_runtime = True
-            except ValueError as ex:
-                raise ValueError(
-                    ConfigFile.format_error(config_name, ex)) from ex
+            if Args.game in parser and config_name in parser[Args.game]:
+                try:
+                    if parser[Args.game].getboolean(config_name, fallback=False):
+                        config_src = ConfigSource.FILE
+                        Args.without_steam_runtime = True
+                except ValueError as ex:
+                    raise ValueError(
+                        ConfigFile.format_error(config_name, ex)) from ex
+            else:
+                config_src = ConfigSource.DEFAULT
+                Args.without_steam_runtime = False
         logging.info(
             "Whether to disable Steam Runtime: %s (%s)",
             Args.without_steam_runtime, config_src.value)
@@ -198,8 +200,10 @@ class ConfigFile:
             Args.rendering_backend = "dx11"
 
         if Args.rendering_backend == "auto":
+            rendering_backend = None
             try:
-                rendering_backend = parser[Args.game].get("rendering-backend")
+                if Args.game in parser:
+                    rendering_backend = parser[Args.game].get("rendering-backend")
                 # use OpenGL when "rendering-backend" is not specified
                 # in the game specific section
                 if rendering_backend is None:
@@ -229,7 +233,7 @@ class ConfigFile:
 
         if Args.moddir is None:
             config_name = "truckersmp-directory"
-            if config_name in parser[Args.game]:
+            if Args.game in parser and config_name in parser[Args.game]:
                 config_src = ConfigSource.FILE
                 Args.moddir = parser[Args.game][config_name]
             else:
