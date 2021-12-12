@@ -322,6 +322,7 @@ SteamCMD can use your saved credentials for convenience.
                 [Default: "C:\\Program Files (x86)\\Steam" in the prefix]"""))
     store_actions.append(parser.add_argument(
         "--without-steam-runtime",
+        default=None,
         help="don't use Steam Runtime even when using Proton 5.13 or newer",
         action="store_true"))
     store_actions.append(parser.add_argument(

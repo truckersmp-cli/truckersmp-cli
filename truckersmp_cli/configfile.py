@@ -69,67 +69,78 @@ class ConfigFile:
         ConfigFile.handle_game_specific_settings(parser, wants_rich_presence_cnt)
 
     @staticmethod
-    def configure_game_and_prefix_directories(parser):
+    def configure_game_specific_setting(
+            parser, arg_value, config_name, default_value, log_name):
         """
-        Determine game and prefix directories.
+        Configure a game specific setting.
+
+        The return value will be one of:
+         * The value from command line option (always used when specified)
+         * The value from game specific setting in config file
+           (used only when the command line option is not given)
+         * The default value
 
         parser: A ConfigParser object
+        arg_value: The given value from command line option
+        config_name: The string for the setting
+        default_value: The default value for the setting or a dict of defaults
+                       that contains the keys "ats" and "ets2"
+        log_name: The configuration description for logging
         """
-        config_src = dict(game=ConfigSource.OPTION, prefix=ConfigSource.OPTION)
-
-        game = Args.game.replace("mp", "")  # {ats,ets2} for default_{game,prefix}dir
-
-        if Args.gamedir is None:
-            config_name = "game-directory"
-            if Args.game in parser and config_name in parser[Args.game]:
-                config_src["game"] = ConfigSource.FILE
-                path = parser[Args.game][config_name]
-                if not os.path.isabs(path):
-                    # assume it's relative to our data directory
-                    path = os.path.join(Dir.truckersmp_cli_data, path)
-                Args.gamedir = path
-            else:
-                config_src["game"] = ConfigSource.DEFAULT
-                Args.gamedir = Dir.default_gamedir[game]
-        logging.info(
-            "Game directory: %s (%s)", Args.gamedir, config_src["game"].value)
-
-        if Args.prefixdir is None:
-            config_name = "prefix-directory"
-            if Args.game in parser and config_name in parser[Args.game]:
-                config_src["prefix"] = ConfigSource.FILE
-                path = parser[Args.game][config_name]
-                if not os.path.isabs(path):
-                    path = os.path.join(Dir.truckersmp_cli_data, path)
-                Args.prefixdir = path
-            else:
-                config_src["prefix"] = ConfigSource.DEFAULT
-                Args.prefixdir = Dir.default_prefixdir[game]
-        logging.info(
-            "Prefix directory: %s (%s)", Args.prefixdir, config_src["prefix"].value)
-
-    @staticmethod
-    def configure_game_options(parser):
-        """
-        Determine custom game options.
-
-        If no options are specified, "-nointro -64bit" will be used.
-        Note that game starters will prepend "-rdevice" to the given options.
-
-        parser: A ConfigParser object
-        """
-        config_src = ConfigSource.OPTION
-
-        if Args.game_options is None:
-            config_name = "game-options"
+        if arg_value is not None:
+            config_src = ConfigSource.OPTION
+            ret = arg_value
+        else:
             if Args.game in parser and config_name in parser[Args.game]:
                 config_src = ConfigSource.FILE
-                Args.game_options = parser[Args.game][config_name]
+                ret = parser[Args.game][config_name]
+                if ((config_name.endswith("-directory") or config_name.endswith("-file"))
+                        and not os.path.isabs(ret)):
+                    # assume it's relative to our data directory
+                    ret = os.path.join(Dir.truckersmp_cli_data, ret)
             else:
                 config_src = ConfigSource.DEFAULT
-                Args.game_options = "-nointro -64bit"
-        logging.info(
-            "Game options: %s (%s)", Args.game_options, config_src.value)
+                ret = default_value[Args.game.replace("mp", "")] \
+                    if isinstance(default_value, dict) else default_value
+        logging.info("%s: %s (%s)", log_name, ret, config_src.value)
+
+        return ret
+
+    @staticmethod
+    def configure_game_specific_setting_boolean(
+            parser, arg_value, config_name, default_value, log_name):
+        """
+        Configure a game specific setting (boolean).
+
+        The return value will be one of:
+         * The value from command line option (always used when specified)
+         * The value from game specific setting in config file
+           (used only when the command line option is not given)
+         * The default value
+
+        parser: A ConfigParser object
+        arg_value: The given value from command line option
+        config_name: The string for the setting
+        default_value: The default value for the setting
+        log_name: The configuration description for logging
+        """
+        if arg_value is not None:
+            config_src = ConfigSource.OPTION
+            ret = arg_value
+        else:
+            if Args.game in parser and config_name in parser[Args.game]:
+                config_src = ConfigSource.FILE
+                try:
+                    ret = parser[Args.game].getboolean(config_name)
+                except ValueError as ex:
+                    raise ValueError(
+                        ConfigFile.format_error(config_name, ex)) from ex
+            else:
+                config_src = ConfigSource.DEFAULT
+                ret = default_value
+        logging.info("%s: %s (%s)", log_name, ret, config_src.value)
+
+        return ret
 
     @staticmethod
     def configure_rich_presence(parser, wants_rich_presence_cnt):
@@ -158,32 +169,6 @@ class ConfigFile:
         except ValueError as ex:
             raise ValueError(
                 ConfigFile.format_error("without-rich-presence", ex)) from ex
-
-    @staticmethod
-    def determine_disable_steamruntime(parser):
-        """
-        Determine whether to disable Steam Runtime.
-
-        parser: A ConfigParser object
-        """
-        config_src = ConfigSource.OPTION
-
-        if not Args.without_steam_runtime:
-            config_name = "without-steamruntime"
-            if Args.game in parser and config_name in parser[Args.game]:
-                try:
-                    if parser[Args.game].getboolean(config_name, fallback=False):
-                        config_src = ConfigSource.FILE
-                        Args.without_steam_runtime = True
-                except ValueError as ex:
-                    raise ValueError(
-                        ConfigFile.format_error(config_name, ex)) from ex
-            else:
-                config_src = ConfigSource.DEFAULT
-                Args.without_steam_runtime = False
-        logging.info(
-            "Whether to disable Steam Runtime: %s (%s)",
-            Args.without_steam_runtime, config_src.value)
 
     @staticmethod
     def determine_rendering_backend(parser):
@@ -223,26 +208,6 @@ class ConfigFile:
             "Rendering backend: %s (%s)", Args.rendering_backend, config_src.value)
 
     @staticmethod
-    def determine_truckersmp_directory(parser):
-        """
-        Determine TruckersMP MOD directory.
-
-        parser: A ConfigParser object
-        """
-        config_src = ConfigSource.OPTION
-
-        if Args.moddir is None:
-            config_name = "truckersmp-directory"
-            if Args.game in parser and config_name in parser[Args.game]:
-                config_src = ConfigSource.FILE
-                Args.moddir = parser[Args.game][config_name]
-            else:
-                config_src = ConfigSource.DEFAULT
-                Args.moddir = Dir.default_moddir
-        logging.info(
-            "TruckersMP MOD directory: %s (%s)", Args.moddir, config_src.value)
-
-    @staticmethod
     def format_error(name, ex):
         """
         Get a formatted output string for ValueError.
@@ -261,23 +226,42 @@ class ConfigFile:
         wants_rich_presence_cnt: The number of third-party program sections
                                  that have "wants-rich-presence = [true]"
         """
-        # game/prefix directories
-        ConfigFile.configure_game_and_prefix_directories(parser)
+        # game directory
+        Args.gamedir = ConfigFile.configure_game_specific_setting(
+            parser, Args.gamedir,
+            "game-directory", Dir.default_gamedir, "Game directory",
+        )
+
+        # prefix directory
+        Args.prefixdir = ConfigFile.configure_game_specific_setting(
+            parser, Args.prefixdir,
+            "prefix-directory", Dir.default_prefixdir, "Prefix directory",
+        )
 
         # game options
-        ConfigFile.configure_game_options(parser)
+        # note that game starters will prepend "-rdevice" to the given options
+        Args.game_options = ConfigFile.configure_game_specific_setting(
+            parser, Args.game_options,
+            "game-options", "-nointro -64bit", "Game options",
+        )
+
+        # TruckersMP MOD directory
+        Args.moddir = ConfigFile.configure_game_specific_setting(
+            parser, Args.moddir,
+            "truckersmp-directory", Dir.default_moddir, "TruckersMP MOD directory",
+        )
+
+        # whether to disable Steam Runtime
+        Args.without_steam_runtime = ConfigFile.configure_game_specific_setting_boolean(
+            parser, Args.without_steam_runtime,
+            "without-steamruntime", False, "Whether to disable Steam Runtime",
+        )
 
         # Discord Rich Presence
         ConfigFile.configure_rich_presence(parser, wants_rich_presence_cnt)
 
-        # whether to disable Steam Runtime
-        ConfigFile.determine_disable_steamruntime(parser)
-
         # rendering backend
         ConfigFile.determine_rendering_backend(parser)
-
-        # TruckersMP MOD directory
-        ConfigFile.determine_truckersmp_directory(parser)
 
     @property
     def thirdparty_executables(self):
