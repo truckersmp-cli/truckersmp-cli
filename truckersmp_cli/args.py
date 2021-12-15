@@ -34,38 +34,8 @@ GAMES = (
 
 def check_args_errors():
     """Check command-line arguments."""
-    # pylint: disable=too-many-branches,too-many-statements
-
-    # "--downgrade" implies "--update"
-    if Args.downgrade:
-        Args.update = True
-
-    # checks for updating and/or starting
-    if not Args.update and not Args.start:
-        logging.info("--update/--start not specified, doing both.")
-        Args.start = True
-        Args.update = True
-
-    # make sure only one game is chosen
-    if Args.ats and Args.ets2:
-        sys.exit("It's only possible to use one game at a time.")
-    elif not Args.ats and not Args.ets2:
-        logging.info("--ats/--ets2 not specified, choosing ETS2.")
-        Args.ets2 = True
-
     game = "ats" if Args.ats else "ets2"
     Args.steamid = str(AppId.game[game])
-
-    # make sure proton and wine aren't chosen at the same time
-    if Args.proton and Args.wine:
-        sys.exit("Start/Update with Proton (-p) or Wine (-w)?")
-    elif not Args.proton and not Args.wine:
-        if platform.system() == "Linux":
-            logging.info("Platform is Linux, using Proton")
-            Args.proton = True
-        else:
-            logging.info("Platform is not Linux, using Wine")
-            Args.wine = True
 
     # make sure proton and wine are using the same default
     if Args.wine:
@@ -122,9 +92,37 @@ making sure it's the same directory as Proton""")
 
     # info
     logging.info("AppID/GameID: %s (%s)", Args.steamid, game)
-    if Args.proton:
-        logging.info("Proton directory: %s", Args.protondir)
-        logging.info("Steam Runtime directory: %s", Args.steamruntimedir)
+
+
+def check_args_errors_early():
+    """Check command-line arguments before configuring."""
+    # "--downgrade" implies "--update"
+    if Args.downgrade:
+        Args.update = True
+
+    # checks for updating and/or starting
+    if not Args.update and not Args.start:
+        logging.info("Action update/start not specified, doing both.")
+        Args.start = True
+        Args.update = True
+
+    # make sure only one game is chosen
+    if Args.ats and Args.ets2:
+        sys.exit("It's only possible to use one game at a time.")
+    elif not Args.ats and not Args.ets2:
+        logging.info("--ats/--ets2 not specified, choosing ETS2.")
+        Args.ets2 = True
+
+    # make sure proton and wine aren't chosen at the same time
+    if Args.proton and Args.wine:
+        sys.exit("Start/update with Proton (-p) or Wine (-w)?")
+    elif not Args.proton and not Args.wine:
+        if platform.system() == "Linux":
+            logging.info("Platform is Linux, using Proton")
+            Args.proton = True
+        else:
+            logging.info("Platform is not Linux, using Wine")
+            Args.wine = True
 
 
 def create_arg_parser():
@@ -216,7 +214,6 @@ SteamCMD can use your saved credentials for convenience.
                 with saved credentials)"""))
     store_actions.append(parser.add_argument(
         "-o", "--protondir", metavar="DIR",
-        default=Dir.default_protondir,
         help="""choose a different Proton directory
                 [Default: $XDG_DATA_HOME/truckersmp-cli/Proton]
                 While updating any previous version in this folder gets changed
@@ -241,7 +238,6 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true"))
     store_actions.append(parser.add_argument(
         "--steamruntimedir", metavar="DIR",
-        default=Dir.default_steamruntimedir,
         help="""choose a different Steam Runtime directory for Proton 5.13 or newer
                 [Default: $XDG_DATA_HOME/truckersmp-cli/SteamRuntime]"""))
     store_actions.append(parser.add_argument(

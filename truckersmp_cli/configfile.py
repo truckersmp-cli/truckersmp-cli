@@ -257,6 +257,19 @@ class ConfigFile:
             "without-steamruntime", False, "Whether to disable Steam Runtime",
         )
 
+        # Proton/Steam Runtime directory
+        if Args.proton:
+            Args.protondir = ConfigFile.configure_game_specific_setting(
+                parser, Args.protondir,
+                "proton-directory", Dir.default_protondir, "Proton directory",
+            )
+            Args.steamruntimedir = ConfigFile.configure_game_specific_setting(
+                parser, Args.steamruntimedir,
+                "steamruntime-directory",
+                Dir.default_steamruntimedir,
+                "Steam Runtime directory",
+            )
+
         # Discord Rich Presence
         ConfigFile.configure_rich_presence(parser, wants_rich_presence_cnt)
 
