@@ -257,6 +257,12 @@ class ConfigFile:
             "without-steamruntime", False, "Whether to disable Steam Runtime",
         )
 
+        # whether to disable Steam Overlay
+        Args.disable_proton_overlay = ConfigFile.configure_game_specific_setting_boolean(
+            parser, Args.disable_proton_overlay,
+            "disable-proton-overlay", False, "Whether to disable Steam Overlay",
+        )
+
         # Proton/Steam Runtime directory
         if Args.proton:
             Args.protondir = ConfigFile.configure_game_specific_setting(

@@ -269,6 +269,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true"))
     store_actions.append(parser.add_argument(
         "--disable-proton-overlay",
+        default=None,
         help="disable Steam Overlay when using Proton",
         action="store_true"))
     store_actions.append(parser.add_argument(
