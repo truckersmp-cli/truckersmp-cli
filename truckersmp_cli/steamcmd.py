@@ -23,8 +23,6 @@ from .variables import AppId, Args, Dir, URL
 class SteamCMD:
     """SteamCMD command."""
 
-    # pylint: disable=too-few-public-methods
-
     def __init__(self, path, wine=None, env=None):
         """
         Initialize SteamCMD object.
@@ -36,6 +34,100 @@ class SteamCMD:
         self._path = path
         self._wine = wine
         self._env = env
+
+    @staticmethod
+    def download_steamcmd(dest, url):
+        """
+        Download SteamCMD if it doesn't exist in our data directory.
+
+        dest: SteamCMD destination path
+        url: SteamCMD download URL
+        """
+        os.makedirs(Dir.steamcmddir, exist_ok=True)
+        if not os.path.isfile(dest):
+            logging.debug("Retrieving SteamCMD")
+            try:
+                with urllib.request.urlopen(url) as f_in:
+                    archive = f_in.read()
+            except OSError as ex:
+                sys.exit(f"Failed to retrieve SteamCMD: {ex}")
+            logging.debug("Extracting SteamCMD")
+            try:
+                if Args.proton:
+                    with tarfile.open(
+                            fileobj=io.BytesIO(archive), mode="r:gz") as f_in:
+                        f_in.extractall(Dir.steamcmddir)
+                else:
+                    with ZipFile(io.BytesIO(archive)) as f_in:
+                        with f_in.open("steamcmd.exe") as f_exe:
+                            with open(dest, "wb") as f_out:
+                                f_out.write(f_exe.read())
+            except (OSError, tarfile.TarError) as ex:
+                sys.exit(f"Failed to extract SteamCMD: {ex}")
+        logging.info("SteamCMD: %s", dest)
+
+    @staticmethod
+    def install_via_steamcmd(steamcmd_path, gamedir, wine, env):
+        """
+        Install Proton, Steam Runtime, and the specified game via SteamCMD.
+
+        steamcmd_path: Path to SteamCMD
+        gamedir: Game directory
+                 (DOS/Windows style path when using Wine, otherwise UNIX style path)
+        wine: Wine command, not used when using Proton
+        env: A dict of environment variables for Wine, not used when using Proton
+        """
+        steamcmd = SteamCMD(
+            steamcmd_path,
+            wine=wine if not Args.proton else None,
+            env=env if not Args.proton else None,
+        )
+
+        if Args.proton:
+            if Args.skip_update_proton:
+                logging.info("Skipping updating Proton and Steam Runtime")
+            else:
+                if not Args.without_steam_runtime:
+                    # download/update Steam Runtime and Proton
+                    os.makedirs(Args.steamruntimedir, exist_ok=True)
+                    # Proton and Steam Linux Runtime work only on Linux systems
+                    appid_steamruntime = AppId.steamruntime["Linux"]
+                    logging.debug("Updating Steam Runtime (AppID:%s)", appid_steamruntime)
+                    steamcmd.run(
+                        [
+                            "+force_install_dir", Args.steamruntimedir,
+                            "+login", "anonymous",
+                            "+app_update", str(appid_steamruntime), "validate",
+                            "+quit",
+                        ]
+                    )
+                os.makedirs(Args.protondir, exist_ok=True)
+                logging.debug("Updating Proton (AppID:%s)", Args.proton_appid)
+                steamcmd.run(
+                    [
+                        "+force_install_dir", Args.protondir,
+                        "+login", "anonymous",
+                        "+app_update", str(Args.proton_appid), "validate",
+                        "+quit",
+                    ]
+                )
+
+        # determine game branch
+        branch = determine_game_branch()
+        logging.info("Game branch: %s", branch)
+
+        # use SteamCMD to update the chosen game
+        os.makedirs(Args.gamedir, exist_ok=True)
+        logging.debug("Updating Game (AppID:%s)", Args.steamid)
+        steamcmd.run(
+            [
+                "+@sSteamCmdForcePlatformType", "windows",
+                "+force_install_dir", gamedir,
+                "+login", Args.account,
+                "+app_update", Args.steamid, "-beta", branch, "validate",
+                "+quit",
+            ]
+        )
 
     def run(self, args):
         """
@@ -87,17 +179,13 @@ def update_game():
     SteamCMD. When "--proton" is specified, this retrieves/uses
     Linux version of SteamCMD.
     """
-    # pylint: disable=too-many-branches,too-many-locals,too-many-statements
-
     env = os.environ.copy()
     env.update(WINEDEBUG="-all", WINEARCH="win64")
     env_steam = env.copy()
-    if Args.proton:
-        # Proton's "prefix" is for STEAM_COMPAT_DATA_PATH that contains
-        # the directory "pfx" for WINEPREFIX
-        env_steam["WINEPREFIX"] = os.path.join(Args.prefixdir, "pfx")
-    else:
-        env_steam["WINEPREFIX"] = Args.prefixdir
+    # Proton's "prefix" is for STEAM_COMPAT_DATA_PATH that contains
+    # the directory "pfx" for WINEPREFIX
+    env_steam["WINEPREFIX"] = os.path.join(Args.prefixdir, "pfx") if Args.proton \
+        else Args.prefixdir
     env.update(
         # use a prefix only for SteamCMD to avoid every-time authentication
         WINEPREFIX=Dir.steamcmdpfx,
@@ -136,29 +224,7 @@ def update_game():
         steamcmd_url = URL.steamcmdwin
 
     # fetch SteamCMD if not in our data directory
-    os.makedirs(Dir.steamcmddir, exist_ok=True)
-    if not os.path.isfile(steamcmd_path):
-        logging.debug("Retrieving SteamCMD")
-        try:
-            with urllib.request.urlopen(steamcmd_url) as f_in:
-                steamcmd_archive = f_in.read()
-        except OSError as ex:
-            sys.exit(f"Failed to retrieve SteamCMD: {ex}")
-        logging.debug("Extracting SteamCMD")
-        try:
-            if Args.proton:
-                with tarfile.open(
-                        fileobj=io.BytesIO(steamcmd_archive), mode="r:gz") as f_in:
-                    f_in.extractall(Dir.steamcmddir)
-            else:
-                with ZipFile(io.BytesIO(steamcmd_archive)) as f_in:
-                    with f_in.open("steamcmd.exe") as f_exe:
-                        with open(steamcmd_path, "wb") as f_out:
-                            f_out.write(f_exe.read())
-        except (OSError, tarfile.TarError) as ex:
-            sys.exit(f"Failed to extract SteamCMD: {ex}")
-
-    logging.info("SteamCMD: %s", steamcmd_path)
+    SteamCMD.download_steamcmd(steamcmd_path, steamcmd_url)
 
     # Linux version of Steam
     if platform.system() == "Linux" and check_steam_process(use_proton=True):
@@ -173,56 +239,5 @@ def update_game():
             (wine, os.path.join(Args.wine_steam_dir, "steam.exe"), "-shutdown"),
             env=env_steam)
 
-    steamcmd = SteamCMD(
-        steamcmd_path,
-        wine=wine if not Args.proton else None,
-        env=env if not Args.proton else None,
-    )
-
-    if Args.proton:
-        if Args.skip_update_proton:
-            logging.info("Skipping updating Proton and Steam Runtime")
-        else:
-            if not Args.without_steam_runtime:
-                # download/update Steam Runtime and Proton
-                os.makedirs(Args.steamruntimedir, exist_ok=True)
-                # Proton and Steam Linux Runtime work only on Linux systems
-                appid_steamruntime = AppId.steamruntime["Linux"]
-                logging.debug("Updating Steam Runtime (AppID:%s)", appid_steamruntime)
-                steamcmd.run(
-                    [
-                        "+force_install_dir", Args.steamruntimedir,
-                        "+login", "anonymous",
-                        "+app_update", str(appid_steamruntime), "validate",
-                        "+quit",
-                    ]
-                )
-            os.makedirs(Args.protondir, exist_ok=True)
-            logging.debug("Updating Proton (AppID:%s)", Args.proton_appid)
-            steamcmd.run(
-                [
-                    "+force_install_dir", Args.protondir,
-                    "+login", "anonymous",
-                    "+app_update", str(Args.proton_appid), "validate",
-                    "+quit",
-                ]
-            )
-
-    # determine game branch
-    branch = determine_game_branch()
-    logging.info("Game branch: %s", branch)
-
-    # use SteamCMD to update the chosen game
-    os.makedirs(Args.gamedir, exist_ok=True)
-    logging.debug("Updating Game (AppID:%s)", Args.steamid)
-    steamcmd.run(
-        [
-            "+@sSteamCmdForcePlatformType", "windows",
-            "+force_install_dir", gamedir,
-            "+login", Args.account,
-            "+app_update", Args.steamid,
-            "-beta", branch,
-            "validate",
-            "+quit",
-        ]
-    )
+    # install via SteamCMD
+    SteamCMD.install_via_steamcmd(steamcmd_path, gamedir, wine, env)
