@@ -228,52 +228,50 @@ class ConfigFile:
         """
         # game directory
         Args.gamedir = ConfigFile.configure_game_specific_setting(
-            parser, Args.gamedir,
-            "game-directory", Dir.default_gamedir, "Game directory",
+            parser, Args.gamedir, "game-directory",
+            Dir.default_gamedir, "Game directory",
         )
 
         # prefix directory
         Args.prefixdir = ConfigFile.configure_game_specific_setting(
-            parser, Args.prefixdir,
-            "prefix-directory", Dir.default_prefixdir, "Prefix directory",
+            parser, Args.prefixdir, "prefix-directory",
+            Dir.default_prefixdir, "Prefix directory",
         )
 
         # game options
         # note that game starters will prepend "-rdevice" to the given options
         Args.game_options = ConfigFile.configure_game_specific_setting(
-            parser, Args.game_options,
-            "game-options", "-nointro -64bit", "Game options",
+            parser, Args.game_options, "game-options",
+            "-nointro -64bit", "Game options",
         )
 
         # TruckersMP MOD directory
         Args.moddir = ConfigFile.configure_game_specific_setting(
-            parser, Args.moddir,
-            "truckersmp-directory", Dir.default_moddir, "TruckersMP MOD directory",
+            parser, Args.moddir, "truckersmp-directory",
+            Dir.default_moddir, "TruckersMP MOD directory",
         )
 
         # whether to disable Steam Runtime
         Args.without_steam_runtime = ConfigFile.configure_game_specific_setting_boolean(
-            parser, Args.without_steam_runtime,
-            "without-steamruntime", False, "Whether to disable Steam Runtime",
+            parser, Args.without_steam_runtime, "without-steamruntime",
+            False, "Whether to disable Steam Runtime",
         )
 
         # whether to disable Steam Overlay
         Args.disable_proton_overlay = ConfigFile.configure_game_specific_setting_boolean(
-            parser, Args.disable_proton_overlay,
-            "disable-proton-overlay", False, "Whether to disable Steam Overlay",
+            parser, Args.disable_proton_overlay, "disable-proton-overlay",
+            False, "Whether to disable Steam Overlay",
         )
 
         # Proton/Steam Runtime directory
         if Args.proton:
             Args.protondir = ConfigFile.configure_game_specific_setting(
-                parser, Args.protondir,
-                "proton-directory", Dir.default_protondir, "Proton directory",
+                parser, Args.protondir, "proton-directory",
+                Dir.default_protondir, "Proton directory",
             )
             Args.steamruntimedir = ConfigFile.configure_game_specific_setting(
-                parser, Args.steamruntimedir,
-                "steamruntime-directory",
-                Dir.default_steamruntimedir,
-                "Steam Runtime directory",
+                parser, Args.steamruntimedir, "steamruntime-directory",
+                Dir.default_steamruntimedir, "Steam Runtime directory",
             )
 
         # Discord Rich Presence
