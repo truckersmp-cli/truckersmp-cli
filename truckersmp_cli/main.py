@@ -158,11 +158,11 @@ See {URL.project_doc_inst} for additional information.""")
             # when starting with Proton + Steam Runtime
             run = os.path.join(Args.steamruntimedir, "run")
             var = os.path.join(Args.steamruntimedir, "var")
-            if not Args.without_steam_runtime:
+            if not Args.disable_steamruntime:
                 if not os.access(run, os.R_OK | os.X_OK):
                     sys.exit(
                         f'Steam Runtime is not found in {Args.steamruntimedir}\n'
-                        'Update the game or start with "--without-steam-runtime" option\n'
+                        'Update the game or start with "--disable-steamruntime" option\n'
                         'to disable the Steam Runtime')
                 if (not os.access(Args.steamruntimedir, os.R_OK | os.W_OK | os.X_OK)
                         or (os.path.isdir(var)
