@@ -205,8 +205,7 @@ SteamCMD can use your saved credentials for convenience.
     store_actions.append(parser.add_argument(
         "-m", "--moddir", metavar="DIR",
         help="""choose a different directory for the mod files
-                [Default: $XDG_DATA_HOME/truckersmp-cli/TruckersMP,
-                Fallback: ./truckersmp]"""))
+                [Default: $XDG_DATA_HOME/truckersmp-cli/TruckersMP]"""))
     store_actions.append(parser.add_argument(
         "-n", "--account", metavar="NAME",
         help="""steam account name to use
