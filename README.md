@@ -98,6 +98,7 @@ Short option|Long option|Description
 (Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
 (Not available)|`--check-windows-steam`|Check for the Windows Steam version on updating when using Proton
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
+(Not available)|`--disable-steamruntime`|Don't use Steam Runtime even when using Proton 5.13 or newer
 (Not available)|`--download-throttle SPEED`|Limit download speed to SPEED (KiB/s), disabled if negative value is specified [Default: `-1`]
 (Not available)|`--game-options OPTIONS`|Specify ATS/ETS2 options Note: If specifying one option, use `--game-options=-option` format [Default: `-nointro -64bit`]
 (Not available)|`--native-steam-dir`|Choose native Steam installation, useful only if your Steam directory is not detected automatically [Default: `auto`]
@@ -107,7 +108,6 @@ Short option|Long option|Description
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
 (Not available)|`--wine-desktop SIZE`|Use Wine desktop, work around resolution issue, mouse clicking won't work in other GUI apps while the game is running, SIZE must be 'WIDTHxHEIGHT' format (e.g. 1920x1080)
 (Not available)|`--wine-steam-dir`|Choose a directory for Windows version of Steam [Default: `C:\Program Files (x86)\Steam` in the prefix]
-(Not available)|`--without-steam-runtime`|Don't use Steam Runtime even when using Proton 5.13 or newer
 (Not available)|`--without-wine-discord-ipc-bridge`|Don't use wine-discord-ipc-bridge for Discord Rich Presence
 (Not available)|`--version`|Print version information and quit
 

@@ -272,6 +272,11 @@ SteamCMD can use your saved credentials for convenience.
         help="disable Steam Overlay when using Proton",
         action="store_true"))
     store_actions.append(parser.add_argument(
+        "--disable-steamruntime",
+        default=None,
+        help="don't use Steam Runtime even when using Proton 5.13 or newer",
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "--downgrade",
         help="""**DEPRECATED** downgrade to the latest version supported by TruckersMP
                 Note: This option implies "--update" option and
@@ -319,7 +324,8 @@ SteamCMD can use your saved credentials for convenience.
     store_actions.append(parser.add_argument(
         "--without-steam-runtime",
         default=None,
-        help="don't use Steam Runtime even when using Proton 5.13 or newer",
+        help="""**DEPRECATED** don't use Steam Runtime even when using
+                Proton 5.13 or newer""",
         action="store_true"))
     store_actions.append(parser.add_argument(
         "--without-wine-discord-ipc-bridge",

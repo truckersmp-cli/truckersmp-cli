@@ -50,7 +50,7 @@ class StarterProton(GameStarterInterface):
         major, minor = get_proton_version(Args.protondir)
         logging.info("Proton version is (major=%d, minor=%d)", major, minor)
         self._use_steam_runtime = (
-            not Args.without_steam_runtime
+            not Args.disable_steamruntime
             and (major >= 6 or (major == 5 and minor >= 13)))
         logging.info(
             # use Steam Runtime container for Proton 5.13+
