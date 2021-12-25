@@ -245,6 +245,12 @@ class ConfigFile:
             "-nointro -64bit", "Game options",
         )
 
+        # log file
+        Args.logfile = ConfigFile.configure_game_specific_setting(
+            parser, Args.logfile, "log-file",
+            "", "Log file",
+        )
+
         # TruckersMP MOD directory
         Args.moddir = ConfigFile.configure_game_specific_setting(
             parser, Args.moddir, "truckersmp-directory",
