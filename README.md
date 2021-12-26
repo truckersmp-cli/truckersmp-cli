@@ -15,6 +15,7 @@ On Linux it's possible to start TruckersMP through [Proton][github:proton]. A wo
 * If D3D11 rendering backend is used, TruckersMP login screen is not shown without Windows native 64-bit `d3dcompiler_47.dll`
     * `truckersmp-cli` will automatically download and set up the Windows native dll when D3D11 is used
 * If Steam is running while SteamCMD is being used the Steam client looses all connections and maybe asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
+* If there are game MOD files with German umlauts `ü` and `ß` in filename, game crashes on German locale. For the details, see [issue #248][github:issue248].
 
 ## Install
 
@@ -381,6 +382,7 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 [article:dll-injection]: http://securityxploded.com/dll-injection-and-hooking.php
 [github:inject]: https://github.com/mewrev/inject
 [github:issue147]: https://github.com/truckersmp-cli/truckersmp-cli/issues/147
+[github:issue248]: https://github.com/truckersmp-cli/truckersmp-cli/issues/248
 [github:issue253]: https://github.com/truckersmp-cli/truckersmp-cli/issues/253
 [github:kakurasan]: https://github.com/kakurasan
 [github:Lucki]: https://github.com/Lucki
