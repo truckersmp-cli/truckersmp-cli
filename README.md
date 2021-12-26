@@ -254,17 +254,17 @@ Settings in `[DEFAULT]` will be applied to all game modes.
 
 Key-Value-Pair|Description
 ---|---
-`without-rich-presence = [boolean]`|Disable Discord Rich Presence for the game mode - overriding what is set in third party sections. [Default: `no`]
-`game-directory = [path]`|Choose a different directory for the game files [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`]
-`prefix-directory = [path]`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]
-`game-options = [options]`|Specify ATS/ETS2 options [Default: `-nointro -64bit`]
-`rendering-backend = {auto,dx11,gl}`|Choose a rendering backend [Default: `auto` (OpenGL is used when this is not specified for the game in the configuration file)]
-`proton-directory = [path]`|Choose a different Proton directory [Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`]
+`without-rich-presence = [boolean]`|Disable Discord Rich Presence for the game mode - overriding what is set in third party sections.<br><br>Default: `no`
+`game-directory = [path]`|Choose a different directory for the game files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`
+`prefix-directory = [path]`|Choose a different directory for the prefix<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`
+`game-options = [options]`|Specify ATS/ETS2 options<br><br>Default: `-nointro -64bit`
+`rendering-backend = {auto,dx11,gl}`|Choose a rendering backend<br><br>Default: `auto` (OpenGL is used when this is not specified for the game in the configuration file)
+`proton-directory = [path]`|Choose a different Proton directory<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`
 `steamruntime-directory = [path]`|Choose a different Steam Runtime directory for Proton 5.13 or newer
-`disable-steamruntime = [boolean]`|Don't use Steam Runtime even when using Proton 5.13 or newer [Default: `no`]
-`disable-proton-overlay = [boolean]`|Disable Steam Overlay when using Proton [Default: `no`]
-`log-file = [path]`|Write log into the specified file, `-vv` option is recommended [Default: Empty string (only stderr)] Note: Messages from Steam/SteamCMD won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
-`truckersmp-directory = [path]`|Choose a different directory for the mod files [Default: `$XDG_DATA_HOME/truckersmp-cli/TruckersMP`]
+`disable-steamruntime = [boolean]`|Don't use Steam Runtime even when using Proton 5.13 or newer<br><br>Default: `no`
+`disable-proton-overlay = [boolean]`|Disable Steam Overlay when using Proton<br><br>Default: `no`
+`log-file = [path]`|Write log into the specified file, `-vv` option is recommended<br><br>Default: Empty string (only stderr)<br>Note: Messages from Steam/SteamCMD won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
+`truckersmp-directory = [path]`|Choose a different directory for the mod files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/TruckersMP`
 
 ### Sections for third party programs
 
