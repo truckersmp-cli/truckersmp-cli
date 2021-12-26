@@ -17,6 +17,7 @@ from .args import (
 )
 from .configfile import ConfigFile
 from .gamestarter import StarterProton, StarterWine
+from .logger import Logger
 from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import check_libsdl2, perform_self_update
@@ -98,7 +99,7 @@ def main():
     process_actions_gamenames()
 
     # set up logging
-    setup_logging()
+    logger = Logger()
 
     # check for errors before configuring
     check_args_errors_early()
@@ -108,6 +109,8 @@ def main():
         cfg = ConfigFile(Args.configfile)
     except ValueError as ex:
         sys.exit(f"Invalid configuration found in {Args.configfile}:\n{ex}")
+    logger.add_file_handler(cfg.logfile)
+    cfg.parse_settings()
 
     # print version
     if Args.version:
@@ -178,22 +181,3 @@ See {URL.project_doc_inst} for additional information.""")
         starter.run()
 
     sys.exit()
-
-
-def setup_logging():
-    """
-    Set up Python logging facility.
-
-    This function must be called after parse_args().
-    """
-    formatter = logging.Formatter("** {levelname} **  {message}", style="{")
-    stderr_handler = logging.StreamHandler()
-    stderr_handler.setFormatter(formatter)
-    logger = logging.getLogger()
-    if Args.verbose:
-        logger.setLevel(logging.INFO if Args.verbose == 1 else logging.DEBUG)
-    logger.addHandler(stderr_handler)
-    if Args.logfile != "":
-        file_handler = logging.FileHandler(Args.logfile, mode="w")
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
