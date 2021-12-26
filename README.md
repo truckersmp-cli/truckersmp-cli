@@ -248,7 +248,8 @@ Boolean values can be `{yes,no}`, `{true,false}`, `{on,off}` and `{1,0}`.
 ### Sections for game modes
 
 Supported sections are `[ats]`, `[atsmp]`, `[ets2]` and `[ets2mp]`.
- 
+Settings in `[DEFAULT]` will be applied to all game modes.
+
 #### Optional game mode settings
 
 Key-Value-Pair|Description
@@ -286,6 +287,15 @@ Key-Value-Pair|Description
 ### Example configuration file
 
 ~~~ ini
+# Common settings
+[DEFAULT]
+# D3D11 will be enabled in all games
+rendering-backend = dx11
+# Use unofficial version of Proton in all games
+proton-directory = /path/to/proton-tkg-6.8
+# Disable Steam Runtime as a workaround
+disable-steamruntime = true
+
 # Forbid Discord Rich Presence in multiplayer of ETS2
 [ets2mp]
 without-rich-presence = true
