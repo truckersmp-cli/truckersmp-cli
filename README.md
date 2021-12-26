@@ -248,12 +248,23 @@ Boolean values can be `{yes,no}`, `{true,false}`, `{on,off}` and `{1,0}`.
 ### Sections for game modes
 
 Supported sections are `[ats]`, `[atsmp]`, `[ets2]` and `[ets2mp]`.
- 
+Settings in `[DEFAULT]` will be applied to all game modes.
+
 #### Optional game mode settings
 
 Key-Value-Pair|Description
 ---|---
-`without-rich-presence = [boolean]`|Disable Discord Rich Presence for the game mode - overriding what is set in third party sections.
+`without-rich-presence = [boolean]`|Disable Discord Rich Presence for the game mode - overriding what is set in third party sections.<br><br>Default: `no`
+`game-directory = [path]`|Choose a different directory for the game files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`
+`prefix-directory = [path]`|Choose a different directory for the prefix<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`
+`game-options = [options]`|Specify ATS/ETS2 options<br><br>Default: `-nointro -64bit`
+`rendering-backend = {auto,dx11,gl}`|Choose a rendering backend<br><br>Default: `auto` (OpenGL is used when this is not specified for the game in the configuration file)
+`proton-directory = [path]`|Choose a different Proton directory<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`
+`steamruntime-directory = [path]`|Choose a different Steam Runtime directory for Proton 5.13 or newer
+`disable-steamruntime = [boolean]`|Don't use Steam Runtime even when using Proton 5.13 or newer<br><br>Default: `no`
+`disable-proton-overlay = [boolean]`|Disable Steam Overlay when using Proton<br><br>Default: `no`
+`log-file = [path]`|Write log into the specified file, `-vv` option is recommended<br><br>Default: Empty string (only stderr)<br>Note: Messages from Steam/SteamCMD won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
+`truckersmp-directory = [path]`|Choose a different directory for the mod files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/TruckersMP`
 
 ### Sections for third party programs
 
@@ -276,9 +287,22 @@ Key-Value-Pair|Description
 ### Example configuration file
 
 ~~~ ini
+# Common settings
+[DEFAULT]
+# D3D11 will be enabled in all games
+rendering-backend = dx11
+# Use unofficial version of Proton in all games
+proton-directory = /path/to/proton-tkg-6.8
+# Disable Steam Runtime as a workaround
+disable-steamruntime = true
+
 # Forbid Discord Rich Presence in multiplayer of ETS2
 [ets2mp]
 without-rich-presence = true
+
+# Use custom game options only when starting singleplayer of ATS
+[ats]
+game-options = -mm_pool_size 600 -nointro -64bit
 
 # Start Trucky together with all game modes (ats, atsmp, ets2, ets2mp)
 # and wait at least 45 seconds before starting the game
