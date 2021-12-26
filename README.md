@@ -258,7 +258,7 @@ Key-Value-Pair|Description
 `game-directory = [path]`|Choose a different directory for the game files [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`]
 `prefix-directory = [path]`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]
 `game-options = [options]`|Specify ATS/ETS2 options [Default: `-nointro -64bit`]
-`rendering-backend = {auto,dx11,gl}`|Choose a rendering backend [Default: `auto` (OpenGL is used when `rendering-backend = ` is not specified for the game in the configuration file)]
+`rendering-backend = {auto,dx11,gl}`|Choose a rendering backend [Default: `auto` (OpenGL is used when this is not specified for the game in the configuration file)]
 `proton-directory = [path]`|Choose a different Proton directory [Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`]
 `steamruntime-directory = [path]`|Choose a different Steam Runtime directory for Proton 5.13 or newer
 `disable-steamruntime = [boolean]`|Don't use Steam Runtime even when using Proton 5.13 or newer [Default: `no`]
