@@ -300,6 +300,10 @@ disable-steamruntime = true
 [ets2mp]
 without-rich-presence = true
 
+# Use custom game options only when starting singleplayer of ATS
+[ats]
+game-options = -mm_pool_size 600 -nointro -64bit
+
 # Start Trucky together with all game modes (ats, atsmp, ets2, ets2mp)
 # and wait at least 45 seconds before starting the game
 [thirdparty.trucky]
