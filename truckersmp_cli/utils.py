@@ -534,15 +534,17 @@ def log_info_formatted_envars_and_args(runner, env_print, env, args):
     for name in env_print:
         name_value_pairs.append(f"{name}={env[name]}")
     env_str += "\n  ".join(name_value_pairs) + "\n  "
-    # don't add newline after the first "-rdevice"
-    args_print = args.copy()
-    for i, arg in enumerate(args_print):
-        if arg == "-rdevice":
-            try:
-                args_print[i:i + 2] = (f"{arg} {args_print[i + 1]}", )
-            except IndexError:
-                pass
+    args_print = []
+    opts_print = []
+    # print game options in one line
+    for i, arg in enumerate(args):
+        # game starter already put "-rdevice" first
+        if arg.startswith("-rdevice"):
+            opts_print += args[i:]
             break
+        args_print.append(arg)
+    if len(opts_print) > 0:
+        args_print.append("  " + " ".join(opts_print))
     cmd_str += "\n    ".join(args_print)
     logging.info("Running %s:\n  %s%s", runner, env_str, cmd_str)
 
