@@ -196,7 +196,7 @@ SteamCMD can use your saved credentials for convenience.
                  [Default: {AppId.proton[AppId.proton["default"]]}]"""))
     store_actions.append(parser.add_argument(
         "-l", "--logfile", metavar="LOG",
-        default="",
+        default=None,
         help="""write log into LOG, "-vv" option is recommended
                 [Default: Empty string (only stderr)]
                 Note: Messages from Steam/SteamCMD won't be written,
