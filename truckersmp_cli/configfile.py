@@ -107,7 +107,8 @@ class ConfigFile:
                 config_src = ConfigSource.DEFAULT
                 ret = default_value[Args.game.replace("mp", "")] \
                     if isinstance(default_value, dict) else default_value
-        logging.info("%s: %s (%s)", log_name, ret, config_src.value)
+        logging.info(
+            "%s: %s (%s)", log_name, ret if ret != "" else "<empty>", config_src.value)
 
         return ret
 
