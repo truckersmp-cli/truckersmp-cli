@@ -91,7 +91,7 @@ Short option|Long option|Description
 `-m DIR`|`--moddir DIR`|Choose a different directory for the mod files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/TruckersMP`
 `-n NAME`|`--account NAME`|Steam account name to use
 `-o DIR`|`--protondir DIR`|Choose a different Proton directory<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`
-`-p`|`--proton`|Start the game with Proton [Default on Linux if neither Proton or Wine are specified]
+`-p`|`--proton`|Start the game with Proton<br><br>Default on Linux if neither Proton or Wine are specified
 `-r {auto,dx11,gl}`|`--rendering-backend {auto,dx11,gl}`|Choose a rendering backend<br><br>Default: `auto` (OpenGL is used when `rendering-backend = ` is not specified for the game in the configuration file)
 `-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
 `-w`|`--wine`|Start the game with Wine<br><br>Default on systems other than linux if neither Proton or Wine are specified
