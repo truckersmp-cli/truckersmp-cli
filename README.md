@@ -100,7 +100,7 @@ Short option|Long option|Description
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
 (Not available)|`--disable-steamruntime`|Don't use Steam Runtime even when using Proton 5.13 or newer
 (Not available)|`--download-throttle SPEED`|Limit download speed to SPEED (KiB/s), disabled if negative value is specified<br><br>Default: `-1`
-(Not available)|`--game-options OPTIONS`|Specify ATS/ETS2 options Note: If specifying one option, use `--game-options=-option` format<br><br>Default: `-nointro -64bit`
+(Not available)|`--game-options OPTIONS`|Specify ATS/ETS2 options<br><br>Default: `-nointro -64bit`<br>Note: If specifying only one option, use `--game-options=-option` format
 (Not available)|`--native-steam-dir`|Choose native Steam installation, useful only if your Steam directory is not detected automatically<br><br>Default: `auto`
 (Not available)|`--self-update`|Update files to the latest release and quit
 (Not available)|`--skip-update-proton`|Skip updating already-installed Proton when updating game with Proton enabled
