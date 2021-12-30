@@ -328,7 +328,11 @@ executable = my program/executable.exe
 wants-rich-presence = true
 ~~~
 
-## Default directories
+## Default files/directories
+
+### truckersmp-cli configuration file
+
+`$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`
 
 ### Game data
 
