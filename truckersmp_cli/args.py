@@ -251,7 +251,8 @@ SteamCMD can use your saved credentials for convenience.
     store_actions.append(parser.add_argument(
         "-w", "--wine",
         help="""start the game with Wine
-                [Default on other systems if neither Proton or Wine are specified]""",
+                [Default on systems other than linux
+                 if neither Proton or Wine are specified]""",
         action="store_true"))
     store_actions.append(parser.add_argument(
         "-x", "--prefixdir", metavar="DIR",
