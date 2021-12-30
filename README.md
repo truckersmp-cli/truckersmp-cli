@@ -93,7 +93,7 @@ Short option|Long option|Description
 `-o DIR`|`--protondir DIR`|Choose a different Proton directory<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`
 `-p`|`--proton`|Start the game with Proton<br><br>Default on Linux if neither Proton or Wine are specified
 `-r {auto,dx11,gl}`|`--rendering-backend {auto,dx11,gl}`|Choose a rendering backend<br><br>Default: `auto`<br>OpenGL is used when `rendering-backend` is not specified for the game in the configuration file
-`-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
+`-v`|`--verbose`|Verbose output<br><br>none: error, once: info, twice or more: debug
 `-w`|`--wine`|Start the game with Wine<br><br>Default on systems other than linux if neither Proton or Wine are specified
 `-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`
 (Not available)|`--check-windows-steam`|Check for the Windows Steam version on updating when using Proton

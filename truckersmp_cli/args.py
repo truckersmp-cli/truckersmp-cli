@@ -246,7 +246,7 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true"))
     store_actions.append(parser.add_argument(
         "-v", "--verbose",
-        help="verbose output (none:error, once:info, twice or more:debug)",
+        help="verbose output (none: error, once: info, twice or more: debug)",
         action="count"))
     store_actions.append(parser.add_argument(
         "-w", "--wine",
