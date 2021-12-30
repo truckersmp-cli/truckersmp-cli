@@ -228,7 +228,7 @@ SteamCMD can use your saved credentials for convenience.
         choices=("auto", "dx11", "gl"),
         default="auto",
         help="""choose a rendering backend
-                [Default: auto (OpenGL is used when "rendering-backend = " is
+                [Default: auto (OpenGL is used when "rendering-backend" is
                           not specified for the game in the configuration file)]"""))
     store_actions.append(parser.add_argument(
         "-s", "--start",
