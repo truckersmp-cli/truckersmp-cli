@@ -259,8 +259,8 @@ SteamCMD can use your saved credentials for convenience.
                 [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix]"""))
     store_actions.append(parser.add_argument(
         "--activate-native-d3dcompiler-47",
-        help="""activate native 64-bit d3dcompiler_47.dll when starting
-                (Needed for D3D11 renderer)""",
+        help="""Force activating native 64-bit d3dcompiler_47.dll for D3D11, when starting
+                Note: No need to specify manually""",
         action="store_true"))
     store_actions.append(parser.add_argument(
         "--check-windows-steam",

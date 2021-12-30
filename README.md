@@ -96,7 +96,6 @@ Short option|Long option|Description
 `-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
 `-w`|`--wine`|Start the game with Wine [Default on other systems if neither Proton or Wine are specified]
 `-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`
-(Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
 (Not available)|`--check-windows-steam`|Check for the Windows Steam version on updating when using Proton
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
 (Not available)|`--disable-steamruntime`|Don't use Steam Runtime even when using Proton 5.13 or newer
