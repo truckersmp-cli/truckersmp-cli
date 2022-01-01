@@ -15,6 +15,7 @@ On Linux it's possible to start TruckersMP through [Proton][github:proton]. A wo
 * If D3D11 rendering backend is used, TruckersMP login screen is not shown without Windows native 64-bit `d3dcompiler_47.dll`
     * `truckersmp-cli` will automatically download and set up the Windows native dll when D3D11 is used
 * If Steam is running while SteamCMD is being used the Steam client looses all connections and maybe asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
+* If there are game MOD files with German umlauts `ü` and `ß` in filename, game crashes on German locale. For the details, see [issue #248][github:issue248].
 
 ## Install
 
@@ -82,32 +83,31 @@ Short option|Long option|Description
 ---|---|---
 `-h`|`--help`|Show help
 `-b VERSION`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
-`-c FILE`|`--configfile FILE`|Use alternative configuration file [Default: `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`]
+`-c FILE`|`--configfile FILE`|Use alternative configuration file<br><br>Default: `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`
 `-d`|`--enable-d3d11`|**DEPRECATED** Use Direct3D 11 instead of OpenGL
-`-g DIR`|`--gamedir DIR`|Choose a different directory for the game files [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`]
+`-g DIR`|`--gamedir DIR`|Choose a different directory for the game files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`
 `-i APPID`|`--proton-appid APPID`|Choose a different AppID for Proton (Needs an update for changes)
-`-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended [Default: Empty string (only stderr)] Note: Messages from Steam/SteamCMD won't be written, only from this script (Game logs are written into `My Documents/{ETS2,ATS}MP/logs/client_*.log`)
-`-m DIR`|`--moddir DIR`|Choose a different directory for the mod files [Default: `$XDG_DATA_HOME/truckersmp-cli/TruckersMP`]
+`-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended<br><br>Default: Empty string (only stderr)<br>Note: Messages from Steam/SteamCMD won't be written, only from this script<br>See [#default-directories](https://github.com/truckersmp-cli/truckersmp-cli#default-directories) for game log locations.
+`-m DIR`|`--moddir DIR`|Choose a different directory for the mod files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/TruckersMP`
 `-n NAME`|`--account NAME`|Steam account name to use
-`-o DIR`|`--protondir DIR`|Choose a different Proton directory [Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`]
-`-p`|`--proton`|Start the game with Proton [Default on Linux if neither Proton or Wine are specified]
-`-r {auto,dx11,gl}`|`--rendering-backend {auto,dx11,gl}`|Choose a rendering backend [Default: `auto` (OpenGL is used when `rendering-backend = ` is not specified for the game in the configuration file)]
-`-v`|`--verbose`|Verbose output (none:error, once:info, twice or more:debug)
-`-w`|`--wine`|Start the game with Wine [Default on other systems if neither Proton or Wine are specified]
-`-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix [Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`]
-(Not available)|`--activate-native-d3dcompiler-47`|Activate native 64-bit `d3dcompiler_47.dll` when starting (Needed for D3D11 renderer)
+`-o DIR`|`--protondir DIR`|Choose a different Proton directory<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`
+`-p`|`--proton`|Start the game with Proton<br><br>Default on Linux if neither Proton or Wine are specified
+`-r {auto,dx11,gl}`|`--rendering-backend {auto,dx11,gl}`|Choose a rendering backend<br><br>Default: `auto`<br>OpenGL is used when `rendering-backend` is not specified for the game in the configuration file
+`-v`|`--verbose`|Verbose output<br><br>none: error, once: info, twice or more: debug
+`-w`|`--wine`|Start the game with Wine<br><br>Default on systems other than linux if neither Proton or Wine are specified
+`-x DIR`|`--prefixdir DIR`|Choose a different directory for the prefix<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix`
 (Not available)|`--check-windows-steam`|Check for the Windows Steam version on updating when using Proton
 (Not available)|`--disable-proton-overlay`|Disable Steam Overlay when using Proton
 (Not available)|`--disable-steamruntime`|Don't use Steam Runtime even when using Proton 5.13 or newer
-(Not available)|`--download-throttle SPEED`|Limit download speed to SPEED (KiB/s), disabled if negative value is specified [Default: `-1`]
-(Not available)|`--game-options OPTIONS`|Specify ATS/ETS2 options Note: If specifying one option, use `--game-options=-option` format [Default: `-nointro -64bit`]
-(Not available)|`--native-steam-dir`|Choose native Steam installation, useful only if your Steam directory is not detected automatically [Default: `auto`]
+(Not available)|`--download-throttle SPEED`|Limit download speed to SPEED (KiB/s), disabled if negative value is specified<br><br>Default: `-1`
+(Not available)|`--game-options OPTIONS`|Specify ATS/ETS2 options<br><br>Default: `-nointro -64bit`<br>Note: If specifying only one option, use `--game-options=-option` format
+(Not available)|`--native-steam-dir`|Choose native Steam installation, useful only if your Steam directory is not detected automatically<br><br>Default: `auto`
 (Not available)|`--self-update`|Update files to the latest release and quit
 (Not available)|`--skip-update-proton`|Skip updating already-installed Proton when updating game with Proton enabled
 (Not available)|`--steamruntimedir`|Choose a different Steam Runtime directory for Proton 5.13 or newer
 (Not available)|`--use-wined3d`|Use OpenGL-based D3D11 instead of DXVK when using Proton
 (Not available)|`--wine-desktop SIZE`|Use Wine desktop, work around resolution issue, mouse clicking won't work in other GUI apps while the game is running, SIZE must be 'WIDTHxHEIGHT' format (e.g. 1920x1080)
-(Not available)|`--wine-steam-dir`|Choose a directory for Windows version of Steam [Default: `C:\Program Files (x86)\Steam` in the prefix]
+(Not available)|`--wine-steam-dir`|Choose a directory for Windows version of Steam<br><br>Default: `C:\Program Files (x86)\Steam` in the prefix
 (Not available)|`--without-wine-discord-ipc-bridge`|Don't use wine-discord-ipc-bridge for Discord Rich Presence
 (Not available)|`--version`|Print version information and quit
 
@@ -239,11 +239,15 @@ $ truckersmp-cli --wine --prefixdir "/path/to/prefix/pfx" start ets2mp
 
 ## Configuration file
 
-It's possible to set various game settings and third party programs in a configuration file. The default search path for the file is `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`.
+It's possible to set various game settings and third party programs in a configuration file.
 
 The configuration file format is similar to the INI format known from Windows with several sections `[section]` containing key-value-pairs `key = value`.
 All sections are optional and a key-value-pair has to be in a section.
 Boolean values can be `{yes,no}`, `{true,false}`, `{on,off}` and `{1,0}`.
+
+### Default configuration file path
+
+The default search path for the file is `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`.
 
 ### Sections for game modes
 
@@ -323,7 +327,11 @@ executable = my program/executable.exe
 wants-rich-presence = true
 ~~~
 
-## Default directories
+## Default files/directories
+
+### truckersmp-cli configuration file
+
+`$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`
 
 ### Game data
 
@@ -381,6 +389,7 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 [article:dll-injection]: http://securityxploded.com/dll-injection-and-hooking.php
 [github:inject]: https://github.com/mewrev/inject
 [github:issue147]: https://github.com/truckersmp-cli/truckersmp-cli/issues/147
+[github:issue248]: https://github.com/truckersmp-cli/truckersmp-cli/issues/248
 [github:issue253]: https://github.com/truckersmp-cli/truckersmp-cli/issues/253
 [github:kakurasan]: https://github.com/kakurasan
 [github:Lucki]: https://github.com/Lucki

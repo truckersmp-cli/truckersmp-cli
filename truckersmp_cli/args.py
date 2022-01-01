@@ -228,7 +228,7 @@ SteamCMD can use your saved credentials for convenience.
         choices=("auto", "dx11", "gl"),
         default="auto",
         help="""choose a rendering backend
-                [Default: auto (OpenGL is used when "rendering-backend = " is
+                [Default: auto (OpenGL is used when "rendering-backend" is
                           not specified for the game in the configuration file)]"""))
     store_actions.append(parser.add_argument(
         "-s", "--start",
@@ -246,12 +246,13 @@ SteamCMD can use your saved credentials for convenience.
         action="store_true"))
     store_actions.append(parser.add_argument(
         "-v", "--verbose",
-        help="verbose output (none:error, once:info, twice or more:debug)",
+        help="verbose output (none: error, once: info, twice or more: debug)",
         action="count"))
     store_actions.append(parser.add_argument(
         "-w", "--wine",
         help="""start the game with Wine
-                [Default on other systems if neither Proton or Wine are specified]""",
+                [Default on systems other than linux
+                 if neither Proton or Wine are specified]""",
         action="store_true"))
     store_actions.append(parser.add_argument(
         "-x", "--prefixdir", metavar="DIR",
@@ -259,8 +260,8 @@ SteamCMD can use your saved credentials for convenience.
                 [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/prefix]"""))
     store_actions.append(parser.add_argument(
         "--activate-native-d3dcompiler-47",
-        help="""activate native 64-bit d3dcompiler_47.dll when starting
-                (Needed for D3D11 renderer)""",
+        help="""Force activating native 64-bit d3dcompiler_47.dll for D3D11, when starting
+                Note: No need to specify manually""",
         action="store_true"))
     store_actions.append(parser.add_argument(
         "--check-windows-steam",
@@ -285,8 +286,9 @@ SteamCMD can use your saved credentials for convenience.
     store_actions.append(parser.add_argument(
         "--game-options", metavar="OPTIONS",
         help="""specify ATS/ETS2 options
-                Note: If specifying one option, use "--game-options=-option" format
-                [Default: "-nointro -64bit"]"""))
+                [Default: "-nointro -64bit"]
+                Note: If specifying only one option, use "--game-options=-option" format
+                """))
     store_actions.append(parser.add_argument(
         "--native-steam-dir", metavar="DIR",
         default="auto",
