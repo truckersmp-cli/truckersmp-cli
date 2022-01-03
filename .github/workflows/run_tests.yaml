@@ -1,0 +1,31 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - .github/workflows/run_tests.yaml
+      - truckersmp-cli
+      - truckersmp_cli/*.py
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - .github/workflows/run_tests.yaml
+      - truckersmp-cli
+      - truckersmp_cli/*.py
+
+jobs:
+  print_version:
+    name: Print version (--version)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - name: Run truckersmp-cli with "--version"
+        run: ./truckersmp-cli --version
