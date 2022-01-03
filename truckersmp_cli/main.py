@@ -96,6 +96,10 @@ def main():
     # parse options
     arg_parser = create_arg_parser()[0]
     arg_parser.parse_args(namespace=Args)
+    if Args.version:
+        # print version
+        print(get_version_string())
+        sys.exit()
     process_actions_gamenames()
 
     # set up logging
@@ -111,11 +115,6 @@ def main():
         sys.exit(f"Invalid configuration found in {Args.configfile}:\n{ex}")
     logger.add_file_handler(cfg.logfile)
     cfg.parse_settings()
-
-    # print version
-    if Args.version:
-        print(get_version_string())
-        sys.exit()
 
     # check whether the executable of our inject program is present
     if not os.access(File.inject_exe, os.R_OK):
