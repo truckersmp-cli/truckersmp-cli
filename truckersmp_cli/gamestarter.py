@@ -266,6 +266,7 @@ class StarterProton(GameStarterInterface):
                     env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
                 if Args.verbose:
                     print_child_output(proc)
+                proc.wait()
         except subproc.CalledProcessError as ex:
             logging.error(
                 "Steam Runtime helper exited abnormally:\n%s", ex.output.decode("utf-8"))
