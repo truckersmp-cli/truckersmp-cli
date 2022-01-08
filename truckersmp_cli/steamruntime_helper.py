@@ -105,6 +105,7 @@ def main():
                         print(
                             "!! NON UNICODE OUTPUT !!", repr(line),
                             sep="  ", end="", flush=True)
+                proc.wait()
     except subproc.CalledProcessError as ex:
         print("Proton output:\n" + ex.output.decode("utf-8"), file=sys.stderr)
 
