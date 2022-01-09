@@ -253,6 +253,16 @@ class ConfigFile:
                 "'disable-steamruntime' setting instead")
             Args.disable_steamruntime = True
 
+        # whether to use Flatpak version of Steam
+        Args.flatpak_steam = self._configure_game_specific_setting_boolean(
+            Args.flatpak_steam, "flatpak-steam",
+            False, "Whether to use Flatpak version of Steam",
+        )
+        # disable Steam Runtime when using Flatpak version of Steam
+        if Args.flatpak_steam:
+            logging.info("Disabling Steam Runtime for Flatpak")
+            Args.disable_steamruntime = True
+
         # whether to disable Steam Overlay
         Args.disable_proton_overlay = self._configure_game_specific_setting_boolean(
             Args.disable_proton_overlay, "disable-proton-overlay",
