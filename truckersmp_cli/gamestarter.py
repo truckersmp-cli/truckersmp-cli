@@ -65,25 +65,27 @@ class StarterProton(GameStarterInterface):
             with self._steamruntime_usr_tempdir:
                 pass
 
-    def _determine_steamruntime_shared_paths(self, steamdir):
+    def _determine_shared_paths(self, steamdir):
         """
-        Determine and return paths that are shared with Steam Runtime.
+        Determine and return paths that are shared with Steam Runtime or Flatpak.
 
         steamdir: Path to Steam installation
         """
         # pylint: disable=consider-using-with
 
-        if not self._use_steam_runtime:
+        if not self._use_steam_runtime and not Args.flatpak_steam:
             return []
 
         # share directories with Steam Runtime container
-        shared_paths = [Args.gamedir, Args.protondir, Args.prefixdir]
+        shared_paths = [
+            Args.gamedir, Args.protondir, Args.prefixdir, Dir.truckersmp_cli_data]
         if Args.singleplayer:
-            # workshop mods may be loaded from other steam libraries
-            # despite they are also present in our gamedir library
-            shared_paths += get_steam_library_dirs(steamdir)
+            if not Args.flatpak_steam:
+                # workshop mods may be loaded from other steam libraries
+                # despite they are also present in our gamedir library
+                shared_paths += get_steam_library_dirs(steamdir)
         else:
-            shared_paths += Args.moddir, Dir.truckersmp_cli_data
+            shared_paths.append(Args.moddir)
         if Dir.scriptdir.startswith("/usr/"):
             logging.info("System-wide installation detected: %s", Dir.scriptdir)
             # when truckersmp-cli is installed system-wide,
@@ -91,12 +93,16 @@ class StarterProton(GameStarterInterface):
             # the inject program (multiplayer) need to be
             # temporarily copied because /usr cannot be shared
             self._steamruntime_usr_tempdir = tempfile.TemporaryDirectory(
-                prefix="truckersmp-cli-steamruntime-sharing-workaround-")
+                prefix="truckersmp-cli-container-sharing-workaround-")
             logging.debug(
                 "Copying Steam Runtime helper to %s",
                 self._steamruntime_usr_tempdir.name)
             shutil.copy(
                 File.steamruntime_helper, self._steamruntime_usr_tempdir.name)
+            logging.debug(
+                "Copying Flatpak helper to %s", self._steamruntime_usr_tempdir.name)
+            shutil.copy(
+                File.flatpak_helper, self._steamruntime_usr_tempdir.name)
             if not Args.singleplayer:
                 logging.debug(
                     "Copying inject program to %s", self._steamruntime_usr_tempdir.name)
@@ -111,20 +117,30 @@ class StarterProton(GameStarterInterface):
 
     def _init_args(self, args, steamdir):
         """
-        Initialize command line arguments (for Wine, Proton, and Steam Runtime).
+        Initialize command line arguments (for Wine, Proton, Steam Runtime, and Flatpak).
 
         args: A dict for arguments
         steamdir: Path to Steam installation
         """
+        shared_paths = self._determine_shared_paths(steamdir)
         if self._use_steam_runtime:
             python = "python3"
             args["steamrt"].append(os.path.join(Args.steamruntimedir, "run"))
-            shared_paths = self._determine_steamruntime_shared_paths(steamdir)
             for shared_path in shared_paths:
                 args["steamrt"] += "--filesystem", shared_path
             args["steamrt"].append("--")
         else:
             python = sys.executable
+        if Args.flatpak_steam:
+            args["flatpak"] += "flatpak", "run", "--command=python3"
+            for shared_path in shared_paths:
+                args["flatpak"].append(f"--filesystem={shared_path}")
+            args["flatpak"].append("com.valvesoftware.Steam")
+            args["flatpak"].append(
+                File.flatpak_helper if self._steamruntime_usr_tempdir is None
+                else os.path.join(
+                    self._steamruntime_usr_tempdir.name,
+                    os.path.basename(File.flatpak_helper)))
         args["wine"] = args["steamrt"].copy()
         args["steamrt"].append(python)  # helper
         args["proton"].append(python)   # Proton
@@ -195,12 +211,27 @@ class StarterProton(GameStarterInterface):
         ]
         return env_print
 
+    @staticmethod
+    def shutdown_flatpak_steam():
+        """Shut down Flatpak version of Steam."""
+        if not Args.flatpak_steam:
+            return
+
+        ps_output = subproc.check_output(("flatpak", "ps", "--columns=application"))
+        if b"com.valvesoftware.Steam" in ps_output:
+            # we need to shut down the running Flatpak version of Steam
+            # and restart from flatpak_helper.py
+            logging.info("Shutting down already running Steam")
+            subproc.call(("flatpak", "kill", "com.valvesoftware.Steam"))
+
     def run(self):
         """Start the specified game with Proton."""
-        args = dict(wine=[], proton=[], steamrt=[])
+        args = dict(wine=[], proton=[], steamrt=[], flatpak=[])
         prefix = os.path.join(Args.prefixdir, "pfx")
         env = os.environ.copy()
-        steamdir = wait_for_steam(use_proton=True, loginvdf_paths=File.loginusers_paths)
+        steamdir = Dir.flatpak_steamdir if Args.flatpak_steam else \
+            wait_for_steam(
+                use_proton=True, loginvdf_paths=File.loginusers_paths)
         logging.info("Steam installation directory: %s", steamdir)
 
         logging.debug("Creating directory %s if it doesn't exist", Args.prefixdir)
@@ -253,16 +284,19 @@ class StarterProton(GameStarterInterface):
 
         StarterProton.setup_game_env(env, steamdir)
         self._setup_proton_args(args["proton"])
+        StarterProton.shutdown_flatpak_steam()
 
         log_info_formatted_envars_and_args(
             runner="Steam Runtime helper",
             env_print=StarterProton.determine_env_print(env),
             env=env,
             args=args["proton"])
+        helper_args = args["flatpak"] + self._setup_helper_args(args["steamrt"]) \
+            + ["--", ] + args["proton"]
+        logging.debug("Helper arguments: %s", helper_args)
         try:
             with subproc.Popen(
-                    self._setup_helper_args(args["steamrt"])
-                    + ["--", ] + args["proton"],
+                    helper_args,
                     env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
                 if Args.verbose:
                     print_child_output(proc)

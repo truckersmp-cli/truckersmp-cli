@@ -186,6 +186,12 @@ SteamCMD can use your saved credentials for convenience.
                 [Default if neither ATS or ETS2 are specified] """,
         action="store_true"))
     store_actions.append(parser.add_argument(
+        "-f", "--flatpak-steam",
+        default=None,
+        help="""use Flatpak version of Steam with Proton
+                Note: Currently Steam Runtime is not supported and will be disabled""",
+        action="store_true"))
+    store_actions.append(parser.add_argument(
         "-g", "--gamedir", metavar="DIR",
         help="""choose a different directory for the game files
                 [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/data]"""))

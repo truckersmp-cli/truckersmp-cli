@@ -38,6 +38,7 @@ class Dir:
         ats=os.path.join(truckersmp_cli_data, "American Truck Simulator/prefix"),
         ets2=os.path.join(truckersmp_cli_data, "Euro Truck Simulator 2/prefix"),
     )
+    flatpak_steamdir = os.path.expanduser("~/.local/share/Steam")
     default_moddir = os.path.join(truckersmp_cli_data, "TruckersMP")
     default_protondir = os.path.join(truckersmp_cli_data, "Proton")
     default_steamruntimedir = os.path.join(truckersmp_cli_data, "SteamRuntime")
@@ -76,6 +77,7 @@ class File:
     ipcbridge = os.path.join(Dir.ipcbrdir, "winediscordipcbridge.exe")
     ipcbridge_md5 = "78fef85810c5bb8e492d3f67f48947a5"
     sdl2_soname = "libSDL2-2.0.so.0"
+    flatpak_helper = os.path.join(Dir.scriptdir, "flatpak_helper.py")
     steamruntime_helper = os.path.join(Dir.scriptdir, "steamruntime_helper.py")
 
 

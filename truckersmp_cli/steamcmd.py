@@ -227,9 +227,15 @@ def update_game():
     SteamCMD.download_steamcmd(steamcmd_path, steamcmd_url)
 
     # Linux version of Steam
-    if platform.system() == "Linux" and check_steam_process(use_proton=True):
-        logging.debug("Closing Linux version of Steam")
-        subproc.call(("steam", "-shutdown"))
+    if platform.system() == "Linux":
+        try:
+            logging.debug("Trying to close Flatpak version of Steam")
+            subproc.check_call(("flatpak", "kill", "com.valvesoftware.Steam"))
+        except (OSError, subproc.CalledProcessError):
+            pass
+        if check_steam_process(use_proton=True):
+            logging.debug("Closing Linux version of Steam")
+            subproc.call(("steam", "-shutdown"))
     # Windows version of Steam
     if (Args.check_windows_steam
             and wine
