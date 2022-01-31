@@ -230,7 +230,8 @@ def update_game():
     if platform.system() == "Linux":
         try:
             logging.debug("Trying to close Flatpak version of Steam")
-            subproc.check_call(("flatpak", "kill", "com.valvesoftware.Steam"))
+            subproc.check_call(
+                ("flatpak", "kill", "com.valvesoftware.Steam"), stderr=subproc.DEVNULL)
         except (OSError, subproc.CalledProcessError):
             pass
         if check_steam_process(use_proton=True):
