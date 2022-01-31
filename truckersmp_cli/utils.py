@@ -243,8 +243,15 @@ def find_discord_ipc_sockets():
     """
     # Discord creates sockets in $XDG_RUNTIME_DIR
     # "/tmp/" is used as fallback directory
+
+    # Discord from Flatpak and Snap are using subfolder:
+    # * $XDG_RUNTIME_DIR/app/com.discordapp.Discord/discord-ipc-*
+    #   https://github.com/0e4ef622/wine-discord-ipc-bridge/pull/24
+    # * $XDG_RUNTIME_DIR/snap.discord/discord-ipc-*
+    #   https://github.com/0e4ef622/wine-discord-ipc-bridge/issues/17#issuecomment-982285675
     return glob.glob(
-        os.path.join(os.getenv("XDG_RUNTIME_DIR", "/tmp"), "discord-ipc-*"))
+        os.path.join(os.getenv("XDG_RUNTIME_DIR", "/tmp"), "**", "discord-ipc-*"),
+        recursive=True)
 
 
 def get_current_steam_user():
