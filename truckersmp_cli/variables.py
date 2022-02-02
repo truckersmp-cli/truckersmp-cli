@@ -75,7 +75,7 @@ class File:
     d3dcompiler_47_inner = os.path.join(Dir.system32_inner, "d3dcompiler_47.dll")
     d3dcompiler_47_md5 = "b2cc65e1930e75f563078c6a20221b37"
     ipcbridge = os.path.join(Dir.ipcbrdir, "winediscordipcbridge.exe")
-    ipcbridge_md5 = "78fef85810c5bb8e492d3f67f48947a5"
+    ipcbridge_md5 = "a433fb2ec994b664b662e798095f9059"
     sdl2_soname = "libSDL2-2.0.so.0"
     flatpak_helper = os.path.join(Dir.scriptdir, "flatpak_helper.py")
     steamruntime_helper = os.path.join(Dir.scriptdir, "steamruntime_helper.py")
@@ -96,7 +96,7 @@ class URL:
     d3dcompilerpath = "/ImagingSIMS/ImagingSIMS/raw/" + \
         "162e4b02445c1fb621ce81c2bdf82a7870a3fd2a/Redist/x64/d3dcompiler_47.dll"
     ipcbrpath = "/0e4ef622/wine-discord-ipc-bridge/releases/download/" + \
-        "v0.0.1/winediscordipcbridge.exe"
+        "v0.0.2/winediscordipcbridge.exe"
     truckersmp_api = "https://api.truckersmp.com/v2/version"
     truckersmp_status = "https://truckersmp.com/status"
     issueurl = project + "/issues"
