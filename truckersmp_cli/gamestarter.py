@@ -160,7 +160,7 @@ class StarterProton(GameStarterInterface):
         if (not Args.without_wine_discord_ipc_bridge
                 # don't start wine-discord-ipc-bridge when no Discord sockets found
                 and len(self._discord_sockets) > 0):
-            args += "--early-executable", File.ipcbridge, \
+            args += "--early-executable", setup_wine_discord_ipc_bridge(), \
                 "--early-wait-before-start", "5"
         for executable in self._cfg.thirdparty_executables:
             args += "--executable", executable
