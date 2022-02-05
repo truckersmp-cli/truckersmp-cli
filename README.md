@@ -87,7 +87,7 @@ Short option|Long option|Description
 `-d`|`--enable-d3d11`|**DEPRECATED** Use Direct3D 11 instead of OpenGL
 `-f`|`--flatpak-steam`|Use Flatpak version of Steam with Proton<br><br>Note: Currently Steam Runtime is not supported and will be disabled
 `-g DIR`|`--gamedir DIR`|Choose a different directory for the game files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`
-`-i APPID`|`--proton-appid APPID`|Choose a different AppID for Proton (Needs an update for changes)
+`-i APPID`|`--proton-appid APPID`|Choose a different AppID or version name ("X.Y" format) of Proton (Needs an update for changes)
 `-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended<br><br>Default: Empty string (only stderr)<br>Note: Messages from Steam/SteamCMD won't be written, only from this script<br>See [#default-directories](https://github.com/truckersmp-cli/truckersmp-cli#default-directories) for game log locations.
 `-m DIR`|`--moddir DIR`|Choose a different directory for the mod files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/TruckersMP`
 `-n NAME`|`--account NAME`|Steam account name to use
