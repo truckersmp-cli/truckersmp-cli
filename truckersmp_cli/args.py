@@ -96,23 +96,6 @@ making sure it's the same directory as Proton""")
 
 def check_args_errors_early():
     """Check command-line arguments before configuring."""
-    # "--downgrade" implies "--update"
-    if Args.downgrade:
-        Args.update = True
-
-    # checks for updating and/or starting
-    if not Args.update and not Args.start:
-        logging.info("Action update/start not specified, doing both.")
-        Args.start = True
-        Args.update = True
-
-    # make sure only one game is chosen
-    if Args.ats and Args.ets2:
-        sys.exit("It's only possible to use one game at a time.")
-    elif not Args.ats and not Args.ets2:
-        logging.info("--ats/--ets2 not specified, choosing ETS2.")
-        Args.ets2 = True
-
     # make sure proton and wine aren't chosen at the same time
     if Args.proton and Args.wine:
         sys.exit("Start/update with Proton (-p) or Wine (-w)?")
@@ -159,10 +142,6 @@ SteamCMD can use your saved credentials for convenience.
         epilog=gen_proton_appid_list(),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     store_actions.append(parser.add_argument(
-        "-a", "--ats",
-        help="**DEPRECATED** use American Truck Simulator",
-        action="store_true"))
-    store_actions.append(parser.add_argument(
         "-b", "--beta", metavar="VERSION",
         help="""set game version to VERSION,
                 useful for downgrading (e.g. "temporary_1_35")"""))
@@ -179,11 +158,6 @@ SteamCMD can use your saved credentials for convenience.
     store_actions.append(parser.add_argument(
         "-d", "--enable-d3d11",
         help="**DEPRECATED** use Direct3D 11 instead of OpenGL",
-        action="store_true"))
-    store_actions.append(parser.add_argument(
-        "-e", "--ets2",
-        help="""**DEPRECATED** use Euro Truck Simulator 2
-                [Default if neither ATS or ETS2 are specified] """,
         action="store_true"))
     store_actions.append(parser.add_argument(
         "-f", "--flatpak-steam",
@@ -237,19 +211,9 @@ SteamCMD can use your saved credentials for convenience.
                 [Default: auto (OpenGL is used when "rendering-backend" is
                           not specified for the game in the configuration file)]"""))
     store_actions.append(parser.add_argument(
-        "-s", "--start",
-        help="""**DEPRECATED** start the game
-                [Default if neither start or update are specified]""",
-        action="store_true"))
-    store_actions.append(parser.add_argument(
         "--steamruntimedir", metavar="DIR",
         help="""choose a different Steam Runtime directory for Proton 5.13 or newer
                 [Default: $XDG_DATA_HOME/truckersmp-cli/SteamRuntime]"""))
-    store_actions.append(parser.add_argument(
-        "-u", "--update",
-        help="""**DEPRECATED** update the game
-                [Default if neither start or update are specified]""",
-        action="store_true"))
     store_actions.append(parser.add_argument(
         "-v", "--verbose",
         help="verbose output (none: error, once: info, twice or more: debug)",
@@ -284,12 +248,6 @@ SteamCMD can use your saved credentials for convenience.
         help="don't use Steam Runtime even when using Proton 5.13 or newer",
         action="store_true"))
     store_actions.append(parser.add_argument(
-        "--downgrade",
-        help="""**DEPRECATED** downgrade to the latest version supported by TruckersMP
-                Note: This option implies "--update" option and
-                is ignored if "--beta" ("-b") option is specified""",
-        action="store_true"))
-    store_actions.append(parser.add_argument(
         "--game-options", metavar="OPTIONS",
         help="""specify ATS/ETS2 options
                 [Default: "-nointro -64bit"]
@@ -305,11 +263,6 @@ SteamCMD can use your saved credentials for convenience.
         "--self-update",
         help="""update files to the latest release and quit
                 Note: Python package users should use pip instead""",
-        action="store_true"))
-    store_actions.append(parser.add_argument(
-        "--singleplayer",
-        help="""**DEPRECATED** start singleplayer game, useful for save editing,
-                using/testing DXVK in singleplayer, etc.""",
         action="store_true"))
     store_actions.append(parser.add_argument(
         "--skip-update-proton",
@@ -349,12 +302,8 @@ SteamCMD can use your saved credentials for convenience.
     group_action = parser.add_argument_group("action", group_action_desc)
     group_action.add_argument(
         "action",
-        # currently we can't set the default value because it may change
-        # values from deprecated options
-        # when we drop the options we need to
-        # set default="updateandstart" and remove "none"
-        choices=[act[0] for act in ACTIONS] + ["none", ],
-        default="none",
+        choices=[act[0] for act in ACTIONS],
+        default="updateandstart",
         nargs="?")
     group_game_desc = "choose a game"
     for name, desc in GAMES:
@@ -362,10 +311,8 @@ SteamCMD can use your saved credentials for convenience.
     group_game = parser.add_argument_group("game", group_game_desc)
     group_game.add_argument(
         "game",
-        # similarly, when we drop deprecated options we need to
-        # set default="ets2mp" and remove "none"
-        choices=[game[0] for game in GAMES] + ["none", ],
-        default="none",
+        choices=[game[0] for game in GAMES],
+        default="ets2mp",
         nargs="?")
 
     return parser, store_actions
@@ -386,44 +333,25 @@ def gen_proton_appid_list():
 
 def process_actions_gamenames():
     """
-    Process actions/game names in the new syntax.
+    Process actions/game names in the command line syntax.
 
     This function must be called after parse_args(namespace=Args)
     """
-    # pylint: disable=too-many-branches
-
-    # warn if using deprecated options
-    if Args.ets2:
-        logging.warning("'--ets2' ('-e') option is deprecated, use new syntax instead")
-        # the game name (Args.game) will be used when parsing configuration file
-        if Args.game == "none":
-            Args.game = "ets2" if Args.singleplayer else "ets2mp"
-    if Args.ats:
-        logging.warning("'--ats' ('-a') option is deprecated, use new syntax instead")
-        if Args.game == "none":
-            Args.game = "ats" if Args.singleplayer else "atsmp"
-    if Args.update:
-        logging.warning("'--update' ('-u') option is deprecated, use new syntax instead")
-    if Args.downgrade:
-        logging.warning("'--downgrade' option is deprecated, use new syntax instead")
-    if Args.start:
-        logging.warning("'--start' ('-s') option is deprecated, use new syntax instead")
-    if Args.singleplayer:
-        logging.warning("'--singleplayer' option is deprecated, use new syntax instead")
-
     # actions
+    Args.start = Args.update = Args.downgrade = False
     if Args.action == "start":
         Args.start = True
     elif Args.action == "update":
         Args.update = True
     elif Args.action == "downgrade":
-        Args.downgrade = True
+        Args.downgrade = Args.update = True
     elif Args.action in ("updateandstart", "ustart"):
         Args.update = Args.start = True
     elif Args.action in ("downgradeandstart", "dstart"):
-        Args.downgrade = Args.start = True
+        Args.downgrade = Args.update = Args.start = True
 
     # game names
+    Args.ets2 = Args.ats = Args.singleplayer = False
     if Args.game == "ets2mp":
         Args.ets2 = True
     elif Args.game == "atsmp":
