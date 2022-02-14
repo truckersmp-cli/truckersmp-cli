@@ -107,7 +107,7 @@ class SteamCMD:
                     [
                         "+force_install_dir", Args.protondir,
                         "+login", "anonymous",
-                        "+app_update", str(Args.proton_appid), "validate",
+                        "+app_update", Args.proton_appid, "validate",
                         "+quit",
                     ]
                 )

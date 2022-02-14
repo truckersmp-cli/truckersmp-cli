@@ -107,6 +107,17 @@ def check_args_errors_early():
             logging.info("Platform is not Linux, using Wine")
             Args.wine = True
 
+    # check Proton AppId
+    try:
+        int(Args.proton_appid)  # no error if raw AppId is given
+    except ValueError:
+        # find Proton AppId of the given version
+        if "." not in Args.proton_appid:
+            sys.exit(f'Invalid AppId "{Args.proton_appid}"')
+        if Args.proton_appid not in AppId.proton:
+            sys.exit(f'The AppId of Proton "{Args.proton_appid}" is unknown.')
+        Args.proton_appid = AppId.proton[Args.proton_appid]
+
 
 def create_arg_parser():
     """
@@ -170,9 +181,10 @@ SteamCMD can use your saved credentials for convenience.
         help="""choose a different directory for the game files
                 [Default: $XDG_DATA_HOME/truckersmp-cli/(Game name)/data]"""))
     store_actions.append(parser.add_argument(
-        "-i", "--proton-appid", metavar="APPID", type=int,
-        default=AppId.proton[AppId.proton["default"]],
-        help=f"""choose a different AppID for Proton (Needs an update for changes)
+        "-i", "--proton-appid", metavar="APPID",
+        default=str(AppId.proton[AppId.proton["default"]]),
+        help=f"""choose a different AppID or version name ("X.Y" format) of Proton
+                 (Needs an update for changes)
                  [Default: {AppId.proton[AppId.proton["default"]]}]"""))
     store_actions.append(parser.add_argument(
         "-l", "--logfile", metavar="LOG",
