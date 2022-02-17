@@ -109,7 +109,7 @@ class SteamCMD:
                         # Proton 7.0 requires logging in
                         "+login",
                         "anonymous" if int(Args.proton_appid) < AppId.proton["7.0"] \
-                            else Args.account,
+                        else Args.account,
                         "+app_update", Args.proton_appid, "validate",
                         "+quit",
                     ]
