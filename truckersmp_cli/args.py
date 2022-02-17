@@ -116,7 +116,7 @@ def check_args_errors_early():
             sys.exit(f'Invalid AppId "{Args.proton_appid}"')
         if Args.proton_appid not in AppId.proton:
             sys.exit(f'The AppId of Proton "{Args.proton_appid}" is unknown.')
-        Args.proton_appid = AppId.proton[Args.proton_appid]
+        Args.proton_appid = str(AppId.proton[Args.proton_appid])
 
 
 def create_arg_parser():
