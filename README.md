@@ -253,7 +253,7 @@ The default search path for the file is `$XDG_CONFIG_HOME/truckersmp-cli/trucker
 ### Sections for game modes
 
 Supported sections are `[ats]`, `[atsmp]`, `[ets2]` and `[ets2mp]`.
-Settings in `[DEFAULT]` will be applied to all game modes.
+Settings in `[DEFAULT]` will be applied to all game modes if the game mode specific sections exist.
 
 #### Optional game mode settings
 
@@ -293,6 +293,7 @@ Key-Value-Pair|Description
 
 ~~~ ini
 # Common settings
+# Game mode specific sections are needed too to apply these settings
 [DEFAULT]
 # D3D11 will be enabled in all games
 rendering-backend = dx11
@@ -304,6 +305,14 @@ disable-steamruntime = true
 # Forbid Discord Rich Presence in multiplayer of ETS2
 [ets2mp]
 without-rich-presence = true
+
+# Even if there are no game specific settings for ATSMP,
+# the empty section is needed if the user wants to apply the settings
+# in the "[DEFAULT]" section
+[atsmp]
+
+# Game mode specific settings for ETS2 singleplayer
+[ets2]
 
 # Use custom game options only when starting singleplayer of ATS
 [ats]
