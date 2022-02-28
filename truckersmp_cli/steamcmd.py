@@ -107,9 +107,7 @@ class SteamCMD:
                     [
                         "+force_install_dir", Args.protondir,
                         # Proton 7.0 requires logging in
-                        "+login",
-                        "anonymous" if int(Args.proton_appid) < AppId.proton["7.0"] \
-                        else Args.account,
+                        "+login", Args.account,
                         "+app_update", Args.proton_appid, "validate",
                         "+quit",
                     ]
