@@ -65,8 +65,8 @@ def get_supported_game_versions():
                 ats=data[key_ats_compat].replace("s", ""),
             )
         else:
-            logging.warning("\
-TruckersMP Web API returned the JSON that doesn't contain supported game versions.")
+            logging.warning("TruckersMP Web API returned the JSON"
+                            " that doesn't contain supported game versions.")
     except (OSError, ValueError) as ex:
         logging.warning("Failed to get information via TruckersMP Web API: %s", ex)
 
