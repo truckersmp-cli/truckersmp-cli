@@ -106,7 +106,8 @@ class SteamCMD:
                 steamcmd.run(
                     [
                         "+force_install_dir", Args.protondir,
-                        "+login", "anonymous",
+                        # Proton 7.0 requires logging in
+                        "+login", Args.account,
                         "+app_update", Args.proton_appid, "validate",
                         "+quit",
                     ]
