@@ -48,7 +48,7 @@ def main():
     arg_parser = argparse.ArgumentParser(description=desc)
     arg_parser.add_argument(
         "-v", "--verbose", action="count",
-        help="verbose output (none:error, once:info, twice or more:debug)")
+        help="verbose output (none: error, once: info, twice or more: debug)")
     arg_parser.add_argument(
         "--early-executable", action="append", metavar="FILE",
         help="""3rd party executable to start early in Steam Runtime container
