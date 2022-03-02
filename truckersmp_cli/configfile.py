@@ -176,11 +176,6 @@ class ConfigFile:
         """Determine rendering backend."""
         config_src = ConfigSource.OPTION
 
-        if Args.enable_d3d11:
-            logging.warning("'--enable-d3d11' ('-d') option is deprecated,"
-                            " use '--rendering-backend dx11 (-r dx11)' instead")
-            Args.rendering_backend = "dx11"
-
         if Args.rendering_backend == "auto":
             rendering_backend = None
             try:

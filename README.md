@@ -84,7 +84,6 @@ Short option|Long option|Description
 `-h`|`--help`|Show help
 `-b VERSION`|`--beta VERSION`|Set game version to VERSION, useful for downgrading (e.g. `temporary_1_35`)
 `-c FILE`|`--configfile FILE`|Use alternative configuration file<br><br>Default: `$XDG_CONFIG_HOME/truckersmp-cli/truckersmp-cli.conf`
-`-d`|`--enable-d3d11`|**DEPRECATED** Use Direct3D 11 instead of OpenGL
 `-f`|`--flatpak-steam`|Use Flatpak version of Steam with Proton<br><br>Note: Currently Steam Runtime is not supported and will be disabled
 `-g DIR`|`--gamedir DIR`|Choose a different directory for the game files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`
 `-i APPID`|`--proton-appid APPID`|Choose a different AppID or version name ("X.Y" format) of Proton (Needs an update for changes)
@@ -236,7 +235,7 @@ $ truckersmp-cli --wine --prefixdir "/path/to/prefix/pfx" start ets2mp
     * DXVK 1.4.6 or newer is needed because older versions have rendering issue. If you're using Proton, use 4.11-10 or newer.
 * Proton uses DXVK by default.
     * When using Proton, wined3d can be used by specifying `--use-wined3d`, but it's not recommended because this is slower than OpenGL.
-* Used only when `-d` or `--enable-d3d11` is specified.
+* Used only when `-r dx11` or `--rendering-backend dx11` is given.
 
 ## Configuration file
 
