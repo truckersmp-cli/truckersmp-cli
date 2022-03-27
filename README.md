@@ -396,7 +396,7 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 * Amit Malik's [article][article:dll-injection] on dll injection was also a great help.
 * [kakurasan][github:kakurasan] and [Lucki][github:Lucki] for the helper script.
 
-[article:dll-injection]: http://securityxploded.com/dll-injection-and-hooking.php
+[article:dll-injection]: https://securityxploded.com/dll-injection-and-hooking.php
 [github:inject]: https://github.com/mewrev/inject
 [github:issue147]: https://github.com/truckersmp-cli/truckersmp-cli/issues/147
 [github:issue248]: https://github.com/truckersmp-cli/truckersmp-cli/issues/248
