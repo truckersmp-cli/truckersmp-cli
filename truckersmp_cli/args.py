@@ -167,10 +167,6 @@ SteamCMD can use your saved credentials for convenience.
         help="""limit download speed to SPEED (KiB/s),
                 disabled if negative value is specified [Default: -1]"""))
     store_actions.append(parser.add_argument(
-        "-d", "--enable-d3d11",
-        help="**DEPRECATED** use Direct3D 11 instead of OpenGL",
-        action="store_true"))
-    store_actions.append(parser.add_argument(
         "-f", "--flatpak-steam",
         default=None,
         help="""use Flatpak version of Steam with Proton
