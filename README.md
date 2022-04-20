@@ -88,7 +88,7 @@ Short option|Long option|Description
 `-f`|`--flatpak-steam`|Use Flatpak version of Steam with Proton<br><br>Note: Currently Steam Runtime is not supported and will be disabled
 `-g DIR`|`--gamedir DIR`|Choose a different directory for the game files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/(Game name)/data`
 `-i APPID`|`--proton-appid APPID`|Choose a different AppID or version name ("X.Y" format) of Proton (Needs an update for changes)
-`-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended<br><br>Default: Empty string (only stderr)<br>Note: Messages from Steam/SteamCMD won't be written, only from this script<br>See [#default-directories](https://github.com/truckersmp-cli/truckersmp-cli#default-directories) for game log locations.
+`-l LOG`|`--logfile LOG`|Write log into LOG, `-vv` option is recommended<br><br>Default: Empty string (only stderr)<br>Note: Messages from Steam/SteamCMD won't be written, only from this script<br>See [#game-logs](https://github.com/truckersmp-cli/truckersmp-cli#game-logs) for game log locations.
 `-m DIR`|`--moddir DIR`|Choose a different directory for the mod files<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/TruckersMP`
 `-n NAME`|`--account NAME`|Steam account name to use
 `-o DIR`|`--protondir DIR`|Choose a different Proton directory<br><br>Default: `$XDG_DATA_HOME/truckersmp-cli/Proton`
@@ -396,7 +396,7 @@ and TheUnknownNO's unofficial [TruckersMP-Launcher][github:truckersmp-launcher].
 * Amit Malik's [article][article:dll-injection] on dll injection was also a great help.
 * [kakurasan][github:kakurasan] and [Lucki][github:Lucki] for the helper script.
 
-[article:dll-injection]: http://securityxploded.com/dll-injection-and-hooking.php
+[article:dll-injection]: https://securityxploded.com/dll-injection-and-hooking.php
 [github:inject]: https://github.com/mewrev/inject
 [github:issue147]: https://github.com/truckersmp-cli/truckersmp-cli/issues/147
 [github:issue248]: https://github.com/truckersmp-cli/truckersmp-cli/issues/248
