@@ -602,7 +602,26 @@ def perform_self_update():
     topdir = os.path.dirname(Dir.scriptdir)
     try:
         with tarfile.open(fileobj=io.BytesIO(asset_archive), mode="r:xz") as f_in:
-            f_in.extractall(topdir)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(f_in, topdir)
     except (OSError, tarfile.TarError) as ex:
         sys.exit(f"Failed to unpack release asset file: {ex}")
 

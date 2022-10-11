@@ -56,7 +56,26 @@ class SteamCMD:
                 if Args.proton:
                     with tarfile.open(
                             fileobj=io.BytesIO(archive), mode="r:gz") as f_in:
-                        f_in.extractall(Dir.steamcmddir)
+                        def is_within_directory(directory, target):
+                            
+                            abs_directory = os.path.abspath(directory)
+                            abs_target = os.path.abspath(target)
+                        
+                            prefix = os.path.commonprefix([abs_directory, abs_target])
+                            
+                            return prefix == abs_directory
+                        
+                        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                        
+                            for member in tar.getmembers():
+                                member_path = os.path.join(path, member.name)
+                                if not is_within_directory(path, member_path):
+                                    raise Exception("Attempted Path Traversal in Tar File")
+                        
+                            tar.extractall(path, members, numeric_owner=numeric_owner) 
+                            
+                        
+                        safe_extract(f_in, Dir.steamcmddir)
                 else:
                     with ZipFile(io.BytesIO(archive)) as f_in:
                         with f_in.open("steamcmd.exe") as f_exe:
