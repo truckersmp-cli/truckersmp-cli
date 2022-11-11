@@ -321,6 +321,17 @@ def get_mtime(files):
     return results
 
 
+def get_proton_dist_dir():
+    """Determine and return the path to the dist directorty in Proton directory."""
+    return os.path.join(
+        Args.protondir,
+        # the subdir is "dist" (official) or "files" (some forked builds)
+        "files" if os.access(
+            os.path.join(Args.protondir, "files/bin/wine"),
+            os.R_OK | os.X_OK,
+        ) else "dist")
+
+
 def get_proton_version(protondir):
     """
     Get Proton version from "version" file.
