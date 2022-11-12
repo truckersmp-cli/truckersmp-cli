@@ -16,7 +16,7 @@ import urllib.request
 from zipfile import ZipFile
 
 from .truckersmp import determine_game_branch
-from .utils import check_steam_process
+from .utils import check_and_unpack_tar, check_steam_process
 from .variables import AppId, Args, Dir, URL
 
 
@@ -56,7 +56,7 @@ class SteamCMD:
                 if Args.proton:
                     with tarfile.open(
                             fileobj=io.BytesIO(archive), mode="r:gz") as f_in:
-                        f_in.extractall(Dir.steamcmddir)
+                        check_and_unpack_tar(f_in, path=Dir.steamcmddir)
                 else:
                     with ZipFile(io.BytesIO(archive)) as f_in:
                         with f_in.open("steamcmd.exe") as f_exe:

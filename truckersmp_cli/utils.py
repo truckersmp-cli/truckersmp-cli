@@ -80,6 +80,25 @@ def activate_native_d3dcompiler_47(prefix, wine):
         env=env)
 
 
+def check_and_unpack_tar(f_tar, path=".", members=None, *, numeric_owner=False):
+    """
+    Check and try to unpack a tar archive.
+
+    This function checks whether the given tar archive can perform
+    a directory path traversal attack.
+    If yes, this function raises a tarfile.ReadError.
+
+    f_tar: A tarfile.TarFile object
+    path: "path" argument for tarfile.extractall()
+    members: "members" argument for tarfile.extractall()
+    numeric_owner: "numeric_owner" argument for tarfile.extractall()
+    """
+    for member in f_tar.getmembers():
+        if not is_within_directory(os.path.join(path, member.name), path):
+            raise tarfile.ReadError("Attempted path traversal in tar archive")
+    f_tar.extractall(path, members, numeric_owner=numeric_owner)
+
+
 def check_hash(path, digest, hashobj):
     """
     Compare given digest and calculated one.
@@ -530,6 +549,17 @@ def is_envar_enabled(envars, name):
     return len(value) > 0 and value != "0"
 
 
+def is_within_directory(dir1, dir2):
+    """
+    Check whether directory dir1 is within dir2.
+
+    dir1: A path to a directory
+    dir2: A path to another directory
+    """
+    dir2_abs = os.path.abspath(dir2)
+    return os.path.commonpath((dir2_abs, os.path.abspath(dir1))) == dir2_abs
+
+
 def log_info_formatted_envars_and_args(runner, env_print, env, args):
     """
     Print formatted envars and command line with logging level "info".
@@ -602,7 +632,7 @@ def perform_self_update():
     topdir = os.path.dirname(Dir.scriptdir)
     try:
         with tarfile.open(fileobj=io.BytesIO(asset_archive), mode="r:xz") as f_in:
-            f_in.extractall(topdir)
+            check_and_unpack_tar(f_in, path=topdir)
     except (OSError, tarfile.TarError) as ex:
         sys.exit(f"Failed to unpack release asset file: {ex}")
 
