@@ -478,7 +478,7 @@ def is_d3dcompiler_setup_skippable():
         return True
 
     # if Proton is used, get prefix version from the prefix directory
-    ver_pfx = dict(major=0, minor=0)
+    ver_pfx = dict(major=-1, minor=-1)
     try:
         with open(
                 os.path.join(Args.prefixdir, "version"),
@@ -488,13 +488,13 @@ def is_d3dcompiler_setup_skippable():
             ver_pfx["major"], ver_pfx["minor"] = int(major), int(minor)
     except (OSError, ValueError):
         pass
-    if ver_pfx["major"] == 0 or ver_pfx["minor"] == 0:
+    if ver_pfx["major"] < 0 or ver_pfx["minor"] < 0:
         # failed to get prefix version, unable to compare
         logging.debug("Failed to get Proton prefix version from version file")
         return False
 
     # get CURRENT_PREFIX_VERSION from "proton" script
-    ver_proton = dict(major=0, minor=0)
+    ver_proton = dict(major=-1, minor=-1)
     try:
         with open(os.path.join(Args.protondir, "proton"), encoding="utf-8") as f_proton:
             for line in f_proton:
@@ -504,7 +504,7 @@ def is_d3dcompiler_setup_skippable():
                     ver_proton["major"], ver_proton["minor"] = int(major), int(minor)
     except (OSError, ValueError):
         pass
-    if ver_proton["major"] == 0 or ver_proton["minor"] == 0:
+    if ver_proton["major"] < 0 or ver_proton["minor"] < 0:
         # failed to get CURRENT_PREFIX_VERSION, unable to compare
         logging.debug("Failed to get CURRENT_PREFIX_VERSION from proton script")
         return False
