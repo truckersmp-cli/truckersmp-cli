@@ -312,6 +312,7 @@ def get_proton_version(protondir):
       "xxxxxxxxxx 6.1-GE-2" -> (6, 1)
       "xxxxxxxxxx GE-Proton7-4" -> (7, 0)
       "xxxxxxxxxx proton-tkg-6.8.r15.gf308782d" -> (6, 8)
+      "xxxxxxxxxx experimental-bleeding-edge-7.0-29091-20221115-..." -> (7, 0)
 
     protondir: Proton top directory that has "version" file
     """
@@ -323,6 +324,9 @@ def get_proton_version(protondir):
     elif "GE-Proton" in ver:
         # 9 = len("GE-Proton")
         major, minor = (ver[ver.index("GE-Proton") + 9:ver.rindex("-")], 0)
+    elif "experimental-bleeding-edge-" in ver:
+        major, minor = ver.partition(
+            "experimental-bleeding-edge-")[2].split("-")[0].split(".")[:2]
     else:
         ver = ver.replace("proton-", "")
         major, minor = ver[ver.index(" ") + 1:ver.index("-")].split(".")
