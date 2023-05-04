@@ -60,10 +60,10 @@ def get_supported_game_versions():
         key_ets2_compat = "supported_game_version"
         key_ats_compat = "supported_ats_game_version"
         if key_ets2_compat in data and key_ats_compat in data:
-            result = dict(
-                ets2=data[key_ets2_compat].replace("s", ""),
-                ats=data[key_ats_compat].replace("s", ""),
-            )
+            result = {
+                "ets2": data[key_ets2_compat].replace("s", ""),
+                "ats": data[key_ats_compat].replace("s", ""),
+            }
         else:
             logging.warning("TruckersMP Web API returned the JSON"
                             " that doesn't contain supported game versions.")
