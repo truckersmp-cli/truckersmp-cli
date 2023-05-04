@@ -483,7 +483,7 @@ def is_d3dcompiler_setup_skippable():
         return True
 
     # if Proton is used, get prefix version from the prefix directory
-    ver_pfx = dict(major=-1, minor=-1)
+    ver_pfx = {"major": 1, "minor": -1}
     try:
         with open(
                 os.path.join(Args.prefixdir, "version"),
@@ -499,7 +499,7 @@ def is_d3dcompiler_setup_skippable():
         return False
 
     # get CURRENT_PREFIX_VERSION from "proton" script
-    ver_proton = dict(major=-1, minor=-1)
+    ver_proton = {"major": -1, "minor": -1}
     try:
         with open(os.path.join(Args.protondir, "proton"), encoding="utf-8") as f_proton:
             for line in f_proton:

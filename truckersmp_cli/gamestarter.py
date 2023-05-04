@@ -226,7 +226,7 @@ class StarterProton(GameStarterInterface):
 
     def run(self):
         """Start the specified game with Proton."""
-        args = dict(wine=[], proton=[], steamrt=[], flatpak=[])
+        args = {"wine": [], "proton": [], "steamrt": [], "flatpak": []}
         prefix = os.path.join(Args.prefixdir, "pfx")
         env = os.environ.copy()
         steamdir = Dir.flatpak_steamdir if Args.flatpak_steam else \

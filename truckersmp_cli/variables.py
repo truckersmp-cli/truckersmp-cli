@@ -30,14 +30,14 @@ class Dir:
     XDG_CONFIG_HOME = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
     XDG_DATA_HOME = os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
     truckersmp_cli_data = os.path.join(XDG_DATA_HOME, "truckersmp-cli")
-    default_gamedir = dict(
-        ats=os.path.join(truckersmp_cli_data, "American Truck Simulator/data"),
-        ets2=os.path.join(truckersmp_cli_data, "Euro Truck Simulator 2/data"),
-    )
-    default_prefixdir = dict(
-        ats=os.path.join(truckersmp_cli_data, "American Truck Simulator/prefix"),
-        ets2=os.path.join(truckersmp_cli_data, "Euro Truck Simulator 2/prefix"),
-    )
+    default_gamedir = {
+        "ats": os.path.join(truckersmp_cli_data, "American Truck Simulator/data"),
+        "ets2": os.path.join(truckersmp_cli_data, "Euro Truck Simulator 2/data"),
+    }
+    default_prefixdir = {
+        "ats": os.path.join(truckersmp_cli_data, "American Truck Simulator/prefix"),
+        "ets2": os.path.join(truckersmp_cli_data, "Euro Truck Simulator 2/prefix"),
+    }
     flatpak_steamdir = os.path.expanduser("~/.local/share/Steam")
     default_moddir = os.path.join(truckersmp_cli_data, "TruckersMP")
     default_protondir = os.path.join(truckersmp_cli_data, "Proton")
