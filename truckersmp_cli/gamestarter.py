@@ -13,7 +13,7 @@ import tempfile
 import time
 
 from .utils import (
-    activate_native_d3dcompiler_47, find_discord_ipc_sockets,
+    activate_native_d3dcompiler_47, find_discord_ipc_sockets, get_proton_dist_dir,
     get_proton_version, get_steam_library_dirs, is_d3dcompiler_setup_skippable,
     log_info_formatted_envars_and_args, print_child_output,
     set_wine_desktop_registry, setup_wine_discord_ipc_bridge, wait_for_steam,
@@ -23,6 +23,10 @@ from .variables import Args, Dir, File
 
 class GameStarterInterface:
     """The interface of game starter classes."""
+
+    def kill_active_procs(self):
+        """Kill running processes by running "wineserver -k"."""
+        raise NotImplementedError
 
     def run(self):
         """Start the specified game."""
@@ -43,10 +47,6 @@ class StarterProton(GameStarterInterface):
 
         cfg: A ConfigFile object
         """
-        self._cfg = cfg
-        self._steamruntime_usr_tempdir = None
-        self._discord_sockets = find_discord_ipc_sockets()
-
         major, minor = get_proton_version(Args.protondir)
         logging.info("Proton version is (major=%d, minor=%d)", major, minor)
         self._use_steam_runtime = (
@@ -58,6 +58,28 @@ class StarterProton(GameStarterInterface):
             # don't use Steam Runtime container for older Proton
             else "Not using Steam Runtime container")
 
+        proton_dist_dir = get_proton_dist_dir()
+        self._cfg = cfg
+        self._steamruntime_usr_tempdir = None
+        self._discord_sockets = find_discord_ipc_sockets()
+        self._path = {
+            "prefix": os.path.join(Args.prefixdir, "pfx"),
+            "wine": os.path.join(proton_dist_dir, "bin/wine"),
+            "wineserver": os.path.join(proton_dist_dir, "bin/wineserver"),
+            "proton": os.path.join(Args.protondir, "proton"),
+            "steamdir": Dir.flatpak_steamdir if Args.flatpak_steam else
+            wait_for_steam(
+                use_proton=True, loginvdf_paths=File.loginusers_paths),
+        }
+        logging.info("Steam installation directory: %s", self._path["steamdir"])
+        self._env = os.environ.copy()
+        self._env.update(
+            STEAM_COMPAT_DATA_PATH=Args.prefixdir,
+            STEAM_COMPAT_CLIENT_INSTALL_PATH=self._path["steamdir"],
+        )
+        self._args = {"wine": [], "proton": [], "steamrt": [], "flatpak": []}
+        self._init_args(self._args)
+
     def _cleanup(self):
         """Do cleanup tasks."""
         # cleanup temporary directory when used
@@ -65,12 +87,8 @@ class StarterProton(GameStarterInterface):
             with self._steamruntime_usr_tempdir:
                 pass
 
-    def _determine_shared_paths(self, steamdir):
-        """
-        Determine and return paths that are shared with Steam Runtime or Flatpak.
-
-        steamdir: Path to Steam installation
-        """
+    def _determine_shared_paths(self):
+        """Determine and return paths that are shared with Steam Runtime or Flatpak."""
         # pylint: disable=consider-using-with
 
         if not self._use_steam_runtime and not Args.flatpak_steam:
@@ -83,10 +101,10 @@ class StarterProton(GameStarterInterface):
             if not Args.flatpak_steam:
                 # workshop mods may be loaded from other steam libraries
                 # despite they are also present in our gamedir library
-                shared_paths += get_steam_library_dirs(steamdir)
+                shared_paths += get_steam_library_dirs(self._path["steamdir"])
         else:
             shared_paths.append(Args.moddir)
-        if Dir.scriptdir.startswith("/usr/"):
+        if Args.start and Dir.scriptdir.startswith("/usr/"):
             logging.info("System-wide installation detected: %s", Dir.scriptdir)
             # when truckersmp-cli is installed system-wide,
             # the Steam Runtime helper (singleplayer/multiplayer) and
@@ -115,14 +133,13 @@ class StarterProton(GameStarterInterface):
         logging.debug("Shared paths: %s", shared_paths)
         return shared_paths
 
-    def _init_args(self, args, steamdir):
+    def _init_args(self, args):
         """
         Initialize command line arguments (for Wine, Proton, Steam Runtime, and Flatpak).
 
         args: A dict for arguments
-        steamdir: Path to Steam installation
         """
-        shared_paths = self._determine_shared_paths(steamdir)
+        shared_paths = self._determine_shared_paths()
         if self._use_steam_runtime:
             python = "python3"
             args["steamrt"].append(os.path.join(Args.steamruntimedir, "run"))
@@ -142,9 +159,31 @@ class StarterProton(GameStarterInterface):
                     self._steamruntime_usr_tempdir.name,
                     os.path.basename(File.flatpak_helper)))
         args["wine"] = args["steamrt"].copy()
+        args["wineserver"] = args["wine"].copy()
+        args["wine"].append(self._path["wine"])
+        args["wineserver"].append(self._path["wineserver"])
         args["steamrt"].append(python)  # helper
         args["proton"].append(python)   # Proton
-        args["proton"] += os.path.join(Args.protondir, "proton"), "run"
+        args["proton"] += self._path["proton"], "run"
+
+    def _init_proton_dist_and_prefix(self):
+        """
+        Initialize Proton installation and prefix.
+
+        It makes sure:
+        * Wine commands from Proton dist tarball are ready to use.
+          -> The dist tarball is not unpacked before running Proton first
+        * Prefix is already upgraded/downgraded
+          -> Native d3dcompiler_47 is removed when the prefix is downgraded
+        """
+        try:
+            subproc.check_output(
+                self._args["proton"] + ["wineboot", ],
+                env=self._env, stderr=subproc.STDOUT)
+        except OSError as ex:
+            sys.exit(f"Failed to run wineboot: {ex}")
+        except subproc.CalledProcessError as ex:
+            sys.exit(f"wineboot failed:\n{ex.output.decode('utf-8')}")
 
     def _setup_helper_args(self, args):
         """
@@ -224,80 +263,59 @@ class StarterProton(GameStarterInterface):
             logging.info("Shutting down already running Steam")
             subproc.call(("flatpak", "kill", "com.valvesoftware.Steam"))
 
+    def kill_active_procs(self):
+        """Kill running processes by running "wineserver -k"."""
+        if not os.access(self._path["wine"], os.R_OK | os.X_OK):
+            self._init_proton_dist_and_prefix()
+
+        self._env.update(WINEPREFIX=os.path.join(Args.prefixdir, "pfx"))
+        try:
+            subproc.check_output(
+                self._args["wineserver"] + ["-k", ],
+                env=self._env, stderr=subproc.STDOUT)
+        except OSError as ex:
+            sys.exit(f"Failed to run wineserver: {ex}")
+        except subproc.CalledProcessError as ex:
+            sys.exit(f"wineserver failed:\n{ex.output.decode('utf-8')}")
+
     def run(self):
         """Start the specified game with Proton."""
-        args = {"wine": [], "proton": [], "steamrt": [], "flatpak": []}
-        prefix = os.path.join(Args.prefixdir, "pfx")
-        env = os.environ.copy()
-        steamdir = Dir.flatpak_steamdir if Args.flatpak_steam else \
-            wait_for_steam(
-                use_proton=True, loginvdf_paths=File.loginusers_paths)
-        logging.info("Steam installation directory: %s", steamdir)
-
         logging.debug("Creating directory %s if it doesn't exist", Args.prefixdir)
         os.makedirs(Args.prefixdir, exist_ok=True)
-
-        env.update(
-            STEAM_COMPAT_DATA_PATH=Args.prefixdir,
-            STEAM_COMPAT_CLIENT_INSTALL_PATH=steamdir,
-        )
-
-        self._init_args(args, steamdir)
 
         do_d3dcompiler_setup = (Args.activate_native_d3dcompiler_47
                                 or (not Args.singleplayer
                                     and Args.rendering_backend == "dx11"
                                     and not is_d3dcompiler_setup_skippable()))
         logging.debug("Whether to setup native d3dcompiler_47: %s", do_d3dcompiler_setup)
-
-        # Proton's "dist" directory tree is missing until first run
-        # make sure it's present for using "dist/bin/wine" directly
-        wine_command = os.path.join(
-            Args.protondir,
-            # if proton-tkg (files/bin/wine) is installed, use it
-            "files" if os.access(
-                os.path.join(Args.protondir, "files/bin/wine"),
-                os.R_OK | os.X_OK,
-            ) else "dist",
-            "bin/wine")
-        args["wine"].append(wine_command)
-
-        if (not os.access(wine_command, os.R_OK)
-                # native d3dcompiler_47 is removed when the prefix is downgraded
-                # make sure the prefix is already upgraded/downgraded
-                or do_d3dcompiler_setup):
-            try:
-                subproc.check_output(
-                    args["proton"] + ["wineboot", ], env=env, stderr=subproc.STDOUT)
-            except OSError as ex:
-                sys.exit(f"Failed to run wineboot: {ex}")
-            except subproc.CalledProcessError as ex:
-                sys.exit(f"wineboot failed:\n{ex.output.decode('utf-8')}")
+        if not os.access(self._path["wine"], os.R_OK | os.X_OK) or do_d3dcompiler_setup:
+            self._init_proton_dist_and_prefix()
 
         # activate native d3dcompiler_47
         if do_d3dcompiler_setup:
-            activate_native_d3dcompiler_47(prefix, args["wine"])
+            activate_native_d3dcompiler_47(self._path["prefix"], self._args["wine"])
 
         # enable Wine desktop if requested
         if Args.wine_desktop:
-            set_wine_desktop_registry(prefix, args["wine"], True)
+            set_wine_desktop_registry(self._path["prefix"], self._args["wine"], True)
 
-        StarterProton.setup_game_env(env, steamdir)
-        self._setup_proton_args(args["proton"])
+        StarterProton.setup_game_env(self._env, self._path["steamdir"])
+        self._setup_proton_args(self._args["proton"])
         StarterProton.shutdown_flatpak_steam()
 
         log_info_formatted_envars_and_args(
             runner="Steam Runtime helper",
-            env_print=StarterProton.determine_env_print(env),
-            env=env,
-            args=args["proton"])
-        helper_args = args["flatpak"] + self._setup_helper_args(args["steamrt"]) \
-            + ["--", ] + args["proton"]
+            env_print=StarterProton.determine_env_print(self._env),
+            env=self._env,
+            args=self._args["proton"])
+        helper_args = self._args["flatpak"] \
+            + self._setup_helper_args(self._args["steamrt"]) \
+            + ["--", ] + self._args["proton"]
         logging.debug("Helper arguments: %s", helper_args)
         try:
             with subproc.Popen(
                     helper_args,
-                    env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
+                    env=self._env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
                 if Args.verbose:
                     print_child_output(proc)
                 proc.wait()
@@ -307,7 +325,7 @@ class StarterProton(GameStarterInterface):
 
         # disable Wine desktop if enabled
         if Args.wine_desktop:
-            set_wine_desktop_registry(prefix, args["wine"], False)
+            set_wine_desktop_registry(self._path["prefix"], self._args["wine"], False)
 
         self._cleanup()
 
@@ -349,6 +367,8 @@ class StarterWine(GameStarterInterface):
         """
         self._cfg = cfg
         self._thirdparty_processes = []
+        self._env = os.environ.copy()
+        self._env.update(WINEDEBUG="-all", WINEARCH="win64", WINEPREFIX=Args.prefixdir)
 
     def _cleanup(self):
         """Do cleanup tasks."""
@@ -358,12 +378,21 @@ class StarterWine(GameStarterInterface):
                     proc.kill()
                 proc.wait()
 
+    def kill_active_procs(self):
+        """Kill running processes by running "wineserver -k"."""
+        try:
+            subproc.call(
+                (os.getenv("WINESERVER", "wineserver"), "-k"),
+                env=self._env, stderr=subproc.STDOUT)
+        except OSError as ex:
+            sys.exit(f"Failed to run wineserver: {ex}")
+        except subproc.CalledProcessError as ex:
+            sys.exit(f"wineserver failed:\n{ex.output.decode('utf-8')}")
+
     def run(self):
         """Start the specified game with Wine."""
         # pylint: disable=consider-using-with
 
-        env = os.environ.copy()
-        env.update(WINEDEBUG="-all", WINEARCH="win64", WINEPREFIX=Args.prefixdir)
         wine_command = os.getenv("WINE", "wine")
         wine_args = [wine_command, ]
 
@@ -377,7 +406,7 @@ class StarterWine(GameStarterInterface):
             use_proton=False,
             loginvdf_paths=(os.path.join(Args.wine_steam_dir, File.loginvdf_inner), ),
             wine=wine_command,
-            env=env,
+            env=self._env,
         )
 
         executables = self._cfg.thirdparty_executables.copy()
@@ -388,18 +417,18 @@ class StarterWine(GameStarterInterface):
             self._thirdparty_processes.append(
                 subproc.Popen(
                     [wine_command, ] + [discord_bridge, ],
-                    env=env, stderr=subproc.STDOUT))
+                    env=self._env, stderr=subproc.STDOUT))
             time.sleep(5)
 
         for path in executables:
             self._thirdparty_processes.append(
                 subproc.Popen(
-                    [wine_command, ] + [path, ], env=env, stderr=subproc.STDOUT))
+                    [wine_command, ] + [path, ], env=self._env, stderr=subproc.STDOUT))
 
         time.sleep(self._cfg.thirdparty_wait)
 
-        if "WINEDLLOVERRIDES" not in env:
-            env["WINEDLLOVERRIDES"] = ""
+        if "WINEDLLOVERRIDES" not in self._env:
+            self._env["WINEDLLOVERRIDES"] = ""
 
         wine_args = StarterWine.setup_wine_args(wine_args)
 
@@ -410,12 +439,12 @@ class StarterWine(GameStarterInterface):
         log_info_formatted_envars_and_args(
             runner="Wine",
             env_print=("WINEARCH", "WINEDEBUG", "WINEDLLOVERRIDES", "WINEPREFIX"),
-            env=env,
+            env=self._env,
             args=wine_args)
         try:
             with subproc.Popen(
                     wine_args,
-                    env=env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
+                    env=self._env, stdout=subproc.PIPE, stderr=subproc.STDOUT) as proc:
                 if Args.verbose:
                     print("Wine output:")
                     print_child_output(proc)

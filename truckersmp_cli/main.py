@@ -149,8 +149,7 @@ See {URL.project_doc_inst} for additional information.""")
         logging.debug("Updating mod files")
         update_mod()
 
-    # start truckersmp with proton or wine
-    if Args.start:
+    if Args.kill_procs or Args.start:
         if Args.proton:
             # check for Proton availability when starting with Proton
             if not os.access(os.path.join(Args.protondir, "proton"), os.R_OK):
@@ -176,7 +175,14 @@ See {URL.project_doc_inst} for additional information.""")
         if not check_libsdl2():
             sys.exit("SDL2 was not found on your system.")
         starter = StarterProton(cfg) if Args.proton else StarterWine(cfg)
-        logging.debug("Starting game with %s", starter.runner_name)
-        starter.run()
+        logging.debug("Created starter for %s", starter.runner_name)
+        # kill active processes if "kill" action is given
+        if Args.kill_procs:
+            logging.info("Killing running processes")
+            starter.kill_active_procs()
+        # start TruckersMP with Proton or Wine
+        if Args.start:
+            logging.info("Starting game")
+            starter.run()
 
     sys.exit()
