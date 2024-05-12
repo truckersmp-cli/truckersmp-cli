@@ -268,9 +268,25 @@ def find_discord_ipc_sockets():
     #   https://github.com/0e4ef622/wine-discord-ipc-bridge/pull/24
     # * $XDG_RUNTIME_DIR/snap.discord/discord-ipc-*
     #   https://github.com/0e4ef622/wine-discord-ipc-bridge/issues/17#issuecomment-982285675
-    return glob.glob(
-        os.path.join(os.getenv("XDG_RUNTIME_DIR", "/tmp"), "**", "discord-ipc-*"),
-        recursive=True)
+
+    # Combine globs to avoid the use of "**":
+    # Using the “**” pattern in large directory trees may consume a huge amount of time.
+    results = glob.glob(
+        os.path.join(
+            os.getenv("XDG_RUNTIME_DIR", "/tmp"),
+            "discord-ipc-*"))
+    results += glob.glob(
+        os.path.join(
+            os.getenv("XDG_RUNTIME_DIR", "/tmp"),
+            "app",
+            "com.discordapp.Discord",
+            "discord-ipc-*"))
+    results += glob.glob(
+        os.path.join(
+            os.getenv("XDG_RUNTIME_DIR", "/tmp"),
+            "snap.discord",
+            "discord-ipc-*"))
+    return results
 
 
 def get_current_steam_user():
