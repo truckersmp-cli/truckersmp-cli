@@ -255,11 +255,15 @@ def download_files(host, files_to_download, progress_count=None):
 
 def find_discord_ipc_sockets():
     """
-    Find Discord IPC sockets.
+    Find Discord IPC sockets when using wine-discord-ipc-bridge.
 
     This function returns a list of Discord IPC socket paths.
-    When no sockets found, an empty list ([]) is returned.
+    When not using wine-discord-ipc-bridge or no sockets found,
+    an empty list ([]) is returned.
     """
+    if Args.without_wine_discord_ipc_bridge:
+        return []
+
     # Discord creates sockets in $XDG_RUNTIME_DIR
     # "/tmp/" is used as fallback directory
 
