@@ -96,7 +96,8 @@ class SteamCMD:
                     steamcmd.run(
                         [
                             "+force_install_dir", Args.steamruntimedir,
-                            "+login", "anonymous",
+                            # Steam Runtime 3.0 requires logging in
+                            "+login", Args.account,
                             "+app_update", str(appid_steamruntime), "validate",
                             "+quit",
                         ]
