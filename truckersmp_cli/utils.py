@@ -275,21 +275,13 @@ def find_discord_ipc_sockets():
 
     # Combine globs to avoid the use of "**":
     # Using the “**” pattern in large directory trees may consume a huge amount of time.
+    xdg_runtime_dir = os.getenv("XDG_RUNTIME_DIR", "/tmp")
     results = glob.glob(
-        os.path.join(
-            os.getenv("XDG_RUNTIME_DIR", "/tmp"),
-            "discord-ipc-*"))
+        os.path.join(xdg_runtime_dir, "discord-ipc-*"))
     results += glob.glob(
-        os.path.join(
-            os.getenv("XDG_RUNTIME_DIR", "/tmp"),
-            "app",
-            "com.discordapp.Discord",
-            "discord-ipc-*"))
+        os.path.join(xdg_runtime_dir, "app", "com.discordapp.Discord", "discord-ipc-*"))
     results += glob.glob(
-        os.path.join(
-            os.getenv("XDG_RUNTIME_DIR", "/tmp"),
-            "snap.discord",
-            "discord-ipc-*"))
+        os.path.join(xdg_runtime_dir, "snap.discord", "discord-ipc-*"))
     return results
 
 
