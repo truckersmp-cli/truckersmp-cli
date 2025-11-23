@@ -155,16 +155,16 @@ def main():
     if config.bash_completion is None and config.zsh_completion is None:
         return "At least --bash-completion(-b) or --zsh-completion(-z) option needed."
 
-    comp_data = dict(
-        action_names=[act[0] for act in ACTIONS],
-        bash_options=["-h --help"],
-        dir_options=[],
-        file_options=[],
-        game_names=[game[0] for game in GAMES],
-        zsh_actions=[],
-        zsh_games=[],
-        zsh_options=['{-h,--help}"[show help message and exit]:"', ],
-    )
+    comp_data = {
+        "action_names": [act[0] for act in ACTIONS],
+        "bash_options": ["-h --help"],
+        "dir_options": [],
+        "file_options": [],
+        "game_names": [game[0] for game in GAMES],
+        "zsh_actions": [],
+        "zsh_games": [],
+        "zsh_options": ['{-h,--help}"[show help message and exit]:"', ],
+    }
     for act in create_arg_parser()[1]:
         if act.help.startswith("**DEPRECATED** "):
             continue
