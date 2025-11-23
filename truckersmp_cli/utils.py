@@ -24,6 +24,7 @@ from gettext import ngettext
 
 from .variables import Args, Dir, File, URL
 
+# pylint: disable=invalid-name
 VDF_IS_AVAILABLE = False
 try:
     import vdf
