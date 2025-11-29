@@ -23,6 +23,7 @@ from .truckersmp import update_mod
 from .utils import check_libsdl2, perform_self_update
 from .variables import AppId, Args, Dir, File, URL
 
+# pylint: disable=invalid-name
 PKG_RESOURCES_IS_AVAILABLE = False
 try:
     import pkg_resources
