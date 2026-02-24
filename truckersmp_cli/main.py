@@ -10,10 +10,13 @@ import os
 import signal
 import subprocess as subproc
 import sys
+from typing import Optional
 
 from .args import (
-    check_args_errors, check_args_errors_early,
-    create_arg_parser, process_actions_gamenames,
+    check_args_errors,
+    check_args_errors_early,
+    create_arg_parser,
+    process_actions_gamenames,
 )
 from .configfile import ConfigFile
 from .gamestarter import StarterProton, StarterWine
@@ -23,16 +26,8 @@ from .truckersmp import update_mod
 from .utils import check_libsdl2, perform_self_update
 from .variables import AppId, Args, Dir, File, URL
 
-# pylint: disable=invalid-name
-PKG_RESOURCES_IS_AVAILABLE = False
-try:
-    import pkg_resources
-    PKG_RESOURCES_IS_AVAILABLE = True
-except ImportError:
-    pass
 
-
-def get_version_string():
+def get_version_string() -> str:
     """
     Get the version of this program and return it in string format.
 
@@ -47,16 +42,19 @@ def get_version_string():
     try:
         # try to load "RELEASE" file for release assets or cloned git directory
         with open(
-                os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE"),
-                encoding="utf-8") as f_in:
+            os.path.join(os.path.dirname(Dir.scriptdir), "RELEASE"), encoding="utf-8"
+        ) as f_in:
             version += f_in.readline().rstrip()
     except OSError:
         pass
     if version:
         try:
             # try to get git commit hash, and append it if succeeded
-            version += subproc.check_output(
-                ("git", "log", "-1", "--format= (%h)")).decode("utf-8").rstrip()
+            version += (
+                subproc.check_output(("git", "log", "-1", "--format= (%h)"))
+                .decode("utf-8")
+                .rstrip()
+            )
         except (OSError, subproc.CalledProcessError):
             pass
     else:
@@ -69,7 +67,7 @@ def get_version_string():
     return version if version else "unknown"
 
 
-def main():
+def main() -> None:
     """truckersmp-cli main function."""
     # pylint: disable=too-many-branches,too-many-statements
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -154,8 +152,10 @@ See {URL.project_doc_inst} for additional information.""")
         if Args.proton:
             # check for Proton availability when starting with Proton
             if not os.access(os.path.join(Args.protondir, "proton"), os.R_OK):
-                sys.exit(f"Proton is not found in {Args.protondir}\n"
-                         "Run with '--update' option to install Proton")
+                sys.exit(
+                    f"Proton is not found in {Args.protondir}\n"
+                    "Run with '--update' option to install Proton"
+                )
             # check for Steam Runtime availability and the permission of "var"
             # when starting with Proton + Steam Runtime
             run = os.path.join(Args.steamruntimedir, "run")
@@ -163,15 +163,18 @@ See {URL.project_doc_inst} for additional information.""")
             if not Args.disable_steamruntime:
                 if not os.access(run, os.R_OK | os.X_OK):
                     sys.exit(
-                        f'Steam Runtime is not found in {Args.steamruntimedir}\n'
+                        f"Steam Runtime is not found in {Args.steamruntimedir}\n"
                         'Update the game or start with "--disable-steamruntime" option\n'
-                        'to disable the Steam Runtime')
-                if (not os.access(Args.steamruntimedir, os.R_OK | os.W_OK | os.X_OK)
-                        or (os.path.isdir(var)
-                            and not os.access(var, os.R_OK | os.W_OK | os.X_OK))):
+                        "to disable the Steam Runtime"
+                    )
+                if not os.access(Args.steamruntimedir, os.R_OK | os.W_OK | os.X_OK) or (
+                    os.path.isdir(var)
+                    and not os.access(var, os.R_OK | os.W_OK | os.X_OK)
+                ):
                     sys.exit(
-                        f'The Steam Runtime directory ({Args.steamruntimedir}) and\n'
-                        'the "var" subdirectory must be writable')
+                        f"The Steam Runtime directory ({Args.steamruntimedir}) and\n"
+                        'the "var" subdirectory must be writable'
+                    )
 
         if not check_libsdl2():
             sys.exit("SDL2 was not found on your system.")

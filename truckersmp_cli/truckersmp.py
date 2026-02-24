@@ -11,12 +11,13 @@ import os
 import sys
 import urllib.parse
 import urllib.request
+from typing import Dict, Optional
 
 from .utils import check_hash, download_files
 from .variables import Args, URL
 
 
-def determine_game_branch():
+def determine_game_branch() -> str:
     """
     Determine Steam game branch name.
 
@@ -43,7 +44,7 @@ def determine_game_branch():
     return branch
 
 
-def get_supported_game_versions():
+def get_supported_game_versions() -> Optional[Dict[str, str]]:
     """
     Get TruckersMP-supported game versions via TruckersMP Web API.
 
@@ -65,15 +66,17 @@ def get_supported_game_versions():
                 "ats": data[key_ats_compat].replace("s", ""),
             }
         else:
-            logging.warning("TruckersMP Web API returned the JSON"
-                            " that doesn't contain supported game versions.")
+            logging.warning(
+                "TruckersMP Web API returned the JSON"
+                " that doesn't contain supported game versions."
+            )
     except (OSError, ValueError) as ex:
         logging.warning("Failed to get information via TruckersMP Web API: %s", ex)
 
     return result
 
 
-def update_mod():
+def update_mod() -> None:
     """Download missing or outdated "multiplayer mod" files."""
     # pylint: disable=too-many-branches
 
@@ -95,8 +98,9 @@ def update_mod():
         if len(modfiles) == 0:
             raise ValueError("File list is empty")
     except ValueError as ex:
-        sys.exit(f"Failed to parse files.json: {ex}\n"
-                 f"Please report an issue: {URL.issueurl}")
+        sys.exit(
+            f"Failed to parse files.json: {ex}\nPlease report an issue: {URL.issueurl}"
+        )
 
     # compare existing local files with md5sums
     # and remember missing/wrong files

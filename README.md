@@ -5,7 +5,7 @@ A simple launcher for [TruckersMP][truckersmp] to play ATS or ETS2 in multiplaye
 _truckersmp-cli_ allows to download TruckersMP and handles starting TruckersMP through [Wine][wine] while supporting the Windows versions of [American Truck Simulator][steam:ats] and [Euro Truck Simulator 2][steam:ets2].
 
 The [Windows version of Steam][steam:windows] should already be able to run in the same Wine prefix.
-The Windows versions of ATS and ETS2 can be installed and updated via [SteamCMD][steam:steamcmd] while all running Steam processes will be stopped to prevent Steam from loosing connection. Your Steam password and guard code are required by SteamCMD once for this to work.
+The Windows versions of ATS and ETS2 can be installed and updated via [SteamCMD][steam:steamcmd] while all running Steam processes will be stopped to prevent Steam from losing connection. Your Steam password and guard code are required by SteamCMD once for this to work.
 
 On Linux it's possible to start TruckersMP through [Proton][github:proton]. A working [native Steam][repology:steam] installation is needed for this which has the desired game [installed or with an update pending][github:issue253]. SteamCMD can use your saved credentials for convenience.
 
@@ -14,8 +14,8 @@ On Linux it's possible to start TruckersMP through [Proton][github:proton]. A wo
 * When Proton is used, DLCs don't work without installing the native version of the game. A pending download is also sufficient. For the details, see [issue #253][github:issue253].
 * If D3D11 rendering backend is used, TruckersMP login screen is not shown without Windows native 64-bit `d3dcompiler_47.dll`
     * `truckersmp-cli` will automatically download and set up the Windows native dll when D3D11 is used
-* If Steam is running while SteamCMD is being used the Steam client looses all connections and maybe asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
-* If there are game MOD files with German umlauts `ü` and `ß` in filename, game crashes on German locale. For the details, see [issue #248][github:issue248].
+* If Steam is running while SteamCMD is being used the Steam client loses all connections and maybe asks for the password and the guard code at the next startup. This script closes all Steam processes before acting with SteamCMD so **starting an update with a shortcut out of the Steam client won't work** because Steam waits for the script to finish and the script waits for Steam to quit.
+* If there are game MOD files with German characters `ü` and `ß` in filename, game crashes on German locale. For the details, see [issue #248][github:issue248].
 
 ## Install
 
@@ -42,7 +42,7 @@ You can get the latest pre-built release from [the release page][github:release-
 
 #### Required
 
-* [`python`][repology:python] in version 3.6 (released in December 2016) or later
+* [`python`][repology:python] in version 3.10 (released in October 2021) or later
 * [`sdl2`][repology:sdl2] in x86_64
 * `steam` either the [native Linux version][repology:steam] in use with Proton or the [Windows Steam][steam:windows] in use with Wine
 
@@ -200,7 +200,7 @@ If both options are given, the branch name from `--beta` option is used.
 #### Install, update and start TruckersMP (ATS) with Proton from a custom location
 
 ```
-$ truckermsp-cli --gamedir "/path/to/gamedir" ustart atsmp
+$ truckersmp-cli --gamedir "/path/to/gamedir" ustart atsmp
 ```
 
 #### Start TruckersMP (ETS2) using Wine
@@ -211,7 +211,7 @@ $ truckersmp-cli --wine start ets2mp
 Make sure that
 * The Windows version of Steam is already running in the same Wine prefix **or**
 * The Windows version of Steam is installed in `C:\Program Files (x86)\Steam` in the same Wine prefix **or**
-* You're specifying the path to the Window version of Steam with `--wine-steam-dir`
+* You're specifying the path to the Windows version of Steam with `--wine-steam-dir`
 
 #### Using a different prefix location
 
@@ -220,7 +220,7 @@ $ truckersmp-cli --proton --prefixdir "/path/to/prefix" start ets2mp
 $ truckersmp-cli --wine --prefixdir "/path/to/prefix/pfx" start ets2mp
 ```
 * While the prefix for Wine will point directly to the prefix location, Proton uses a subfolder `pfx` for the actual prefix and points to the parent folder.
-* Your prefix must be 64bits, the mod is not 32bits-compatible.
+* Your prefix must be 64-bit, the mod is not 32bits-compatible.
 
 ## Rendering backends
 

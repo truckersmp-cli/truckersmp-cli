@@ -21,7 +21,7 @@ jobs:
     name: Build and upload inject program
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install gcc-mingw-w64-x86-64
         run: |
              sudo apt -q update
@@ -30,7 +30,7 @@ jobs:
         run: make truckersmp_cli/truckersmp-cli.exe
       - name: Strip truckersmp-cli.exe
         run: x86_64-w64-mingw32-strip truckersmp_cli/truckersmp-cli.exe
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event_name }}-${{ github.sha }}
           path: truckersmp_cli/truckersmp-cli.exe

@@ -21,8 +21,8 @@ jobs:
     name: Check completions generator by flake8
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Install flake8, flake8-docstrings, and flake8-import-order
@@ -33,8 +33,8 @@ jobs:
     name: Check main scripts by pylint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Install pylint

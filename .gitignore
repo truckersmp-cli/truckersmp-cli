@@ -2,3 +2,5 @@
 build/
 dist/
 truckersmp_cli/__pycache__/
+/.ralph
+/.claude
