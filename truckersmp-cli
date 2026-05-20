@@ -14,6 +14,7 @@ from truckersmp_cli.main import main
 
 
 if __name__ == "__main__":
-    locale.setlocale(locale.LC_MESSAGES, "")
+    if hasattr(locale, "LC_MESSAGES"):
+        locale.setlocale(locale.LC_MESSAGES, "")
     locale.setlocale(locale.LC_TIME, "C")
     main()

@@ -1,4 +1,28 @@
+# Python package/build artifacts
 *.egg-info/
 build/
 dist/
-truckersmp_cli/__pycache__/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editor/project-local files
+.vscode/
+
+# Test/lint/cache artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local environment files
+.env
+.env.*

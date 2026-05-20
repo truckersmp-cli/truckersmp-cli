@@ -11,25 +11,23 @@ import signal
 import subprocess as subproc
 import sys
 
+try:
+    from importlib import metadata
+except ImportError:
+    metadata = None
+
 from .args import (
     check_args_errors, check_args_errors_early,
     create_arg_parser, process_actions_gamenames,
 )
 from .configfile import ConfigFile
+from .doctor import run_doctor
 from .gamestarter import StarterProton, StarterWine
 from .logger import Logger
 from .steamcmd import update_game
 from .truckersmp import update_mod
 from .utils import check_libsdl2, perform_self_update
 from .variables import AppId, Args, Dir, File, URL
-
-# pylint: disable=invalid-name
-PKG_RESOURCES_IS_AVAILABLE = False
-try:
-    import pkg_resources
-    PKG_RESOURCES_IS_AVAILABLE = True
-except ImportError:
-    pass
 
 
 def get_version_string():
@@ -40,7 +38,7 @@ def get_version_string():
     for GitHub release assets or cloned git repo directory.
     If succeeded, it additionally tries to get git commit hash and append it.
     Otherwise, it tries to get version from Python package
-    only when "pkg_resources" module is available.
+    using importlib.metadata.
     If the version is still unknown, this returns "unknown".
     """
     version = ""
@@ -62,9 +60,9 @@ def get_version_string():
     else:
         # try to get version from Python package
         try:
-            if PKG_RESOURCES_IS_AVAILABLE:
-                version += pkg_resources.get_distribution(__package__).version
-        except pkg_resources.DistributionNotFound:
+            if metadata is not None:
+                version += metadata.version(__package__)
+        except metadata.PackageNotFoundError:
             pass
     return version if version else "unknown"
 
@@ -116,6 +114,10 @@ def main():
         sys.exit(f"Invalid configuration found in {Args.configfile}:\n{ex}")
     logger.add_file_handler(cfg.logfile)
     cfg.parse_settings()
+
+    # run diagnostics and quit
+    if Args.doctor:
+        sys.exit(run_doctor(get_version_string()))
 
     # check whether the executable of our inject program is present
     if not os.access(File.inject_exe, os.R_OK):

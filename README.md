@@ -1,4 +1,12 @@
-# truckersmp-cli
+# truckersmp-cli-community
+
+> [!NOTE]
+> This is a community-maintained fork of `truckersmp-cli`.
+>
+> The goal is to keep TruckersMP working reliably on Linux/Proton while upstream activity is limited.
+> This fork aims to preserve compatibility with the original project while merging fixes, improving diagnostics, and documenting common Linux setup issues.
+
+## Original project README
 
 A simple launcher for [TruckersMP][truckersmp] to play ATS or ETS2 in multiplayer.
 

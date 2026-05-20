@@ -8,32 +8,36 @@ import io
 import logging
 import os
 import platform
+import re
+import shutil
 import subprocess as subproc
 import sys
 import tarfile
-import urllib.parse
 import urllib.request
 from zipfile import ZipFile
 
+try:
+    import pty
+except ImportError:
+    pty = None
+
 from .truckersmp import determine_game_branch
-from .utils import check_and_unpack_tar, check_steam_process
-from .variables import AppId, Args, Dir, URL
+from .utils import check_and_unpack_tar, check_steam_process, get_steamdir
+from .variables import AppId, Args, Dir, File, URL
 
 
 class SteamCMD:
     """SteamCMD command."""
 
     def __init__(self, path, wine=None, env=None):
-        """
-        Initialize SteamCMD object.
-
-        path: Path to "steamcmd.sh" or "steamcmd.exe"
-        wine: Path to "wine" command (can be None when native SteamCMD is used)
-        env: "env" argument for subprocess.Popen
-        """
+        """Initialize SteamCMD object."""
         self._path = path
         self._wine = wine
         self._env = env
+        self._re = re.compile("Waiting for client config.*")
+        self._lib_backup = None
+        self._backup_restored = False
+        self._login_re = re.compile(r"Waiting for client config.*")
 
     @staticmethod
     def download_steamcmd(dest, url):
@@ -131,6 +135,65 @@ class SteamCMD:
             ]
         )
 
+    def _create_lib_backup(self):
+        """Create backup of steamlibvdf."""
+        lib = os.path.join(get_steamdir(), File.steamlibvdf_inner)
+        if not os.path.isfile(lib):
+            return
+
+        bak = f"{lib}.truckersmp-cli.bak"
+        try:
+            shutil.copy2(lib, bak)
+            logging.debug("Backed up %s -> %s", lib, bak)
+            self._lib_backup = (lib, bak)
+        except OSError as ex:
+            logging.warning("Failed to back up %s: %s", lib, ex)
+            return
+
+    def _restore_lib_backup(self):
+        """Restore steamlibvdf and remove backup copy."""
+        if not self._lib_backup:
+            return
+
+        lib, bak = self._lib_backup
+        try:
+            shutil.copy2(bak, lib)
+            logging.debug("Restored %s from %s", lib, bak)
+        except OSError as ex:
+            logging.warning("Failed to restore %s from %s: %s", lib, bak, ex)
+
+        try:
+            os.remove(bak)
+        except OSError:
+            pass
+
+    def _try_restore_on_login(self, line):
+        """Check for login pattern in line and restore backup if found."""
+        if not self._backup_restored and self._lib_backup and self._login_re.search(line):
+            self._restore_lib_backup()
+            self._backup_restored = True
+
+    def _run_interactive(self, cmdline):
+        """Run SteamCMD interactively with PTY for immediate I/O."""
+        if pty is None:
+            sys.exit(
+                "SteamCMD interactive PTY support is not available on this platform."
+            )
+
+        def master_read(fd):
+            data = os.read(fd, 1024)
+            if data:
+                text = data.decode('utf-8', errors='ignore')
+                self._try_restore_on_login(text)
+            return data
+
+        try:
+            returncode = pty.spawn(cmdline, master_read=master_read)
+            if returncode != 0:
+                sys.exit("SteamCMD exited abnormally")
+        except OSError as ex:
+            sys.exit(f"Failed to start SteamCMD: {ex}")
+
     def run(self, args):
         """
         Run SteamCMD using given command line.
@@ -160,12 +223,27 @@ class SteamCMD:
             elif i > 0:
                 cmd_str += " "
             cmd_str += arg
-        logging.info("Running SteamCMD:\n  %s%s", env_str, cmd_str)
 
-        try:
-            subproc.check_call(cmdline, env=self._env)
-        except subproc.CalledProcessError:
-            sys.exit("SteamCMD exited abnormally")
+        # create backup of Steam library folders
+        if Args.proton:
+            self._create_lib_backup()
+            self._backup_restored = False
+
+        # store current environment and set new one
+        prev_env = os.environ.copy()
+        os.environ.clear()
+        os.environ.update(self._env or {})
+
+        # run SteamCMD
+        if sys.stdin.isatty():
+            logging.info("Running SteamCMD:\n  %s%s", env_str, cmd_str)
+            self._run_interactive(cmdline)
+        else:
+            sys.exit("SteamCMD requires an interactive terminal.")
+
+        # restore previous environment
+        os.environ.clear()
+        os.environ.update(prev_env)
 
 
 def update_game():

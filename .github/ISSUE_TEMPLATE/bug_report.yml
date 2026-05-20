@@ -1,0 +1,90 @@
+name: Bug report
+description: Report a problem with truckersmp-cli-community
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please include as much detail as possible.
+
+  - type: input
+    id: distro
+    attributes:
+      label: Linux distribution
+      description: "Example: Ubuntu 24.04, Arch, Fedora 41, Linux Mint"
+      placeholder: "Ubuntu 24.04"
+    validations:
+      required: true
+
+  - type: input
+    id: install_method
+    attributes:
+      label: Steam install type
+      description: "Native package, Flatpak, Snap, etc."
+      placeholder: "Native / Flatpak / Snap"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: game
+    attributes:
+      label: Game
+      options:
+        - Euro Truck Simulator 2
+        - American Truck Simulator
+        - Both
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: proton
+    attributes:
+      label: Proton version
+      description: "Example: Proton 10.0, Proton Experimental, GE-Proton"
+      placeholder: "Proton 10.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command used
+      description: Paste the command you ran.
+      render: shell
+      placeholder: "truckersmp-cli update"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs/output
+      description: Paste terminal output or logs here.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: steam_libraries
+    attributes:
+      label: Steam library check
+      options:
+        - label: My Steam libraries disappeared or changed after running SteamCMD/truckersmp-cli
+        - label: My `libraryfolders.vdf` file still exists after running the command

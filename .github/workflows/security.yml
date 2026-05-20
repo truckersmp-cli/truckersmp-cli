@@ -1,0 +1,65 @@
+name: Security checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  bandit:
+    name: Bandit Python security scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Bandit
+        run: python -m pip install bandit
+
+      - name: Run Bandit
+        continue-on-error: true
+        run: |
+          bandit \
+            --recursive truckersmp_cli truckersmp-cli \
+            --severity-level medium \
+            --confidence-level medium \
+            --skip B404,B603
+
+  pip-audit:
+    name: Python dependency vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package and pip-audit
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install pip-audit
+
+      - name: Run pip-audit
+        run: pip-audit
+
+  gitleaks:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
