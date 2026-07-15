@@ -232,21 +232,10 @@ class ConfigFile:
         )
 
         # whether to disable Steam Runtime
-        Args.without_steam_runtime = self._configure_game_specific_setting_boolean(
-            Args.without_steam_runtime, "without-steamruntime",
-            False, "Whether to disable Steam Runtime (deprecated)",
-        )
         Args.disable_steamruntime = self._configure_game_specific_setting_boolean(
             Args.disable_steamruntime, "disable-steamruntime",
             False, "Whether to disable Steam Runtime",
         )
-        if Args.without_steam_runtime:
-            logging.warning(
-                "'--without-steam-runtime' option and "
-                "'without-steamruntime' setting are deprecated, "
-                "use '--disable-steamruntime' option or "
-                "'disable-steamruntime' setting instead")
-            Args.disable_steamruntime = True
 
         # whether to use Flatpak version of Steam
         Args.flatpak_steam = self._configure_game_specific_setting_boolean(

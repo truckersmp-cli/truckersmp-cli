@@ -292,12 +292,6 @@ SteamCMD can use your saved credentials for convenience.
         help="""choose a directory for Windows version of Steam
                 [Default: "C:\\Program Files (x86)\\Steam" in the prefix]"""))
     store_actions.append(parser.add_argument(
-        "--without-steam-runtime",
-        default=None,
-        help="""**DEPRECATED** don't use Steam Runtime even when using
-                Proton 5.13 or newer""",
-        action="store_true"))
-    store_actions.append(parser.add_argument(
         "--without-wine-discord-ipc-bridge",
         help="don't use wine-discord-ipc-bridge for Discord Rich Presence",
         action="store_true"))
